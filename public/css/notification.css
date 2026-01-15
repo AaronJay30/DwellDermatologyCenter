@@ -1,0 +1,207 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+.notification-wrapper {
+    padding: 0;
+    max-width: 900px;
+    margin: 0;
+}
+
+
+.notif-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    margin-top: 1rem;
+}
+.notif-header h1 {
+    font-size: 2.3rem;
+    font-weight: bold;
+    color: #000000;
+}
+
+
+/* Empty state */
+.notif-empty {
+    text-align: center;
+    padding: 3rem;
+    color: #197A8C;
+}
+
+
+/* Group section */
+.notif-group {
+    margin-bottom: 2rem;
+}
+.notif-group-title {
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+    color: #444;
+    margin-bottom: .75rem;
+}
+
+
+/* Notification card */
+.notif-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: .75rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+}
+
+
+/* Notification item */
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: .75rem 1rem;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.notif-item.unread {
+    background: #f9f9f9;
+}
+.notif-icon {
+    font-size: 1.5rem;
+}
+.notif-content h3 {
+    margin: 0;
+    color: #197A8C;
+    font-size: 1rem;
+}
+.notif-content p {
+    margin: 0.25rem 0;
+    font-size: .9rem;
+    color: #333;
+}
+.notif-content small {
+    color: #666;
+    font-size: .75rem;
+}
+
+
+/* Actions */
+.notif-actions {
+    margin-left: auto;
+    display: flex;
+    gap: .5rem;
+    
+}
+.btn-mark {
+    background: #197A8C;
+    color: #fff;
+    padding: .3rem .6rem;
+    border-radius: 6px;
+    border: none;
+    font-size: .8rem;
+}
+.btn-danger {
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    padding: .3rem .6rem;
+    border-radius: 6px;
+    font-size: .8rem;
+}
+.notif-admin-form .btn-primary {
+    display: block;
+    width: 100%;
+    height: 50px;
+    text-align: center;
+}
+
+/* ===================== */
+/* Admin Notification Form */
+/* ===================== */
+
+
+.notif-admin-form {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+
+
+.notif-admin-form h3 {
+    color: #197A8C;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+
+.notif-admin-form .form-group {
+    margin-bottom: 1rem;
+}
+
+
+.notif-admin-form label {
+    font-weight: 600;
+    color: #333;
+    display: block;
+    margin-bottom: .5rem;
+}
+
+
+.notif-admin-form textarea.form-control,
+.notif-admin-form select.form-control {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: .6rem .8rem;
+    font-size: .9rem;
+}
+
+
+.notif-admin-form textarea.form-control:focus,
+.notif-admin-form select.form-control:focus {
+    border-color: #197A8C;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(25, 122, 140, 0.2);
+}
+
+
+.notif-admin-form .form-inline {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+
+.notif-admin-form .btn-send-small {
+  display: block;              
+  width: 300px !important;      
+  height: 50px !important;    
+  padding: .35rem .75rem;
+  font-size: .85rem;
+  border-radius: 8px;
+  margin: 0.5rem auto 0;      
+  max-width: 400px;            
+  box-sizing: border-box;
+}
+
+
+
+
+.notif-admin-form .btn-primary:hover {
+    background: #145d6b;
+}
+
+
+/* Error message */
+.notif-admin-form .alert-error {
+    margin-top: .5rem;
+    color: #dc3545;
+    font-size: .85rem;
+}

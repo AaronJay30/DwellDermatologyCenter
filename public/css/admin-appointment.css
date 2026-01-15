@@ -1,0 +1,173 @@
+/* Wrapper - Transparent Background */
+.appointment-wrapper {
+    max-width: 1400px;
+    margin: 5rem auto 2rem auto;
+    padding: 2rem;
+    background: transparent !important;
+    border-radius: 0;
+    min-height: 80vh;
+}
+
+/* Header */
+.appointment-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.appointment-title {
+    font-size: 2.5rem;
+    color: #000;
+    margin-bottom: 0.5rem;
+}
+.appointment-subtitle {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+/* Card - No Background */
+.appointment-card {
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* Table */
+.appointment-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    background: transparent;
+}
+.appointment-table th,
+.appointment-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: none;
+    background: transparent;
+}
+.appointment-table thead tr {
+    background: transparent !important;
+    color: #2c3e50;
+}
+.appointment-table thead th {
+    background: transparent !important;
+    color: #2c3e50;
+}
+
+/* Appointment table rows - same styling as other tables */
+.appointment-table tbody tr {
+    min-height: 80px;
+    background: rgba(255, 250, 240, 0.75) !important; /* Transparent nude/dirty white */
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border: none;
+    /* Gold-black shadow effect */
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 2px 6px rgba(255, 215, 0, 0.15),
+        0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 12px;
+}
+
+.appointment-table tbody tr:hover {
+    transform: translateY(-3px);
+    z-index: 2;
+    /* Enhanced gold-black shadow on hover */
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.12),
+        0 4px 12px rgba(255, 215, 0, 0.25),
+        0 2px 6px rgba(0, 0, 0, 0.15);
+    filter: brightness(1.05);
+    background: rgba(255, 252, 248, 0.85) !important;
+}
+
+.appointment-table tbody td {
+    padding: 20px 1.25rem !important;
+    vertical-align: middle;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    min-height: 80px;
+    border: none;
+    background: transparent;
+}
+
+.appointment-table tbody td:first-child {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
+}
+
+.appointment-table tbody td:last-child {
+    text-align: right;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+/* Status styles */
+.status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+.status.pending { background: #fff3cd; color: #856404; }
+.status.confirmed { background: #d4edda; color: #155724; }
+.status.cancelled { background: #f8d7da; color: #721c24; }
+.status.other { background: #e2e3e5; color: #383d41; }
+
+/* Actions */
+.actions-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.actions-wrapper .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+/* Empty message */
+.no-appointments {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+}
+
+/* Modals */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.4);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.modal-card {
+    width: min(520px, 92vw);
+    border: 1px solid #eef1f4;
+    border-radius: 12px;
+}
+.modal-header {
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+    font-weight: 600;
+}
+.modal-body {
+    padding: 1rem;
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}

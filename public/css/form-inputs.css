@@ -1,0 +1,150 @@
+/* Modern Input Field Design - Inspired Design */
+.modern-input-wrapper {
+    margin-bottom: 1rem;
+}
+
+.modern-input-wrapper label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+}
+
+.modern-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.modern-input-container .input-icon {
+    position: absolute;
+    left: 12px;
+    color: #197a8c;
+    font-size: 1rem;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.modern-input-container .input-icon-right {
+    position: absolute;
+    right: 12px;
+    color: #197a8c;
+    font-size: 1rem;
+    z-index: 1;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.modern-input-container .input-icon-right:hover {
+    color: #0f5a6a;
+}
+
+.modern-input-container input,
+.modern-input-container textarea,
+.modern-input-container select {
+    width: 100%;
+    padding: 0.75rem 0.75rem 0.75rem 2.75rem;
+    border: 1px solid #FFD700;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: #ffffff;
+    color: #2c3e50;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.modern-input-container input:focus,
+.modern-input-container textarea:focus,
+.modern-input-container select:focus {
+    outline: none;
+    border-color: #FFD700;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+    background: #ffffff;
+}
+
+.modern-input-container input::placeholder,
+.modern-input-container textarea::placeholder {
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* For inputs with right icon (like password toggle) */
+.modern-input-container input.has-right-icon {
+    padding-right: 2.75rem;
+}
+
+/* For select dropdowns */
+.modern-input-container select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23197a8c' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 2.5rem;
+}
+
+/* For textarea */
+.modern-input-container textarea {
+    resize: vertical;
+    min-height: 80px;
+    padding-top: 0.75rem;
+}
+
+/* Error state */
+.modern-input-wrapper.has-error input,
+.modern-input-wrapper.has-error textarea,
+.modern-input-wrapper.has-error select {
+    border-color: #dc3545;
+}
+
+.modern-input-wrapper .error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+/* Compact spacing for forms that need to fit on one screen */
+.compact-form .modern-input-wrapper {
+    margin-bottom: 0.75rem;
+}
+
+.compact-form .modern-input-wrapper label {
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+}
+
+.compact-form .modern-input-container input,
+.compact-form .modern-input-container textarea,
+.compact-form .modern-input-container select {
+    padding: 0.6rem 0.6rem 0.6rem 2.5rem;
+    font-size: 0.95rem;
+}
+
+.compact-form .modern-input-container input.has-right-icon {
+    padding-right: 2.5rem;
+}
+
+/* Address cascading dropdowns */
+.address-select-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.address-select-group.full-width {
+    grid-template-columns: 1fr;
+}
+
+.address-select-group .modern-input-container {
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .address-select-group {
+        grid-template-columns: 1fr;
+    }
+}
+

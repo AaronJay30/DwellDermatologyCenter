@@ -1,0 +1,197 @@
+
+/* Background wrapper */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #fefcec;
+}
+.container {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Top section with logo */
+.login-page .card {
+    background: #ffffff;
+    padding: 3rem 2rem;     
+    padding-bottom: 5rem;    
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+.login-header {
+    margin: 0;
+    background: #197a8c;
+    height: 500px;
+    text-align: center;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.login-header img {
+    margin-top: 6px;
+    max-width: 200px;
+    margin-bottom: 10rem;
+}
+
+/* Container */
+.login-container {
+    max-width: 980px;
+    margin: -20rem auto 3rem auto; 
+    padding: 1rem;
+}
+
+
+/* Card */
+.card {
+    background: #fefcec;
+    padding: 3rem 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+/* Heading */
+.card h2 {
+    color: #0f7c82;
+    font-size: 1.5rem;
+    font-weight: 750;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.card p.subtitle {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 2rem;
+}
+
+/* Form groups */
+.form-group {
+    margin-bottom: 1.2rem;
+    text-align: left;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+    color: #333;
+}
+
+/* Inputs */
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #FFD700;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border 0.3s;
+}
+
+.form-control:focus {
+    border-color: #FFD700;
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+    outline: none;
+}
+
+.input-icon {
+    position: relative;
+}
+
+.input-icon i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #197a8c;
+    font-size: 1rem;
+}
+
+.input-icon .form-control {
+    padding-left: 2.5rem; 
+}
+
+/* Error messages */
+.error-message {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+/* Button */
+.btn-primary {
+    width: 100%;
+    padding: 0.9rem;
+    background: #197a8c;
+    color: white;
+    border: none;
+    border-radius: 25px; 
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+    text-transform: uppercase;
+}
+
+.btn-primary:hover {
+    background: #0c6366;
+}
+
+/* Register / Forgot link area */
+.register-link {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.register-link a {
+    color: #197a8c;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+.forgot-password {
+    text-align: right;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.forgot-password a {
+    color: #197a8c;
+    text-decoration: none;
+    font-weight: 500;
+}
+.forgot-password {
+    margin-top: 5px;
+    text-align: right;
+}
+.forgot-password a {
+    font-size: 0.9em;
+    color: #007bff;
+    text-decoration: none;
+}
+.forgot-password a:hover {
+    text-decoration: underline;
+}
+.forgot-password {
+    text-align: center;       /* Centers the link */
+    margin-top: 10px;          /* Optional spacing */
+}
+
+.forgot-password .forgot-link {
+    color:#197a8c;            /* Blue-green */
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: 0.2s ease-in-out;
+}
+
+.forgot-password .forgot-link:hover {
+    color: #dc3545;            /* Darker teal on hover */
+    text-decoration: underline;
+}

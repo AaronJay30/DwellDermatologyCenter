@@ -1,0 +1,462 @@
+/* Modern Soft-UI Table Design */
+
+/* Page Background - Transparent Nude/Dirty White */
+/* Target the content area specifically for doctor dashboard pages */
+.content-wrapper {
+    background: rgba(250, 248, 245, 0.4) !important;
+}
+
+/* Container backgrounds - make transparent */
+.container.appointment-wrapper,
+.appointment-wrapper {
+    background: transparent !important;
+}
+
+/* Table Container */
+.table-container,
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    background: transparent;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
+}
+
+/* Table Wrapper - No Background */
+.table-wrapper {
+    background: transparent !important;
+    border-radius: 0;
+    padding: 1rem;
+    box-shadow: none;
+    overflow: visible;
+}
+
+/* Remove Card Backgrounds */
+.card,
+.appointment-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Table Header */
+table thead {
+    background: transparent;
+}
+
+table thead th {
+    padding: 1rem 1.25rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #2c3e50;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: none;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+    background: transparent;
+}
+
+table thead th:hover {
+    background-color: transparent;
+}
+
+/* Table Body - Individual Row Containers */
+/* Each row is a container with transparent nude/dirty white background and gold-black shadow */
+table tbody tr {
+    min-height: 80px;
+    background: rgba(255, 250, 240, 0.75) !important; /* Transparent nude/dirty white */
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border: none;
+    /* Gold-black shadow effect */
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 2px 6px rgba(255, 215, 0, 0.15),
+        0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 12px;
+}
+
+table tbody tr:last-child {
+    margin-bottom: 0;
+}
+
+/* Row Hover Effect - Lift and Brightness */
+table tbody tr:hover {
+    transform: translateY(-3px);
+    z-index: 2;
+    /* Enhanced gold-black shadow on hover */
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.12),
+        0 4px 12px rgba(255, 215, 0, 0.25),
+        0 2px 6px rgba(0, 0, 0, 0.15);
+    filter: brightness(1.05);
+    background: rgba(255, 252, 248, 0.85) !important;
+}
+
+/* Table Cells */
+table tbody td {
+    padding: 20px 1.25rem;
+    vertical-align: middle;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    min-height: 80px;
+    border: none;
+    background: transparent;
+}
+
+/* Primary Column with Profile Icon */
+table tbody td:first-child {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
+}
+
+.profile-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #197a8c 0%, #1a6b7a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(25, 122, 140, 0.2);
+}
+
+.profile-icon img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.primary-column-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    text-align: left;
+    line-height: 1.5;
+}
+
+/* Status Badges - Pill Shape */
+.status-badge,
+.status {
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    min-width: fit-content;
+    max-width: 100%;
+    vertical-align: middle;
+}
+
+.status-pending,
+.status.pending {
+    background-color: #ffeb3b;
+    color: #f57f17;
+}
+
+.status-confirmed,
+.status.confirmed {
+    background-color: #4caf50;
+    color: #ffffff;
+}
+
+.status-completed,
+.status.completed {
+    background-color: #4caf50;
+    color: #ffffff;
+}
+
+.status-cancelled,
+.status.cancelled {
+    background-color: #f44336;
+    color: #ffffff;
+}
+
+.status-available,
+.status.available {
+    background-color: #4caf50;
+    color: #ffffff;
+}
+
+.status-booked,
+.status.booked {
+    background-color: #f44336;
+    color: #ffffff;
+}
+
+.status-active,
+.status.active,
+.status-activated,
+.status.activated {
+    background-color: #4caf50;
+    color: #ffffff;
+}
+
+.status-inactive,
+.status.inactive {
+    background-color: #ffeb3b;
+    color: #f57f17;
+}
+
+.status-archived,
+.status.archived {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+/* Action Column - Right Aligned */
+table tbody td:last-child {
+    text-align: right;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+/* Action Buttons - Icon Only, Gold Color */
+.action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 0;
+}
+
+.action-btn i,
+.action-btn svg {
+    width: 20px;
+    height: 20px;
+    color: #FFD700;
+    stroke: #FFD700;
+    fill: none;
+    stroke-width: 2;
+    transition: all 0.3s ease;
+}
+
+.action-btn i[data-feather],
+.action-btn svg[data-feather] {
+    color: #FFD700;
+    stroke: #FFD700;
+}
+
+.action-btn:hover {
+    background-color: rgba(255, 215, 0, 0.1);
+    transform: scale(1.05);
+}
+
+.action-btn:active {
+    transform: scale(0.98);
+}
+
+.action-btn:hover i,
+.action-btn:hover svg {
+    color: #FFD700;
+    stroke: #FFD700;
+    transform: scale(1.1);
+}
+
+/* Legacy button support - convert to icon buttons */
+table tbody td .btn {
+    min-width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+table tbody td .btn i,
+table tbody td .btn svg {
+    width: 20px;
+    height: 20px;
+    color: #FFD700;
+    stroke: #FFD700;
+}
+
+table tbody td .btn:hover {
+    background-color: rgba(255, 215, 0, 0.1);
+    transform: scale(1.05);
+}
+
+table tbody td .btn:active {
+    transform: scale(0.98);
+}
+
+table tbody td .btn:hover i,
+table tbody td .btn:hover svg {
+    transform: scale(1.1);
+}
+
+/* Remove text from buttons in action column */
+table tbody td:last-child .btn {
+    font-size: 0;
+    padding: 0;
+}
+
+table tbody td:last-child .btn::before {
+    content: '';
+}
+
+/* Appointment table specific styling */
+.appointment-table,
+table.appointment-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    background: transparent;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
+}
+
+/* Tables inside cards - apply wrapper styling */
+.card table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    background: transparent;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
+}
+
+.card .table-wrapper {
+    background: transparent !important;
+    border-radius: 0;
+    padding: 1rem;
+    box-shadow: none;
+    overflow: visible;
+}
+
+/* Ensure card tables get proper styling */
+.card table thead {
+    background: transparent;
+}
+
+.card table tbody tr {
+    min-height: 80px;
+    background: rgba(255, 250, 240, 0.75) !important; /* Transparent nude/dirty white */
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    border: none;
+    /* Gold-black shadow effect */
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.08),
+        0 2px 6px rgba(255, 215, 0, 0.15),
+        0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 12px;
+}
+
+.card table tbody tr:hover {
+    transform: translateY(-3px);
+    z-index: 2;
+    /* Enhanced gold-black shadow on hover */
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.12),
+        0 4px 12px rgba(255, 215, 0, 0.25),
+        0 2px 6px rgba(0, 0, 0, 0.15);
+    filter: brightness(1.05);
+    background: rgba(255, 252, 248, 0.85) !important;
+}
+
+.card table tbody td {
+    padding: 20px 1.25rem;
+    vertical-align: middle;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    min-height: 80px;
+    border: none;
+    background: transparent;
+}
+
+.card table tbody td:first-child {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
+}
+
+.card table tbody td:last-child {
+    text-align: right;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .table-wrapper {
+        padding: 0.5rem;
+    }
+    
+    table {
+        border-spacing: 0 8px;
+    }
+    
+    table tbody tr {
+        border-radius: 12px;
+    }
+    
+    table tbody td:first-child {
+        border-top-left-radius: 12px;
+        border-bottom-left-radius: 12px;
+    }
+    
+    table tbody td:last-child {
+        border-top-right-radius: 12px;
+        border-bottom-right-radius: 12px;
+    }
+    
+    table thead th,
+    table tbody td {
+        padding: 16px 0.75rem;
+    }
+    
+    .profile-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+    
+    .primary-column-text {
+        font-size: 14px;
+    }
+}
+
