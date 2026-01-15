@@ -140,7 +140,7 @@
                 <div class="profile-image-wrapper">
                     @php
                         $adminUser = $branch->users()->where('role', 'admin')->first();
-                        $adminPhoto = $adminUser && $adminUser->profile_photo ? asset('storage/' . $adminUser->profile_photo) : '#';
+                        $adminPhoto = $adminUser && $adminUser->profile_photo ? asset('storage/' . $adminUser->profile_photo) . '?t=' . time() : '#';
                     @endphp
                     <img id="adminPhotoPreviewImg" class="profile-image-preview" src="{{ $adminPhoto }}" alt="Admin Photo Preview" style="{{ $adminPhoto !== '#' ? 'display: block;' : 'display: none;' }}" />
                     <div id="profilePlaceholder" class="profile-image-placeholder" style="{{ $adminPhoto !== '#' ? 'display: none;' : 'display: flex;' }}">

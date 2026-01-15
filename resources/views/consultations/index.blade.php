@@ -120,9 +120,9 @@
 
 <!-- Consultation Details Modal -->
 <div id="consultationModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000;">
-    <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem;">
-        <div style="background: var(--modal-bg, #ffffff); border-radius: 16px; max-width: 42rem; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px var(--shadow-color, rgba(0,0,0,0.3)); color: var(--dark-text, #2c3e50);">
-            <div style="padding: 1.5rem;">
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; width: 100%;">
+        <div style="background: var(--modal-bg, #ffffff); border-radius: 16px; max-width: 42rem; width: auto; margin: auto; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px var(--shadow-color, rgba(0,0,0,0.3)); color: var(--dark-text, #2c3e50);">
+            <div style="padding: 1.5rem; width: 500px" class="view-modal">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border-color, #e9ecef); padding-bottom: 1rem;">
                     <h2 id="consultationModalTitle" style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color); margin: 0;">Consultation Details</h2>
                     <button onclick="closeConsultationModal()" style="background: none; border: none; cursor: pointer; font-size: 1.5rem; padding: 0.25rem 0.5rem; color: var(--light-text, #6c757d); transition: color 0.2s;" onmouseover="this.style.color=window.getComputedStyle(document.documentElement).getPropertyValue('--dark-text').trim()" onmouseout="this.style.color=window.getComputedStyle(document.documentElement).getPropertyValue('--light-text').trim()">

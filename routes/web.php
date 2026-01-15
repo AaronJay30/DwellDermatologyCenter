@@ -59,7 +59,7 @@ Route::middleware('auth')->group(function () {
     // Patient routes
     Route::middleware('role:patient')->group(function () {
         Route::get('/patient/history', [App\Http\Controllers\PatientController::class, 'history'])->name('patient.history');
-            Route::post('/patient/history/filter', [App\Http\Controllers\PatientController::class, 'historyAjax'])->name('patient.history.filter');
+            Route::get('/patient/history/filter', [App\Http\Controllers\PatientController::class, 'historyAjax'])->name('patient.history.filter');
         
         // Notifications routes
         Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');

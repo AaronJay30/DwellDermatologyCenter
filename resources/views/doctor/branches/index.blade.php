@@ -46,11 +46,11 @@
                             $adminUser = $branch->users()->where('role', 'admin')->first();
                             $adminPhoto = null;
                             if ($adminUser && $adminUser->profile_photo) {
-                                $adminPhoto = asset('storage/' . $adminUser->profile_photo);
+                                $adminPhoto = asset('storage/' . $adminUser->profile_photo) . '?t=' . time();
                             }
                         @endphp
                         <tr class="branch-row" data-name="{{ strtolower($branch->name) }}" data-address="{{ strtolower($branch->address) }}" data-phone="{{ strtolower($branch->phone) }}" data-email="{{ strtolower($branch->email) }}">
-                            <td>
+                            <td data-label="Branch">
                                 <div class="profile-icon">
                                     @if($adminPhoto)
                                         <img src="{{ $adminPhoto }}" alt="{{ $branch->name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -61,10 +61,10 @@
                                 </div>
                                 <span class="primary-column-text">{{ $branch->name }}</span>
                             </td>
-                            <td>{{ $branch->address }}</td>
-                            <td>{{ $branch->phone }}</td>
-                            <td>{{ $branch->email }}</td>
-                            <td>
+                            <td data-label="Address">{{ $branch->address }}</td>
+                            <td data-label="Phone">{{ $branch->phone }}</td>
+                            <td data-label="Email">{{ $branch->email }}</td>
+                            <td data-label="Actions">
                                 <div class="action-buttons">
                                     <a href="{{ route('doctor.branches.edit', $branch) }}" class="action-btn" title="Edit">
                                         <i data-feather="edit"></i>
@@ -258,12 +258,14 @@
         .table-wrapper {
             overflow-x: visible;
             width: 100%;
+            padding: 0;
         }
 
         table {
             min-width: 100%;
             width: 100%;
             display: block;
+            border-spacing: 0 12px;
         }
 
         table thead {
@@ -278,99 +280,163 @@
         table tbody tr {
             display: block;
             width: 100%;
-            margin-bottom: 1rem;
-            padding: 1rem;
-            background: rgba(255, 250, 240, 0.75);
-            border-radius: 12px;
-            box-shadow: 
-                0 4px 12px rgba(0, 0, 0, 0.08),
-                0 2px 6px rgba(255, 215, 0, 0.15);
-            box-sizing: border-box;
+            margin-bottom: 16px;
+            background: rgba(255, 250, 240, 0.9);
+            border-radius: 16px;
+            box-shadow:
+                0 4px 16px rgba(0, 0, 0, 0.08),
+                0 2px 8px rgba(255, 215, 0, 0.2),
+                0 1px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            overflow: hidden;
+            position: relative;
+        }
+
+        table tbody tr:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 8px 24px rgba(0, 0, 0, 0.12),
+                0 4px 12px rgba(255, 215, 0, 0.3),
+                0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         table tbody tr:last-child {
             margin-bottom: 0;
         }
 
-        table tbody td {
+        /* Card Header - Branch Name and Profile */
+        table tbody td:first-child {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 16px 12px 16px;
+            background: linear-gradient(135deg, rgba(25, 122, 140, 0.05), rgba(255, 215, 0, 0.05));
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            margin-bottom: 8px;
+        }
+
+        table tbody td:first-child .profile-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #197a8c, #1a6b7a);
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(25, 122, 140, 0.3);
+        }
+
+        table tbody td:first-child .profile-icon img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        table tbody td:first-child .primary-column-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+            flex: 1;
+        }
+
+        /* Card Content - Details */
+        table tbody td:nth-child(2),
+        table tbody td:nth-child(3),
+        table tbody td:nth-child(4) {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            text-align: left;
-            min-height: auto;
-            position: relative;
-            width: 100%;
-            box-sizing: border-box;
+            padding: 8px 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
         }
 
-        table tbody td:last-child {
+        table tbody td:nth-child(2):last-child,
+        table tbody td:nth-child(3):last-child,
+        table tbody td:nth-child(4):last-child {
             border-bottom: none;
-            padding-bottom: 0;
         }
 
+        /* Card Actions */
+        table tbody td:last-child {
+            display: flex;
+            padding: 12px 16px 16px 16px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            margin-top: 8px;
+        }
+
+        table tbody td:last-child .action-buttons {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        table tbody td:last-child .action-buttons .action-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            min-height: 44px;
+        }
+
+        table tbody td:last-child .action-buttons .action-btn:first-child {
+            background: #197a8c;
+            color: white;
+        }
+
+        table tbody td:last-child .action-buttons .action-btn:first-child:hover {
+            background: #1a6b7a;
+            transform: translateY(-1px);
+        }
+
+        table tbody td:last-child .action-buttons .action-btn:last-child {
+            background: #dc3545;
+            color: white;
+        }
+
+        table tbody td:last-child .action-buttons .action-btn:last-child:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        /* Remove default table cell styles */
+        table tbody td {
+            border: none !important;
+            border-radius: 0 !important;
+            text-align: left !important;
+            vertical-align: top !important;
+            min-height: auto !important;
+            position: relative !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Hide labels since we're using structured layout */
+        table tbody td::before {
+            display: none !important;
+        }
+
+        /* Empty state styling */
         table tbody td[colspan] {
             display: block;
             text-align: center;
-            padding: 2rem 1rem !important;
-            border-bottom: none;
-        }
-
-        table tbody td[colspan]::before {
-            display: none;
-        }
-
-        table tbody td::before {
-            font-weight: 600;
-            color: #2c3e50;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
-            flex-shrink: 0;
-            text-align: left;
-        }
-        
-/* Add labels for each field in mobile view */
-table tbody td:nth-child(1)::before {
-    content: "Branch Name";
-}
-
-table tbody td:nth-child(2)::before {
-    content: "Address";
-}
-
-table tbody td:nth-child(3)::before {
-    content: "Phone";
-}
-
-table tbody td:nth-child(4)::before {
-    content: "Email";
-}
-
-table tbody td:nth-child(5)::before {
-    content: "Actions";
-}
-        table tbody td:first-child {
-            padding-top: 0;
-        }
-
-        /* Action buttons in table */
-        table tbody td:last-child > div,
-        table tbody td:last-child > form,
-        table tbody td:last-child .action-buttons {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        table tbody td:last-child button,
-        table tbody td:last-child a.btn {
-            width: 100%;
-            min-height: 44px;
-            justify-content: center;
+            padding: 3rem 1rem !important;
+            background: rgba(255, 250, 240, 0.9);
+            border-radius: 16px;
+            color: #6c757d;
+            font-style: italic;
         }
     }
 

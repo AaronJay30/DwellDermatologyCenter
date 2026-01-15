@@ -70,16 +70,19 @@ table thead th:hover {
 /* Each row is a container with transparent nude/dirty white background and gold-black shadow */
 table tbody tr {
     min-height: 80px;
-    background: rgba(255, 250, 240, 0.75) !important; /* Transparent nude/dirty white */
+    background: rgba(
+        255,
+        250,
+        240,
+        0.75
+    ) !important; /* Transparent nude/dirty white */
     border-radius: 16px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     border: none;
     /* Gold-black shadow effect */
-    box-shadow: 
-        0 4px 12px rgba(0, 0, 0, 0.08),
-        0 2px 6px rgba(255, 215, 0, 0.15),
-        0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08),
+        0 2px 6px rgba(255, 215, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-bottom: 12px;
 }
 
@@ -92,10 +95,8 @@ table tbody tr:hover {
     transform: translateY(-3px);
     z-index: 2;
     /* Enhanced gold-black shadow on hover */
-    box-shadow: 
-        0 8px 24px rgba(0, 0, 0, 0.12),
-        0 4px 12px rgba(255, 215, 0, 0.25),
-        0 2px 6px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12),
+        0 4px 12px rgba(255, 215, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.15);
     filter: brightness(1.05);
     background: rgba(255, 252, 248, 0.85) !important;
 }
@@ -256,8 +257,8 @@ table tbody td:last-child {
 .action-btn svg {
     width: 20px;
     height: 20px;
-    color: #FFD700;
-    stroke: #FFD700;
+    color: #ffd700;
+    stroke: #ffd700;
     fill: none;
     stroke-width: 2;
     transition: all 0.3s ease;
@@ -265,8 +266,8 @@ table tbody td:last-child {
 
 .action-btn i[data-feather],
 .action-btn svg[data-feather] {
-    color: #FFD700;
-    stroke: #FFD700;
+    color: #ffd700;
+    stroke: #ffd700;
 }
 
 .action-btn:hover {
@@ -280,8 +281,8 @@ table tbody td:last-child {
 
 .action-btn:hover i,
 .action-btn:hover svg {
-    color: #FFD700;
-    stroke: #FFD700;
+    color: #ffd700;
+    stroke: #ffd700;
     transform: scale(1.1);
 }
 
@@ -304,8 +305,8 @@ table tbody td .btn i,
 table tbody td .btn svg {
     width: 20px;
     height: 20px;
-    color: #FFD700;
-    stroke: #FFD700;
+    color: #ffd700;
+    stroke: #ffd700;
 }
 
 table tbody td .btn:hover {
@@ -329,7 +330,7 @@ table tbody td:last-child .btn {
 }
 
 table tbody td:last-child .btn::before {
-    content: '';
+    content: "";
 }
 
 /* Appointment table specific styling */
@@ -370,16 +371,19 @@ table.appointment-table {
 
 .card table tbody tr {
     min-height: 80px;
-    background: rgba(255, 250, 240, 0.75) !important; /* Transparent nude/dirty white */
+    background: rgba(
+        255,
+        250,
+        240,
+        0.75
+    ) !important; /* Transparent nude/dirty white */
     border-radius: 16px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     border: none;
     /* Gold-black shadow effect */
-    box-shadow: 
-        0 4px 12px rgba(0, 0, 0, 0.08),
-        0 2px 6px rgba(255, 215, 0, 0.15),
-        0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08),
+        0 2px 6px rgba(255, 215, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
     margin-bottom: 12px;
 }
 
@@ -387,10 +391,8 @@ table.appointment-table {
     transform: translateY(-3px);
     z-index: 2;
     /* Enhanced gold-black shadow on hover */
-    box-shadow: 
-        0 8px 24px rgba(0, 0, 0, 0.12),
-        0 4px 12px rgba(255, 215, 0, 0.25),
-        0 2px 6px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12),
+        0 4px 12px rgba(255, 215, 0, 0.25), 0 2px 6px rgba(0, 0, 0, 0.15);
     filter: brightness(1.05);
     background: rgba(255, 252, 248, 0.85) !important;
 }
@@ -425,38 +427,155 @@ table.appointment-table {
     .table-wrapper {
         padding: 0.5rem;
     }
-    
+
     table {
         border-spacing: 0 8px;
     }
-    
+
     table tbody tr {
         border-radius: 12px;
     }
-    
+
     table tbody td:first-child {
         border-top-left-radius: 12px;
         border-bottom-left-radius: 12px;
     }
-    
+
     table tbody td:last-child {
         border-top-right-radius: 12px;
         border-bottom-right-radius: 12px;
     }
-    
+
     table thead th,
     table tbody td {
         padding: 16px 0.75rem;
     }
-    
+
     .profile-icon {
         width: 28px;
         height: 28px;
         font-size: 0.75rem;
     }
-    
+
     .primary-column-text {
         font-size: 14px;
     }
 }
 
+/* Enhanced Mobile Table Responsiveness */
+@media (max-width: 640px) {
+    /* Hide table headers on very small screens */
+    table thead {
+        display: none;
+    }
+
+    /* Convert table rows to card layout */
+    table tbody tr {
+        display: block;
+        margin-bottom: 16px;
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08),
+            0 2px 6px rgba(255, 215, 0, 0.15);
+    }
+
+    /* Convert table cells to stacked layout */
+    table tbody td {
+        display: block;
+        padding: 8px 0;
+        border: none !important;
+        border-radius: 0 !important;
+        text-align: left !important;
+        position: relative;
+        background: transparent !important;
+    }
+
+    /* Add labels for each data field */
+    table tbody td:before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #2c3e50;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+        display: block;
+    }
+
+    /* Style the first cell (Name) specially */
+    table tbody td:first-child:before {
+        content: "Patient";
+    }
+
+    /* Style specific columns with appropriate labels */
+    table tbody td:nth-child(2):before {
+        content: "Email";
+    }
+
+    table tbody td:nth-child(3):before {
+        content: "Latest History";
+    }
+
+    table tbody td:nth-child(4):before {
+        content: "Actions";
+    }
+
+    /* Style the profile icon and name in first cell */
+    table tbody td:first-child {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        margin-bottom: 8px;
+    }
+
+    table tbody td:first-child:before {
+        display: none; /* Hide label for first cell since we show profile icon */
+    }
+
+    /* Style action buttons */
+    table tbody td:last-child {
+        padding-top: 12px;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        margin-top: 8px;
+    }
+
+    table tbody td:last-child .action-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    table tbody td:last-child .btn-view-history {
+        flex: 1;
+        min-width: 120px;
+        padding: 8px 16px;
+        font-size: 0.875rem;
+        text-align: center;
+    }
+
+    /* Adjust spacing for better mobile layout */
+    .table-wrapper {
+        padding: 0;
+    }
+
+    .patients-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+
+    .patients-header-left,
+    .patients-header-right {
+        width: 100%;
+    }
+
+    .search-wrapper {
+        width: 100%;
+    }
+
+    .patient-search-input {
+        width: 100%;
+    }
+}

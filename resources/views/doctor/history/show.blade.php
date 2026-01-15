@@ -958,7 +958,7 @@
             @endphp
 
             @if($patient->profile_photo)
-                <img src="{{ asset('storage/' . $patient->profile_photo) }}" alt="{{ $patient->name }}" class="patient-photo">
+                <img src="{{ asset('storage/' . $patient->profile_photo) }}?t={{ time() }}" alt="{{ $patient->name }}" class="patient-photo">
             @else
                 <div class="patient-photo" style="background: #197a8c; color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold;">
                     {{ $initials }}

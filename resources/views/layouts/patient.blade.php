@@ -1153,7 +1153,7 @@
                 <div style="text-align: center; margin-bottom: 1.5rem;">
                     <div style="width: 80px; height: 80px; background: var(--primary-color); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; overflow: hidden; position: relative;">
                         @if(auth()->user()->profile_photo)
-                            <img src="{{ asset('storage/' . auth()->user()->profile_photo) }}" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                            <img src="{{ asset('storage/' . auth()->user()->profile_photo) }}?t={{ time() }}" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         @else
                             <i class="fas fa-user" style="font-size: 2rem; color: white;"></i>
                         @endif
@@ -1200,7 +1200,7 @@
                         <div style="position: relative; display: inline-block; cursor: pointer;" onclick="document.getElementById('edit_photo').click()">
                             <div id="profile-photo-circle" style="width: 90px; height: 90px; border-radius: 50%; overflow: hidden; border: 3px solid var(--primary-color); display: inline-flex; align-items: center; justify-content: center; background: var(--primary-color);">
                                 @if(auth()->user()->profile_photo)
-                                    <img id="profile-photo-img" src="{{ asset('storage/' . auth()->user()->profile_photo) }}" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <img id="profile-photo-img" src="{{ asset('storage/' . auth()->user()->profile_photo) }}?t={{ time() }}" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover;">
                                 @else
                                     <i class="fas fa-user" style="font-size: 2.2rem; color: white;" id="profile-photo-icon"></i>
                                 @endif
@@ -1626,26 +1626,13 @@
                     document.querySelector('#profile-overview h3').textContent = formData.get('name');
                     document.querySelector('#profile-overview p').textContent = formData.get('email');
                     
-                    // Update profile photo in overview if it was changed
-                    const photoInput = document.getElementById('edit_photo');
-                    if (photoInput.files.length > 0) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            const overviewPhoto = document.querySelector('#profile-overview div[style*="width: 80px"]');
-                            if (overviewPhoto) {
-                                overviewPhoto.innerHTML = `<img src="${e.target.result}" alt="Profile Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
-                            }
-                        };
-                        reader.readAsDataURL(photoInput.files[0]);
-                    }
-                    
                     // Close edit form and return to overview
                     closeEditProfile();
                     
-                    // Reload page after a short delay to show updated photo from server
+                    // Reload page after a short delay to show updated data from server
                     setTimeout(() => {
                         window.location.reload();
-                    }, 1000);
+                    }, 500);
                 } else {
                     showNotification(data.message || 'An error occurred', 'error');
                 }

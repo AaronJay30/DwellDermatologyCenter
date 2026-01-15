@@ -1,6 +1,10 @@
 @extends('layouts.dashboard')
 @section('page-title', 'Profile')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/register.css') }}">
+@endpush
+
 @section('navbar-links')
     @include('partials.doctor_nav')
 @endsection
@@ -19,7 +23,7 @@
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary-color);">Profile Photo</label>
                     <div style="position: relative; display: inline-block;">
                         <img id="profile-photo-preview" 
-                             src="{{ auth()->user()->profile_photo ? asset('storage/' . auth()->user()->profile_photo) : asset('images/doctor-placeholder.jpg') }}" 
+                             src="{{ auth()->user()->profile_photo ? asset('storage/' . auth()->user()->profile_photo) . '?t=' . time() : asset('images/doctor-placeholder.jpg') }}" 
                              alt="Profile Photo" 
                              style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); cursor: pointer;"
                              onclick="document.getElementById('profile_photo').click()">

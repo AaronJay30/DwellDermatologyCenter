@@ -503,6 +503,10 @@ class DashboardController extends Controller
                 
                 // Handle admin photo upload
                 if ($request->hasFile('admin_photo')) {
+                    // Delete old photo if exists
+                    if ($adminUser->profile_photo && Storage::disk('public')->exists($adminUser->profile_photo)) {
+                        Storage::disk('public')->delete($adminUser->profile_photo);
+                    }
                     $path = $request->file('admin_photo')->store('admin-photos', 'public');
                     $adminUser->profile_photo = $path;
                 }

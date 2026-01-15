@@ -39,6 +39,22 @@
     }
     .filters-card label { font-weight: 600; color: #344357; }
 
+    .filters-card select {
+        border: 1px solid #e7ecf0;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        background: #fff;
+        color: #344357;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+    .filters-card select:focus {
+        border-color: #197a8c;
+        box-shadow: 0 0 0 3px rgba(25, 122, 140, 0.1);
+        outline: none;
+    }
+
     .profile-section { margin-top: 1.5rem; }
     .profile-title {
         display: flex;
@@ -451,8 +467,8 @@
 
 @section('content')
 <div class="container">
-    <div class="history-hero">
-        <div>
+    <div class="history-hero" style="display: flex; flex-direction: column;">
+        <div style="display: flex; flex-direction: column;">
             <p class="mb-1" style="opacity:0.85;">Your consultation journey</p>
             <h2>Patient History</h2>
             <p class="mb-0" style="opacity:0.85;">Review past visits, results, and follow-ups.</p>
@@ -932,36 +948,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const personalId = document.getElementById('personal_information_id').value;
         const branchId = document.getElementById('branch_id').value;
         const type = document.getElementById('type').value;
+        
+        console.log('Fetching history with filters:', { personalId, branchId, type });
+        
+        // Build query string
+        const params = new URLSearchParams();
+        if (personalId) params.append('personal_information_id', personalId);
+        if (branchId) params.append('branch_id', branchId);
+        if (type) params.append('type', type);
+        
+        const url = `{{ route('patient.history.filter') }}?${params.toString()}`;
+        console.log('Request URL:', url);
+        
         try {
-            const res = await fetch(`{{ route('patient.history.filter') }}`, {
-                method: 'POST',
+            const res = await fetch(url, {
+                method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': csrfToken
-                },
-                body: JSON.stringify({
-                    personal_information_id: personalId || null,
-                    branch_id: branchId || null,
-                    type: type || null
-                })
+                }
             });
+            console.log('Response status:', res.status);
             if (!res.ok) throw new Error('Failed to load history');
             const data = await res.json();
+            console.log('Response data:', data);
             historyContainer.innerHTML = data.html;
             document.getElementById('stat-total').textContent = data.stats.total;
             document.getElementById('stat-profiles').textContent = data.stats.profiles;
             document.getElementById('stat-followups').textContent = data.stats.followups;
             bindShowResultButtons(historyContainer);
         } catch (e) {
-            console.error(e);
+            console.error('Filter error:', e);
             alert('Unable to filter right now. Please try again.');
         }
     }
 
     // Live filtering
     document.querySelectorAll('.filter-control').forEach(select => {
-        select.addEventListener('change', fetchHistory);
+        select.addEventListener('change', function() {
+            console.log('Filter changed:', this.id, this.value);
+            fetchHistory();
+        });
     });
 
     // Initial bindings

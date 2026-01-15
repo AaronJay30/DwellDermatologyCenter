@@ -69,19 +69,19 @@
                                 $latestDate = $patientData['latest_date'];
                             @endphp
                             <tr>
-                                <td>
+                                <td data-label="Patient">
                                     <div class="profile-icon">{{ $initials }}</div>
                                     <span class="primary-column-text">{{ $patient->name }}</span>
                                 </td>
-                                <td>{{ $patient->email ?? 'No email' }}</td>
-                                <td>
+                                <td data-label="Email">{{ $patient->email ?? 'No email' }}</td>
+                                <td data-label="Latest History">
                                     @if($latestDate)
                                         {{ $latestDate instanceof \Carbon\Carbon ? $latestDate->format('M d, Y') : \Carbon\Carbon::parse($latestDate)->format('M d, Y') }}
                                     @else
                                         <span class="text-muted">No history available</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td data-label="Actions">
                                     <div class="action-buttons">
                                         <a href="{{ route('doctor.history.patient', $patient->id) }}" class="btn-view-history">
                                             View History

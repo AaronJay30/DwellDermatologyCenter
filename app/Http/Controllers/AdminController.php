@@ -28,6 +28,41 @@ class AdminController extends Controller
 
     public function dashboard()
     {
+        $user = Auth::user();
+        $branchId = $user->branch_id;
+        
+        // Get branches with patient count (users with role 'patient' linked to that branch)
+        $branches = Branch::withCount(['users' => function($query) {
+            $query->where('role', 'patient');
+        }])->orderBy('name')->get();
+        
+        // Get today's schedule - appointments with time slots for today at user's branch
+        $today = Carbon::today();
+        $todaysSchedule = Appointment::with(['patient', 'doctorSlot'])
+            ->whereHas('doctorSlot', function($q) use ($today, $branchId) {
+                $q->whereDate('slot_date', $today);
+                if ($branchId) {
+                    $q->where('branch_id', $branchId);
+                }
+            })
+            ->whereIn('status', ['scheduled', 'confirmed', 'booked'])
+            ->orderBy('created_at')
+            ->limit(10)
+            ->get();
+        
+        // Get upcoming appointments
+        $upcomingAppointments = Appointment::with(['patient', 'doctorSlot'])
+            ->whereHas('doctorSlot', function($q) use ($today, $branchId) {
+                $q->whereDate('slot_date', '>', $today);
+                if ($branchId) {
+                    $q->where('branch_id', $branchId);
+                }
+            })
+            ->whereIn('status', ['scheduled', 'confirmed', 'booked', 'pending'])
+            ->orderBy('created_at')
+            ->limit(5)
+            ->get();
+        
         $counts = [
             'branches' => Branch::count(),
             'categories' => Category::count(),
@@ -35,7 +70,8 @@ class AdminController extends Controller
             'slots' => TimeSlot::count(),
             'promotions' => Promotion::count(),
         ];
-        return view('admin.dashboard', compact('counts'));
+        
+        return view('admin.dashboard', compact('counts', 'branches', 'todaysSchedule', 'upcomingAppointments'));
     }
 
     public function branches()

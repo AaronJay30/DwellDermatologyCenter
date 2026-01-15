@@ -19,7 +19,7 @@
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary-color);">Profile Photo</label>
                     <div style="position: relative; display: inline-block;">
                         <img id="profile-photo-preview" 
-                             src="{{ $admin->profile_photo ? asset('storage/' . $admin->profile_photo) : asset('images/doctor-placeholder.jpg') }}" 
+                             src="{{ $admin->profile_photo ? asset('storage/' . $admin->profile_photo) . '?t=' . time() : asset('images/doctor-placeholder.jpg') }}" 
                              alt="Profile Photo" 
                              style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); cursor: pointer;"
                              onclick="document.getElementById('profile_photo').click()">

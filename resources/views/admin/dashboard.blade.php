@@ -27,10 +27,12 @@
 
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:1rem;">
                 @foreach($branches as $branch)
-                    <a href="{{ route('admin.branch.patients', $branch) }}" class="card" style="text-decoration:none; color:inherit; background: linear-gradient(135deg, #eef8fb, #ffffff); padding: 1.25rem; border-radius: 12px; display: block;">
-                        <div style="font-weight:600; color:#197a8c; font-size: 1.1rem;">{{ $branch->name }}</div>
-                        <div style="margin-top:.5rem; font-size:.85rem; color:#6c757d; min-height: 2.5rem;">{{ $branch->address }}</div>
-                        <div style="margin-top:.75rem; font-size:.9rem;">Patients: <strong>{{ $branch->users_count }}</strong></div>
+                    <a href="{{ route('admin.branch.patients', $branch) }}" class="card branch-card">
+                        <div class="branch-name">{{ $branch->name }}</div>
+                        <div class="branch-address">{{ $branch->address }}</div>
+                        <div class="branch-patients">
+                            Patients: <span class="branch-patients-count">{{ $branch->users_count }}</span>
+                        </div>
                     </a>
                 @endforeach
             </div>
@@ -68,7 +70,7 @@
 
         <div class="lg-col-span-4" style="display: flex; flex-direction: column; gap: 1.5rem;">
             <div class="card" style="text-align:center; padding: 1.5rem; border-radius: 12px; background: #fff;">
-                <img src="{{ auth()->user()->profile_photo ? asset('storage/' . auth()->user()->profile_photo) : asset('images/doctor-placeholder.jpg') }}" 
+                <img src="{{ auth()->user()->profile_photo ? asset('storage/' . auth()->user()->profile_photo) . '?t=' . time() : asset('images/doctor-placeholder.jpg') }}" 
                      alt="Admin" 
                      style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin:0 auto 10px; border: 3px solid #f0fdfa;">
                 <div style="font-weight:700; color:#197a8c;">{{ auth()->user()->name }}</div>
@@ -113,6 +115,54 @@
         }
     }
 
+    /* Branch Cards Styling */
+    .branch-card {
+        text-decoration: none;
+        color: inherit;
+        background: linear-gradient(135deg, #eef8fb, #ffffff);
+        padding: 1.25rem;
+        border-radius: 12px;
+        display: block;
+        border-left: 4px solid #197a8c;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .branch-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(25, 122, 140, 0.2);
+    }
+
+    .branch-name {
+        font-weight: 600;
+        color: #197a8c;
+        font-size: 1.1rem;
+    }
+
+    .branch-address {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: #6c757d;
+        min-height: 2.5rem;
+    }
+
+    .branch-patients {
+        margin-top: 0.75rem;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .branch-patients-count {
+        background: #197a8c;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
     /* Mobile adjustments */
     @media (max-width: 768px) {
         .hero-flex {
@@ -125,6 +175,38 @@
         }
         .table-header {
             justify-content: center !important;
+        }
+
+        .branch-card {
+            padding: 1rem;
+        }
+
+        .branch-name {
+            font-size: 1rem;
+        }
+
+        .branch-address {
+            font-size: 0.8rem;
+            min-height: auto;
+        }
+
+        .branch-patients {
+            font-size: 0.85rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .container {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+
+        .branch-card {
+            padding: 0.875rem;
+        }
+
+        .branch-name {
+            font-size: 0.95rem;
         }
     }
 </style>

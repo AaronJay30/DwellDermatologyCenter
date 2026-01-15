@@ -703,10 +703,10 @@
                                 {{ $initials }}
                             </button>
                             <div class="menu-panel" role="menu" aria-labelledby="profile-toggle">
-                                <a href="{{ $profileUrl }}" role="menuitem">Update Profile</a>
-                                <form method="POST" action="{{ route('logout') }}">
+                                <a href="{{ $profileUrl }}" role="menuitem" style="width: 100%; display: block; text-align: center !important;">Update Profile</a>
+                                <form method="POST" action="{{ route('logout') }}" >
                                     @csrf
-                                    <button type="submit" role="menuitem">Logout</button>
+                                    <button type="submit" role="menuitem" style="text-align: center !important">Logout</button>
                                 </form>
                             </div>
                         </div>
