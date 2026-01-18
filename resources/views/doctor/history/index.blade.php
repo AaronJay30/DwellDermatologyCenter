@@ -3,6 +3,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/tables.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 @endpush
 
 @section('navbar-links')

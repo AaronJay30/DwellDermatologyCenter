@@ -406,7 +406,7 @@ class DashboardController extends Controller
     {
         $branches = Branch::with(['users' => function($query) {
             $query->where('role', 'admin');
-        }])->latest()->paginate(10);
+        }])->latest()->paginate(5);
         return view('doctor.branches.index', compact('branches'));
     }
 
@@ -566,7 +566,7 @@ class DashboardController extends Controller
                   ->orWhere('description', 'like', "%{$search}%");
             });
         }
-        $categories = $query->latest()->paginate(12)->withQueryString();
+        $categories = $query->latest()->paginate(5)->withQueryString();
         return view('doctor.categories.index', compact('categories', 'branches'));
     }
 
@@ -682,7 +682,7 @@ class DashboardController extends Controller
             });
         }
 
-        $services = $query->latest()->paginate(10)->withQueryString();
+        $services = $query->latest()->paginate(5)->withQueryString();
 
         return view('doctor.services.index', compact('services', 'branches', 'categories', 'selectedBranchId'));
     }
@@ -911,7 +911,7 @@ class DashboardController extends Controller
             });
         }
 
-        $slots = $baseQuery->paginate(10)->withQueryString();
+        $slots = $baseQuery->paginate(5)->withQueryString();
 
         // Today's date for summary counts
         $todayDate = $today->format('Y-m-d');
@@ -1453,7 +1453,7 @@ class DashboardController extends Controller
             ->where('status', '!=', 'archived')
             ->update(['status' => 'archived', 'is_active' => false]);
 
-        $promotions = Promotion::latest()->paginate(10);
+        $promotions = Promotion::latest()->paginate(5);
         return view('doctor.promotions.index', compact('promotions'));
     }
 
@@ -1629,7 +1629,7 @@ class DashboardController extends Controller
             });
         }
         
-        $appointments = $query->latest()->get();
+        $appointments = $query->latest()->paginate(5);
 
         return view('doctor.my-appointments.index', compact('appointments', 'search'));
     }
@@ -1719,7 +1719,7 @@ class DashboardController extends Controller
             });
         }
         
-        $appointments = $query->latest()->get();
+        $appointments = $query->latest()->paginate(5)->withQueryString();
 
         // Check for past dates with pending appointments
         $today = \Carbon\Carbon::today();
@@ -1776,7 +1776,7 @@ class DashboardController extends Controller
             });
         }
         
-        $appointments = $query->latest()->get();
+        $appointments = $query->latest()->paginate(5)->withQueryString();
         
         // Check for past dates with pending appointments (no branch restriction)
         $today = \Carbon\Carbon::today();
@@ -1974,7 +1974,7 @@ class DashboardController extends Controller
             ->where('doctor_id', Auth::id())
             ->with(['patient', 'service', 'timeSlot', 'branch'])
             ->latest()
-            ->paginate(15);
+            ->paginate(5);
 
         return view('doctor.pending-appointments.index', compact('appointments'));
     }
@@ -2585,7 +2585,7 @@ class DashboardController extends Controller
             });
         }
         
-        $appointments = $query->latest()->get();
+        $appointments = $query->latest()->paginate(5)->withQueryString();
         
         return view('doctor.all-appointments', compact('appointments', 'search'));
     }

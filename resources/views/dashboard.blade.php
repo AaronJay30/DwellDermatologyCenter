@@ -141,6 +141,13 @@
                 </div>
             @endforelse
         </div>
+        
+        <!-- Pagination -->
+        @if($services->hasPages())
+        <div class="pagination-wrapper" id="pagination-wrapper">
+            {{ $services->links() }}
+        </div>
+        @endif
     </div>
 </section>
 
@@ -306,6 +313,12 @@ async function loadAllServices(clickedEl) {
     showLoading();
     
     try {
+        // If no branch is selected, reload the page to show server-side pagination
+        if (!selectedBranchId) {
+            window.location.href = '{{ route('dashboard') }}';
+            return;
+        }
+        
         let url = '/api/branches/0/services'; // Load all services
         if (selectedBranchId) {
             url = '/api/branches/' + selectedBranchId + '/services';
@@ -331,6 +344,12 @@ async function loadAllServices(clickedEl) {
 // Update services grid with new data
 function updateServicesGrid(services) {
     const servicesGrid = document.getElementById('services-grid');
+    const paginationWrapper = document.getElementById('pagination-wrapper');
+    
+    // Hide pagination when filtering
+    if (paginationWrapper) {
+        paginationWrapper.style.display = 'none';
+    }
     
     if (services.length === 0) {
         servicesGrid.innerHTML = '<div class="no-services"><p>No services available for this selection.</p></div>';
@@ -670,6 +689,7 @@ function updatePromoInfo(promoIndex) {
 @endif
 </script>
 
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 <style>
 /* Enhanced Service Card Styles */
 .service-card {

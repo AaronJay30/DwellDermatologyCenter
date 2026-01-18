@@ -3,6 +3,102 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/appointment.css') }}">
 <link rel="stylesheet" href="{{ asset('css/tables.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
+<style>
+    /* Enhanced mobile styles for consultations */
+    @media (max-width: 640px) {
+        .appointment-wrapper {
+            padding: 10px !important;
+        }
+        
+        .appointment-header {
+            margin-bottom: 15px !important;
+            padding: 0 5px;
+        }
+        
+        .appointment-title {
+            font-size: 1.5rem !important;
+            margin-bottom: 5px !important;
+        }
+        
+        .appointment-subtitle {
+            font-size: 0.875rem !important;
+        }
+        
+        .appointment-card {
+            padding: 0 !important;
+            box-shadow: none !important;
+            background: transparent !important;
+        }
+        
+        /* Mobile card styling */
+        .table-wrapper table tbody tr {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .table-wrapper table tbody tr td {
+            padding: 6px 0 !important;
+            border: none !important;
+        }
+        
+        .table-wrapper table tbody tr td:before {
+            font-weight: 600;
+            color: #197a8c;
+            font-size: 0.8rem;
+            min-width: 85px;
+        }
+        
+        /* Profile icon in mobile */
+        .profile-icon {
+            width: 32px !important;
+            height: 32px !important;
+            font-size: 0.9rem !important;
+            margin-right: 8px !important;
+        }
+        
+        .primary-column-text {
+            font-size: 0.9rem !important;
+        }
+        
+        .primary-column-text small {
+            font-size: 0.8rem !important;
+        }
+        
+        /* Status badges */
+        .status-badge {
+            padding: 4px 10px !important;
+            font-size: 0.75rem !important;
+        }
+        
+        /* Action buttons */
+        .action-btn {
+            padding: 6px 10px !important;
+            font-size: 0.85rem !important;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            padding: 30px 15px !important;
+        }
+        
+        .empty-state-icon {
+            font-size: 2.5rem !important;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.1rem !important;
+        }
+        
+        .empty-state p {
+            font-size: 0.85rem !important;
+        }
+    }
+</style>
 @endpush
 
 @section('content')
@@ -108,6 +204,13 @@
                 </table>
             </div>
         </div>
+        
+        <!-- Pagination -->
+        @if($consultations->hasPages())
+        <div class="pagination-wrapper">
+            {{ $consultations->links() }}
+        </div>
+        @endif
     @else
         <div class="text-center py-8">
             <p class="no-appointments">You haven't booked any consultations yet.</p>

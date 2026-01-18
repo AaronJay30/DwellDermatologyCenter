@@ -7,6 +7,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/tables.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 <style>
     /* Base responsive container */
     .container {
@@ -1817,33 +1818,11 @@
                 </tbody>
             </table>
         </div>
-        @if($slots->hasPages())
-            <div class="simple-pagination">
-                @if($slots->onFirstPage())
-                    <span class="pagination-btn disabled">« Previous</span>
-                @else
-                    @php
-                        $prevUrl = $slots->previousPageUrl();
-                        // Remove page=1 from URL if present
-                        $prevUrl = preg_replace('/[?&]page=1(&|$)/', '$1', $prevUrl);
-                        $prevUrl = rtrim($prevUrl, '?&');
-                    @endphp
-                    <a href="{{ $prevUrl }}" class="pagination-btn">« Previous</a>
-                @endif
-
-                @if($slots->hasMorePages())
-                    @php
-                        $nextUrl = $slots->nextPageUrl();
-                        // Remove page=1 from URL if present
-                        $nextUrl = preg_replace('/[?&]page=1(&|$)/', '$1', $nextUrl);
-                        $nextUrl = rtrim($nextUrl, '?&');
-                    @endphp
-                    <a href="{{ $nextUrl }}" class="pagination-btn">Next »</a>
-                @else
-                    <span class="pagination-btn disabled">Next »</span>
-                @endif
-            </div>
-        @endif
+        
+        <!-- Pagination -->
+        <div class="pagination-wrapper">
+            {{ $slots->links() }}
+        </div>
     </div>
 </div>
 

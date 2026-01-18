@@ -20,7 +20,7 @@ class NotificationController extends Controller
         $notifications = Notification::where('user_id', Auth::id())
             ->orWhereNull('user_id') // Global notifications
             ->latest()
-            ->paginate(10);
+            ->paginate(5);
 
         return view('admin.notifications.index', compact('notifications'));
     }

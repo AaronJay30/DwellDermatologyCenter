@@ -33,7 +33,7 @@ class PromoController extends Controller
 
         $promotions = Promotion::with(['images', 'promoServices.service'])
             ->latest()
-            ->paginate(15);
+            ->paginate(5);
 
         return view('doctor.promos.index', compact('promotions'));
     }

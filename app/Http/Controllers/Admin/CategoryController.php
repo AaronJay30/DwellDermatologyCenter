@@ -45,7 +45,7 @@ class CategoryController extends Controller
 
         $categories = $categoriesQuery
             ->latest()
-            ->paginate(12)
+            ->paginate(5)
             ->withQueryString();
 
         return view('admin.categories.index', [

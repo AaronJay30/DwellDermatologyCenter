@@ -3,6 +3,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/tables.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 @endpush
 
 @section('navbar-links')
@@ -91,6 +92,11 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination-wrapper">
+                {{ $patients->links() }}
             </div>
         </div>
     @endif

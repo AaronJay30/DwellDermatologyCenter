@@ -24,7 +24,7 @@ class ConsultationController extends Controller
             ->whereNotNull('time_slot_id')
             ->with(['patient', 'branch', 'timeSlot'])
             ->latest()
-            ->get();
+            ->paginate(5);
         
         return view('doctor.consultations.index', compact('consultations'));
     }

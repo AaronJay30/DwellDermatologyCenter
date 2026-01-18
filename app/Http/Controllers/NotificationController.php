@@ -20,7 +20,8 @@ class NotificationController extends Controller
                       ->orWhereNull('user_id'); // Global notifications
             })
             ->latest()
-            ->get();
+            ->paginate(5)
+            ->withQueryString();
 
         return view('notifications.index', compact('notifications'));
     }

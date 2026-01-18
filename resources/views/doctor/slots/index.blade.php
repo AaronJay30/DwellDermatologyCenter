@@ -7,6 +7,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/tables.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 <style>
     .slots-header {
         display: flex;
@@ -1550,11 +1551,11 @@ nav[role="navigation"] .hidden {
                 </tbody>
             </table>
         </div>
-        @if($slots->hasPages())
-            <div style="margin-top:1rem;">
-                {{ $slots->links() }}
-            </div>
-        @endif
+        
+        <!-- Pagination -->
+        <div class="pagination-wrapper">
+            {{ $slots->links() }}
+        </div>
     </div>
 </div>
 

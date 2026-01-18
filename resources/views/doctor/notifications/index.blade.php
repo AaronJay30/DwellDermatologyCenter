@@ -2,6 +2,7 @@
 @section('page-title', 'Notifications')
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/notification.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 @endpush
 
 @section('navbar-links')
@@ -48,6 +49,9 @@
             </div>
         </div>
 
+        <div class="pagination-wrapper">
+            {{ $notifications->links() }}
+        </div>
     @endif
 </div>
 

@@ -22,7 +22,7 @@ class NotificationController extends Controller
                       ->orWhereNull('user_id'); // Global notifications
             })
             ->latest()
-            ->get();
+            ->paginate(5);
 
         return view('doctor.notifications.index', compact('notifications'));
     }

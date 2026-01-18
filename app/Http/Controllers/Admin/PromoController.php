@@ -62,7 +62,7 @@ class PromoController extends Controller
         $promotions = Promotion::with(['images', 'promoServices.service', 'branch'])
             ->where('branch_id', $branch->id)
             ->latest()
-            ->paginate(15);
+            ->paginate(5);
 
         return view('admin.promos.index', compact('promotions'));
     }

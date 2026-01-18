@@ -1,6 +1,42 @@
 @extends('layouts.patient')
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/notification.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
+<style>
+    /* Mobile responsive styles for notifications */
+    @media (max-width: 640px) {
+        .notification-wrapper {
+            padding: 10px !important;
+        }
+        
+        .notif-header {
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px !important;
+        }
+        
+        .notif-header h1 {
+            font-size: 1.5rem !important;
+        }
+        
+        .notif-item {
+            padding: 12px !important;
+            margin-bottom: 8px !important;
+        }
+        
+        .notif-content h3 {
+            font-size: 0.95rem !important;
+        }
+        
+        .notif-content p {
+            font-size: 0.85rem !important;
+        }
+        
+        .notif-content small {
+            font-size: 0.75rem !important;
+        }
+    }
+</style>
 @endpush
 @section('content')
 <div class="container notification-wrapper">
@@ -76,6 +112,13 @@
                 @endforeach
             </div>
         </div>
+        
+        <!-- Pagination -->
+        @if($notifications->hasPages())
+        <div class="pagination-wrapper">
+            {{ $notifications->links() }}
+        </div>
+        @endif
     @endif
 </div>
 

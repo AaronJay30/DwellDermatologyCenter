@@ -2,6 +2,7 @@
 @section('page-title', 'Services')
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/tables.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 @endpush
 
 @section('navbar-links')
@@ -109,7 +110,7 @@
                 <div style="color:#6c757d;">No services found.</div>
             @endforelse
         </div>
-        <div style="margin-top: 1rem;">{{ $services->links() }}</div>
+        <div class="pagination-wrapper">{{ $services->links() }}</div>
     </div>
 </div>
 

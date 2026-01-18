@@ -76,7 +76,7 @@ class ServiceController extends Controller
 
         $services = $servicesQuery
             ->latest()
-            ->paginate(10)
+            ->paginate(5)
             ->withQueryString();
 
         return view('admin.services.index', [

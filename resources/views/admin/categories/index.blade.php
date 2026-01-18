@@ -2,6 +2,7 @@
 @section('page-title', 'Categories')
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/tables.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 @endpush
 
 @section('navbar-links')
@@ -87,7 +88,7 @@
             @endforelse
         </div>
 
-        <div style="margin-top: 1rem;">{{ $categories->links() }}</div>
+        <div class="pagination-wrapper">{{ $categories->links() }}</div>
     </div>
 </div>
 

@@ -7,6 +7,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/tables.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 <style>
     .slots-header {
         display: flex;
@@ -1177,6 +1178,11 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination-wrapper">
+            {{ $appointments->links() }}
         </div>
     </div>
 </div>

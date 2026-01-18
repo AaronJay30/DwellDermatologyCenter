@@ -402,12 +402,78 @@
             padding: 1rem;
         }
         
+        .page-header {
+            padding: 1.5rem;
+        }
+        
+        .page-header h2 {
+            font-size: 1.5rem;
+        }
+        
+        .history-list-container {
+            padding: 1rem;
+        }
+        
+        .history-item-card {
+            padding: 1rem;
+        }
+        
+        .update-form-wrapper {
+            padding: 1.5rem;
+        }
+        
         .file-upload-buttons {
             flex-direction: column;
         }
         
         .file-preview {
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .update-page-container {
+            padding: 0.5rem;
+        }
+        
+        .page-header {
+            padding: 1rem;
+            border-radius: 12px;
+        }
+        
+        .page-header h2 {
+            font-size: 1.25rem;
+        }
+        
+        .history-list-container,
+        .update-form-wrapper {
+            padding: 1rem;
+            border-radius: 12px;
+        }
+        
+        .history-item-card {
+            padding: 0.75rem;
+        }
+        
+        .file-preview {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        
+        .file-preview-item img {
+            height: 120px;
+        }
+        
+        .bullet-note-item {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .btn-upload,
+        .btn-camera {
+            width: 100%;
+            justify-content: center;
+            padding: 0.65rem 1rem;
         }
     }
 </style>

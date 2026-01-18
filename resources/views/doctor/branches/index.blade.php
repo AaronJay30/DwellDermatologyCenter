@@ -2,6 +2,7 @@
 @section('page-title', 'Branches')
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/tables.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 @endpush
 
 @section('navbar-links')
@@ -83,7 +84,7 @@
                 </tbody>
             </table>
         </div>
-        <div style="margin-top: 1rem;">{{ $branches->links() }}</div>
+        <div class="pagination-wrapper">{{ $branches->links() }}</div>
     </div>
 </div>
 

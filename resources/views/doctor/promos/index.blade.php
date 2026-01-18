@@ -2,6 +2,7 @@
 @section('page-title', 'Promotions')
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/tables.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 <style>
 /* Responsive Design - Tablets */
 @media (max-width: 992px) {
@@ -317,7 +318,7 @@
                 </tbody>
             </table>
         </div>
-        <div style="margin-top: 1rem;">{{ $promotions->links() }}</div>
+        <div class="pagination-wrapper">{{ $promotions->links() }}</div>
     </div>
 </div>
 

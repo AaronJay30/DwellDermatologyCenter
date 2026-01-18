@@ -345,24 +345,29 @@
         color: #ffffff;
     }
 
-    /* Annual Report Modal */
+    /* Annual Report Modal - Full Screen Overlay */
     .annual-report-modal {
         display: none;
         position: fixed;
-        z-index: 2000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
+        z-index: 99999;
+        left: 0 !important;
+        top: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
         overflow: auto;
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.6);
+        box-sizing: border-box;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
     .annual-report-modal.active {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 20px;
+        padding: 20px !important;
     }
 
     .annual-report-modal-content {
@@ -371,12 +376,14 @@
         padding: 0;
         border: 3px solid #FFD700;
         width: 90%;
-        max-width: 1000px;
-        max-height: 90vh;
+        max-width: 850px;
+        max-height: calc(100vh - 40px);
         overflow-y: auto;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow-x: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         position: relative;
-        border-radius: 5px;
+        border-radius: 8px;
+        box-sizing: border-box;
     }
 
     .annual-report-modal-header {
@@ -418,13 +425,17 @@
     }
 
     .annual-report-modal-body {
-        padding: 2rem;
+        padding: 1.5rem;
+        box-sizing: border-box;
+        width: 100%;
+        overflow-x: hidden;
     }
 
     .report-section {
         margin-bottom: 2rem;
         padding-bottom: 2rem;
         border-bottom: 2px solid #e0e0e0;
+        box-sizing: border-box;
     }
 
     .report-section:last-child {
@@ -435,17 +446,20 @@
         background-color: #E6F3F5;
         border: 2px solid #FFD700;
         border-radius: 5px;
-        padding: 1.5rem;
+        padding: 1.25rem;
         margin-bottom: 1.5rem;
+        box-sizing: border-box;
+        width: 100%;
+        overflow: hidden;
     }
 
     .result-section-header {
         background-color: #008080;
         color: #ffffff;
         padding: 0.75rem 1rem;
-        margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+        margin: -1.25rem -1.25rem 1.25rem -1.25rem;
         font-weight: bold;
-        font-size: 1.1rem;
+        font-size: 1rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         border-radius: 5px 5px 0 0;
@@ -453,6 +467,7 @@
 
     .result-form-group {
         margin-bottom: 1.5rem;
+        box-sizing: border-box;
     }
 
     .result-form-group:last-child {
@@ -623,6 +638,20 @@
         line-height: 1.6;
     }
 
+    /* For screens with sidebar visible (1024px to 1320px) - offset modal to account for sidebar */
+    @media (min-width: 1025px) and (max-width: 1320px) {
+        .annual-report-modal.active {
+            padding-left: 250px; /* Account for sidebar width (230px) + some margin */
+        }
+        
+        .annual-report-modal-content {
+            width: calc(100% - 280px);
+            max-width: 750px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+
     @media (max-width: 1024px) {
         .patient-history-container {
             grid-template-columns: 1fr;
@@ -630,6 +659,114 @@
 
         .patient-info-panel {
             position: static;
+        }
+        
+        .annual-report-modal-content {
+            width: calc(100% - 20px);
+            max-width: 800px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .annual-report-modal.active {
+            padding: 10px;
+        }
+        
+        .annual-report-modal-content {
+            width: calc(100% - 20px);
+            max-width: none;
+            margin: 0 auto;
+            max-height: calc(100vh - 20px);
+        }
+        
+        .annual-report-modal-header {
+            padding: 1rem;
+        }
+        
+        .annual-report-modal-title {
+            font-size: 1.1rem;
+        }
+        
+        .annual-report-modal-body {
+            padding: 1rem;
+        }
+        
+        .result-form-section {
+            padding: 0.875rem;
+            margin-bottom: 1rem;
+        }
+        
+        .result-section-header {
+            font-size: 0.9rem;
+            padding: 0.6rem 0.875rem;
+            margin: -0.875rem -0.875rem 1rem -0.875rem;
+        }
+        
+        .file-preview {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.75rem;
+        }
+        
+        .file-preview-item img,
+        .file-preview-item video {
+            height: 100px;
+        }
+        
+        .bullet-note-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .bullet-text {
+            width: 100%;
+        }
+    }
+    
+    
+    @media (max-width: 480px) {
+        .annual-report-modal.active {
+            padding: 0;
+        }
+        
+        .annual-report-modal-content {
+            width: 100%;
+            max-height: 100vh;
+            border-radius: 0;
+            border: none;
+        }
+        
+        .annual-report-modal-header {
+            padding: 0.75rem 1rem;
+        }
+        
+        .annual-report-modal-title {
+            font-size: 1rem;
+        }
+        
+        .annual-report-modal-close {
+            font-size: 24px;
+            width: 28px;
+            height: 28px;
+        }
+        
+        .annual-report-modal-body {
+            padding: 0.75rem;
+        }
+        
+        .result-form-section {
+            padding: 0.75rem;
+        }
+        
+        .result-section-header {
+            font-size: 0.85rem;
+            padding: 0.5rem 0.75rem;
+            margin: -0.75rem -0.75rem 0.75rem -0.75rem;
+        }
+        
+        .file-preview {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
         }
     }
 </style>

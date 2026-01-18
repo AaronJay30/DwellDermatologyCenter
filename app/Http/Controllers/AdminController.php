@@ -76,7 +76,7 @@ class AdminController extends Controller
 
     public function branches()
     {
-        $branches = Branch::latest()->paginate(10);
+        $branches = Branch::latest()->paginate(5);
         return view('admin.branches.index', compact('branches'));
     }
 
@@ -207,7 +207,7 @@ class AdminController extends Controller
                   ->orWhere('description', 'like', "%{$search}%");
             });
         }
-        $categories = $query->latest()->paginate(12)->withQueryString();
+        $categories = $query->latest()->paginate(5)->withQueryString();
         return view('admin.categories.index', compact('categories', 'branches'));
     }
 
@@ -312,7 +312,7 @@ class AdminController extends Controller
             });
         }
 
-        $services = $query->latest()->paginate(10)->withQueryString();
+        $services = $query->latest()->paginate(5)->withQueryString();
 
         return view('admin.services.index', compact('services', 'branches', 'categories', 'selectedBranchId'));
     }
@@ -462,7 +462,7 @@ class AdminController extends Controller
         if (request('date')) {
             $query->whereDate('date', request('date'));
         }
-        $slots = $query->latest()->paginate(10)->withQueryString();
+        $slots = $query->latest()->paginate(5)->withQueryString();
         return view('admin.slots.index', compact('slots', 'branches'));
     }
 
@@ -584,7 +584,7 @@ class AdminController extends Controller
             ->where('status', '!=', 'archived')
             ->update(['status' => 'archived', 'is_active' => false]);
 
-        $promotions = Promotion::latest()->paginate(10);
+        $promotions = Promotion::latest()->paginate(5);
         return view('admin.promotions.index', compact('promotions'));
     }
 
@@ -721,7 +721,7 @@ class AdminController extends Controller
             ->orWhere('status', 'pending')
             ->with(['patient', 'service', 'timeSlot', 'branch'])
             ->latest()
-            ->paginate(15);
+            ->paginate(5);
 
         return view('admin.my-appointments.index', compact('appointments'));
     }
@@ -783,7 +783,7 @@ class AdminController extends Controller
             ->where('doctor_id', Auth::id())
             ->with(['patient', 'service', 'timeSlot', 'branch'])
             ->latest()
-            ->paginate(15);
+            ->paginate(5);
 
         return view('admin.pending-appointments.index', compact('appointments'));
     }

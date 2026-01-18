@@ -136,7 +136,7 @@ class DashboardController extends Controller
             });
         }
         
-        $appointments = $query->latest()->get();
+        $appointments = $query->latest()->paginate(5)->withQueryString();
         
         return view('admin.appointments', compact('appointments', 'search'));
     }
@@ -390,10 +390,10 @@ class DashboardController extends Controller
             });
         }
         
-        $patients = $query->orderBy('name')->get();
+        $patients = $query->orderBy('name')->paginate(5)->withQueryString();
         
         // Add canEdit flag for each patient
-        $patients = $patients->map(function($patient) {
+        $patients->getCollection()->transform(function($patient) {
             $patient->canEdit = $this->patientBelongsToAdminBranch($patient);
             return $patient;
         });
@@ -834,7 +834,7 @@ class DashboardController extends Controller
             });
         }
         
-        $appointments = $query->latest()->get();
+        $appointments = $query->latest()->paginate(5)->withQueryString();
 
         // Check for past dates with pending appointments
         $today = \Carbon\Carbon::today();
@@ -891,7 +891,7 @@ class DashboardController extends Controller
             });
         }
         
-        $appointments = $query->latest()->get();
+        $appointments = $query->latest()->paginate(5)->withQueryString();
         
         // Check for past dates with pending appointments
         $today = \Carbon\Carbon::today();
@@ -1350,7 +1350,7 @@ class DashboardController extends Controller
             });
         }
 
-        $slots = $baseQuery->paginate(10)->withQueryString();
+        $slots = $baseQuery->paginate(5)->withQueryString();
 
         // Stats should only show today's data (always, regardless of filters)
         $todayDate = now()->toDateString();

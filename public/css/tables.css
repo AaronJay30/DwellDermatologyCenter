@@ -425,40 +425,42 @@ table.appointment-table {
 /* Responsive Design */
 @media (max-width: 768px) {
     .table-wrapper {
-        padding: 0.5rem;
+        padding: 0.25rem;
     }
 
     table {
-        border-spacing: 0 8px;
+        border-spacing: 0 4px;
     }
 
     table tbody tr {
-        border-radius: 12px;
+        border-radius: 8px;
+        min-height: 50px;
     }
 
     table tbody td:first-child {
-        border-top-left-radius: 12px;
-        border-bottom-left-radius: 12px;
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
     }
 
     table tbody td:last-child {
-        border-top-right-radius: 12px;
-        border-bottom-right-radius: 12px;
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
     }
 
     table thead th,
     table tbody td {
-        padding: 16px 0.75rem;
+        padding: 10px 0.5rem;
+        font-size: 0.875rem;
     }
 
     .profile-icon {
-        width: 28px;
-        height: 28px;
-        font-size: 0.75rem;
+        width: 26px;
+        height: 26px;
+        font-size: 0.7rem;
     }
 
     .primary-column-text {
-        font-size: 14px;
+        font-size: 13px;
     }
 }
 
@@ -469,37 +471,40 @@ table.appointment-table {
         display: none;
     }
 
-    /* Convert table rows to card layout */
+    /* Convert table rows to card layout - Very compact */
     table tbody tr {
         display: block;
-        margin-bottom: 16px;
-        padding: 16px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08),
-            0 2px 6px rgba(255, 215, 0, 0.15);
+        margin-bottom: 8px;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08),
+            0 1px 3px rgba(255, 215, 0, 0.12);
     }
 
-    /* Convert table cells to stacked layout */
+    /* Convert table cells to stacked layout - Very tight spacing */
     table tbody td {
         display: block;
-        padding: 8px 0;
+        padding: 4px 0;
         border: none !important;
         border-radius: 0 !important;
         text-align: left !important;
         position: relative;
         background: transparent !important;
+        font-size: 0.875rem;
+        line-height: 1.4;
     }
 
-    /* Add labels for each data field */
+    /* Add labels for each data field - Smaller text */
     table tbody td:before {
         content: attr(data-label);
         font-weight: 600;
         color: #2c3e50;
         text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.5px;
-        margin-bottom: 4px;
+        font-size: 0.65rem;
+        letter-spacing: 0.3px;
+        margin-bottom: 2px;
         display: block;
+        opacity: 0.8;
     }
 
     /* Style the first cell (Name) specially */
@@ -520,38 +525,40 @@ table.appointment-table {
         content: "Actions";
     }
 
-    /* Style the profile icon and name in first cell */
+    /* Style the profile icon and name in first cell - Very tight */
     table tbody td:first-child {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        margin-bottom: 8px;
+        gap: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        margin-bottom: 4px;
     }
 
     table tbody td:first-child:before {
         display: none; /* Hide label for first cell since we show profile icon */
     }
 
-    /* Style action buttons */
+    /* Style action buttons - Very tight */
     table tbody td:last-child {
-        padding-top: 12px;
-        border-top: 1px solid rgba(0, 0, 0, 0.1);
-        margin-top: 8px;
+        padding-top: 6px;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        margin-top: 4px;
     }
 
     table tbody td:last-child .action-buttons {
         display: flex;
-        gap: 8px;
+        gap: 5px;
         flex-wrap: wrap;
     }
 
-    table tbody td:last-child .btn-view-history {
+    table tbody td:last-child .btn-view-history,
+    table tbody td:last-child button,
+    table tbody td:last-child a.btn {
         flex: 1;
-        min-width: 120px;
-        padding: 8px 16px;
-        font-size: 0.875rem;
+        min-width: 90px;
+        padding: 6px 10px;
+        font-size: 0.8rem;
         text-align: center;
     }
 
@@ -560,10 +567,16 @@ table.appointment-table {
         padding: 0;
     }
 
+    /* Reduce spacing between items */
+    table {
+        border-spacing: 0 4px;
+    }
+
     .patients-header {
         flex-direction: column;
-        gap: 16px;
+        gap: 10px;
         align-items: stretch;
+        margin-bottom: 12px;
     }
 
     .patients-header-left,
@@ -577,5 +590,17 @@ table.appointment-table {
 
     .patient-search-input {
         width: 100%;
+    }
+
+    /* Make profile icons smaller */
+    .profile-icon {
+        width: 24px;
+        height: 24px;
+        font-size: 0.7rem;
+    }
+
+    /* Reduce text sizes */
+    .primary-column-text {
+        font-size: 0.875rem;
     }
 }

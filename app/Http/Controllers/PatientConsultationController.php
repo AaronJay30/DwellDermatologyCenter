@@ -79,7 +79,8 @@ class PatientConsultationController extends Controller
             })
             ->with(['branch', 'timeSlot', 'doctor', 'service'])
             ->latest()
-            ->get();
+            ->paginate(5)
+            ->withQueryString();
         
         return view('consultations.index', compact('consultations'));
     }

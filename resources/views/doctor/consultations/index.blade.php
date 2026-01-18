@@ -3,6 +3,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/tables.css') }}">
+<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 @endpush
 
 @section('navbar-links')
@@ -77,6 +78,9 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+            <div class="pagination-wrapper">
+                {{ $consultations->links() }}
             </div>
         </div>
     @else

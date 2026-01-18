@@ -30,7 +30,8 @@ class DashboardController extends Controller
             $categories = Category::with('branch')->get();
             $services = Service::with(['images', 'category', 'promoServices.promotion'])
                 ->where('is_active', true)
-                ->get();
+                ->paginate(5)
+                ->withQueryString();
             
             // Get active promotions with images and services
             // Try less strict query first to catch all active promotions
