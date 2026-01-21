@@ -1,22 +1,5 @@
 @if ($paginator->hasPages())
     <nav role="navigation" aria-label="{{ __('Pagination Navigation') }}" class="pagination-nav">
-        {{-- Results info --}}
-        <div class="pagination-info">
-            <p>
-                {!! __('Showing') !!}
-                @if ($paginator->firstItem())
-                    <span class="font-medium">{{ $paginator->firstItem() }}</span>
-                    {!! __('to') !!}
-                    <span class="font-medium">{{ $paginator->lastItem() }}</span>
-                @else
-                    {{ $paginator->count() }}
-                @endif
-                {!! __('of') !!}
-                <span class="font-medium">{{ $paginator->total() }}</span>
-                {!! __('results') !!}
-            </p>
-        </div>
-
         {{-- Pagination links --}}
         <ul class="pagination">
             {{-- Previous Page Link --}}

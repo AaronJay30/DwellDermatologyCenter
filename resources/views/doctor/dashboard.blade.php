@@ -154,8 +154,18 @@ function applyFilters() {
     });
 
     fetch(`/doctor/admin/${currentAdminId}/reports?${params.toString()}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            // Check if response contains error
+            if (data.error) {
+                throw new Error(data.message || data.error);
+            }
+            
             // Update Stats
             document.getElementById('summary-total').textContent = data.total_records || '0';
             const now = new Date();
@@ -171,7 +181,7 @@ function applyFilters() {
         })
         .catch(error => {
             console.error('Error:', error);
-            document.getElementById('reports-table-container').innerHTML = '<p style="color: red; text-align: center;">Error loading reports.</p>';
+            document.getElementById('reports-table-container').innerHTML = `<p style="color: red; text-align: center;">Error loading reports: ${error.message}</p>`;
         });
 }
 
@@ -203,8 +213,18 @@ function loadPage(page) {
     });
 
     fetch(`/doctor/admin/${currentAdminId}/reports?${params.toString()}`)
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            // Check if response contains error
+            if (data.error) {
+                throw new Error(data.message || data.error);
+            }
+            
             const paginationHtml = data.pagination 
                 ? `<div class="custom-pagination-container">${data.pagination}</div>` 
                 : '';
@@ -214,7 +234,11 @@ function loadPage(page) {
             attachPaginationHandlers();
             document.getElementById('admin-reports-title').scrollIntoView({ behavior: 'smooth' });
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('reports-table-container').innerHTML = `<p style="color: red; text-align: center;">Error loading reports: ${error.message}</p>`;
+            document.getElementById('reports-table-container').style.opacity = '1';
+        });
 }
 </script>
 @endpush

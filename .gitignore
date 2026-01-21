@@ -1,29 +1,3 @@
-<<<<<<< HEAD
-*.log
-.DS_Store
-.env
-.env.backup
-.env.production
-.phpactor.json
-.phpunit.result.cache
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
-/storage/pail
-/vendor
-Homestead.json
-Homestead.yaml
-Thumbs.db
-=======
 /vendor/
 node_modules/
 npm-debug.log
@@ -43,6 +17,7 @@ public_html/hot
 
 storage/*.key
 .env
+.env.prod
 Homestead.yaml
 Homestead.json
 /.vagrant
@@ -54,4 +29,3 @@ Homestead.json
 .env.production
 .phpactor.json
 auth.json
->>>>>>> 379c311ced873c319791525e446f323b241eed51

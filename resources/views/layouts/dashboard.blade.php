@@ -550,6 +550,10 @@
                 display: inline-block;
             }
 
+            .sidebar.open .hamburger {
+                display: none !important;
+            }
+
             .mobile-menu-toggle {
                 display: inline-flex;
                 align-items: center;

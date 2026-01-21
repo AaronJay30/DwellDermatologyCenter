@@ -160,7 +160,28 @@ class DashboardController extends Controller
 
     public function getAdminReports(Request $request, $adminId)
     {
-        $admin = User::where('id', $adminId)->where('role', 'admin')->firstOrFail();
+        // Validate adminId is numeric
+        if (!is_numeric($adminId)) {
+            if ($request->ajax() || $request->query('ajax')) {
+                return response()->json([
+                    'error' => 'Invalid admin ID',
+                    'message' => 'The admin ID must be a number.'
+                ], 400);
+            }
+            abort(400, 'Invalid admin ID');
+        }
+
+        try {
+            $admin = User::where('id', $adminId)->where('role', 'admin')->firstOrFail();
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->query('ajax')) {
+                return response()->json([
+                    'error' => 'Admin not found',
+                    'message' => 'The requested admin could not be found.'
+                ], 404);
+            }
+            abort(404, 'Admin not found');
+        }
         
         $query = Appointment::where('branch_id', $admin->branch_id)
             ->with(['patient', 'service', 'timeSlot', 'branch']);
@@ -235,14 +256,24 @@ class DashboardController extends Controller
         $perPage = $request->get('per_page', 10);
         $appointments = $query->paginate($perPage)->withQueryString();
         
-        if ($request->ajax()) {
-            return response()->json([
-                'html' => view('doctor.partials.admin-reports-table', compact('appointments', 'admin'))->render(),
-                'pagination' => (string) $appointments->links(),
-            ]);
+        if ($request->ajax() || $request->query('ajax')) {
+            try {
+                return response()->json([
+                    'html' => view('doctor.partials.admin-reports-table', compact('appointments', 'admin'))->render(),
+                    'pagination' => (string) $appointments->links(),
+                    'total_records' => $appointments->total(),
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Admin reports AJAX error: ' . $e->getMessage());
+                return response()->json([
+                    'error' => 'An error occurred while loading reports',
+                    'message' => $e->getMessage()
+                ], 500);
+            }
         }
         
-        return view('doctor.admin-reports', compact('appointments', 'admin'));
+        // This route is intended for AJAX requests only
+        abort(404);
     }
 
     public function getPatientDetails($appointmentId)
