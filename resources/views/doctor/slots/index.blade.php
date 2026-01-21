@@ -380,7 +380,7 @@
     /* Patient Modal Styles */
     .patient-modal {
         display: none;
-        position: fixed;
+        position: absolute;
         z-index: 1000;
         left: 0;
         top: 0;
@@ -1346,14 +1346,6 @@ nav[role="navigation"] .hidden {
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
-
     <div class="stats-container">
         <div class="stat-card">
             <div class="stat-icon">✓</div>
@@ -1621,6 +1613,35 @@ nav[role="navigation"] .hidden {
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" class="patient-modal">
+    <div class="patient-modal-content" style="max-width: 480px;">
+        <div class="patient-modal-header">
+            <h1 class="patient-modal-title" style="font-size: 1.3rem; color: #ef4444;">
+                Confirm Deletion
+            </h1>
+            <button class="patient-modal-close" onclick="closeDeleteModal()">×</button>
+        </div>
+        <div class="patient-modal-body" style="padding: 1.5rem 2rem;">
+            <p style="margin-bottom: 1rem; color: #374151; line-height: 1.5;">
+                Are you sure you want to delete this time slot?<br>
+                <strong>This action cannot be undone.</strong>
+            </p>
+            <p id="deleteTargetInfo" style="font-weight: 500; color: #1f2937; margin: 1.25rem 0;">
+                <!-- Dynamic content will be inserted here -->
+            </p>
+        </div>
+        <div class="patient-modal-footer" style="padding: 1rem 2rem; gap: 1rem;">
+            <button class="patient-modal-btn patient-modal-btn-cancel" onclick="closeDeleteModal()">
+                Cancel
+            </button>
+            <button id="confirmDeleteBtn" class="patient-modal-btn" style="background-color: #ef4444; color: white;">
+                Yes, Delete
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Past Pending Appointments Modal -->
 <div id="pastPendingModal" class="patient-modal">
     <div class="patient-modal-content" style="max-width: 600px;">
@@ -1688,7 +1709,7 @@ nav[role="navigation"] .hidden {
         </div>
         <div class="patient-modal-footer">
             <button class="patient-modal-btn patient-modal-btn-cancel" onclick="closePatientModal()">Cancel</button>
-            <button class="patient-modal-btn patient-modal-btn-print" onclick="printPatientInfo()">Print</button>
+            
             <button class="patient-modal-btn patient-modal-btn-download" onclick="downloadPatientInfo()">Download</button>
         </div>
     </div>
@@ -2132,6 +2153,132 @@ function downloadPatientInfo() {
     // For now, trigger print which allows saving as PDF
     printPatientInfo();
 }
+
+// Delete Confirmation Modal Logic
+let deleteFormToSubmit = null;
+
+function openDeleteConfirmModal(formElement, message = '') {
+    deleteFormToSubmit = formElement;
+    
+    const modal = document.getElementById('deleteConfirmModal');
+    const infoEl = document.getElementById('deleteTargetInfo');
+    
+    if (infoEl && message) {
+        infoEl.innerHTML = message;
+    } else if (infoEl) {
+        infoEl.innerHTML = 'This action cannot be undone.';
+    }
+    
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    deleteFormToSubmit = null; // Reset
+}
+
+// Confirm delete → submit the stored form
+document.addEventListener('DOMContentLoaded', function () {
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function () {
+            if (deleteFormToSubmit) {
+                // Disable button to prevent double-click
+                this.disabled = true;
+                this.textContent = 'Deleting...';
+                console.log("AARON: Submitting delete for", deleteFormToSubmit);
+                
+                const form = deleteFormToSubmit;
+                const formData = new FormData(form);
+
+                const tableDeleteBtn = form.querySelector('button[type="submit"]');
+                let originalTableHTML = '';
+                if (tableDeleteBtn) {
+                    originalTableHTML = tableDeleteBtn.innerHTML;
+                    tableDeleteBtn.disabled = true;
+                    tableDeleteBtn.innerHTML = '<i data-feather="loader"></i> Deleting...';
+                }
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        notifyUser(data.message || 'Time slot deleted successfully!', 'success');
+                        
+                        const row = form.closest('tr');
+                        if (row) {
+                            row.style.transition = 'opacity 0.3s';
+                            row.style.opacity = '0';
+                            setTimeout(() => {
+                                row.remove();
+                                
+                                const tbody = document.querySelector('table tbody');
+                                if (tbody && tbody.children.length === 0) {
+                                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:#6b7280;">No time slots found.</td></tr>';
+                                }
+                                
+                                // Reload page to refresh stats
+                                window.location.reload();
+                            }, 300);
+                        } else {
+                            // Fallback: reload page
+                            window.location.reload();
+                        }
+                    } else {
+                        throw new Error(data.message || 'Failed to delete time slot.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    notifyUser(error.message || 'An error occurred while deleting the time slot. Please try again.', 'error');
+                    
+                    // Restore buttons
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = 'Delete';
+                    
+                    if (tableDeleteBtn) {
+                        tableDeleteBtn.disabled = false;
+                        tableDeleteBtn.innerHTML = originalTableHTML;
+                    }
+                    
+                    if (window.feather && typeof window.feather.replace === 'function') {
+                        window.feather.replace();
+                    }
+                })
+                .finally(() => {
+                    closeDeleteModal();
+                    // Reset global variable
+                    deleteFormToSubmit = null;
+                });
+            }
+        });
+    }
+
+    // Close on outside click
+    const deleteModal = document.getElementById('deleteConfirmModal');
+    if (deleteModal) {
+        deleteModal.addEventListener('click', function(e) {
+            if (e.target === deleteModal) {
+                closeDeleteModal();
+            }
+        });
+    }
+});
 
 document.addEventListener('DOMContentLoaded', function () {
     if (window.feather && typeof window.feather.replace === 'function') {
@@ -2734,74 +2881,18 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.delete-slot-form').forEach(function(form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
+
+            const slotDate = form.closest('tr')?.querySelector('td:nth-child(2)')?.textContent?.trim() || '';
+            const slotTime = form.closest('tr')?.querySelector('td:nth-child(3)')?.textContent?.trim() || '';
             
-            if (!confirm('Are you sure you want to delete this time slot?')) {
-                return;
+            let message = '';
+            if (slotDate && slotTime) {
+                message = `Time slot on <strong>${slotDate}</strong> at <strong>${slotTime}</strong>`;
+            } else {
+                message = 'This time slot';
             }
 
-            const form = this;
-            const formData = new FormData(form);
-            const slotId = form.getAttribute('data-slot-id');
-            const submitButton = form.querySelector('button[type="submit"]');
-            
-            // Disable button during request
-            submitButton.disabled = true;
-            const originalHTML = submitButton.innerHTML;
-            submitButton.innerHTML = '<i data-feather="loader"></i>';
-
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Show success popup
-                    notifyUser(data.message || 'Time slot deleted successfully!', 'success');
-                    
-                    // Remove the row from the table
-                    const row = form.closest('tr');
-                    if (row) {
-                        row.style.transition = 'opacity 0.3s';
-                        row.style.opacity = '0';
-                        setTimeout(() => {
-                            row.remove();
-                            
-                            // Check if table is empty
-                            const tbody = document.querySelector('table tbody');
-                            if (tbody && tbody.children.length === 0) {
-                                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:#6b7280;">No time slots found.</td></tr>';
-                            }
-                            
-                            // Reload page to refresh stats
-                            window.location.reload();
-                        }, 300);
-                    } else {
-                        // Fallback: reload page
-                        window.location.reload();
-                    }
-                } else {
-                    notifyUser(data.message || 'Failed to delete time slot.', 'error');
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = originalHTML;
-                    if (window.feather && typeof window.feather.replace === 'function') {
-                        window.feather.replace();
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                notifyUser('An error occurred while deleting the time slot. Please try again.', 'error');
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalHTML;
-                if (window.feather && typeof window.feather.replace === 'function') {
-                    window.feather.replace();
-                }
-            });
+            openDeleteConfirmModal(form, message);
         });
     });
 });

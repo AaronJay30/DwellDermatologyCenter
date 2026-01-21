@@ -160,7 +160,7 @@
     /* Patient Information Modal Styles */
     .patient-modal {
         display: none;
-        position: fixed;
+        position: absolute;
         z-index: 1000;
         left: 0;
         top: 0;
@@ -1101,11 +1101,7 @@
                         <tr>
                             <td>
                                 <div class="patient-info">
-                                    <span
-                                        class="patient-name-link"
-                                        data-appointment-id="{{ $appointment->id }}"
-                                        onclick="openPatientModal({{ $appointment->id }})"
-                                    >
+                                    <span class="patient-name-link" data-appointment-id="{{ $appointment->id }}" onclick="openPatientModal({{ $appointment->id }})" >
                                         {{ $patientName }}
                                     </span>
                                 </div>
@@ -1730,6 +1726,8 @@ function hideModal() {
 function openPatientModal(appointmentId) {
     const modal = document.getElementById('patientModal');
     modal.classList.add('active');
+
+    console.log("SAMPLE");
     
     // Clear previous data
     clearPatientModal();

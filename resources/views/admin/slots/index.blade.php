@@ -433,7 +433,7 @@
     /* Patient Modal Styles */
     .patient-modal {
         display: none;
-        position: fixed;
+        position: absolute;
         z-index: 1000;
         left: 0;
         top: 0;
@@ -1622,14 +1622,6 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
-
     <div class="stats-container">
         <div class="stat-card">
             <div class="stat-icon">✓</div>
@@ -1955,7 +1947,7 @@
         </div>
         <div class="patient-modal-footer">
             <button class="patient-modal-btn patient-modal-btn-cancel" onclick="closePatientModal()">Cancel</button>
-            <button class="patient-modal-btn patient-modal-btn-print" onclick="printPatientInfo()">Print</button>
+            
             <button class="patient-modal-btn patient-modal-btn-download" onclick="downloadPatientInfo()">Download</button>
         </div>
     </div>
@@ -2104,7 +2096,7 @@ function closePatientModal() {
 }
 
 function printPatientInfo() {
-    const modalContent = document.querySelector('.patient-modal-content');
+    const modalContent = document.querySelector('#patientModal .patient-modal-content');
     if (!modalContent) {
         notifyUser('No patient information to print.', 'error');
         return;
@@ -2400,18 +2392,17 @@ function printPatientInfo() {
             </style>
         </head>
         <body>
-            ${clonedContent.innerHTML}
+            ${clonedContent.innerHTML.replace(/`/g, '\\`')}
         </body>
         </html>
     `);
     printWindow.document.close();
     
-    // Wait for images to load before printing
-    printWindow.onload = function() {
-        setTimeout(function() {
-            printWindow.print();
-        }, 250);
-    };
+    // Wait for content to load and print
+    setTimeout(function() {
+        printWindow.focus();
+        printWindow.print();
+    }, 500);
 }
 
 function downloadPatientInfo() {

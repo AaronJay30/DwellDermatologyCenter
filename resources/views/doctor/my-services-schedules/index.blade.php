@@ -9,6 +9,101 @@
 <link rel="stylesheet" href="{{ asset('css/tables.css') }}">
 <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 <style>
+
+    /* Patient Modal Styles */
+    .patient-modal {
+        display: none;
+        position: absolute;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .patient-modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .patient-modal-content {
+        background-color: #ffffff;
+        margin: auto;
+        padding: 0;
+        border: 3px solid #FFD700;
+        width: 90%;
+        max-width: 900px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+
+    .patient-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.5rem 2rem;
+        border-bottom: 2px solid #e0e0e0;
+        background-color: #ffffff;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .patient-modal-logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .patient-modal-logo img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .patient-modal-logo-text {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #197a8c;
+    }
+
+    .patient-modal-title {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #000000;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0;
+    }
+
+    .patient-modal-close {
+        color: #aaa;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .patient-modal-close:hover,
+    .patient-modal-close:focus {
+        color: #000;
+    }
+
+    .patient-modal-body {
+        padding: 2rem;
+    }
     .slots-header {
         display: flex;
         justify-content: space-between;
@@ -321,6 +416,44 @@
         color: #000000;
     }
 
+    .patient-modal-btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+
+    .patient-modal-btn-cancel {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .patient-modal-btn-cancel:hover {
+        background-color: #5a6268;
+    }
+
+    .patient-modal-btn-print {
+        background-color: #008080;
+        color: white;
+    }
+
+    .patient-modal-btn-print:hover {
+        background-color: #006666;
+    }
+
+    .patient-modal-btn-download {
+        background-color: #008080;
+        color: white;
+    }
+
+    .patient-modal-btn-download:hover {
+        background-color: #006666;
+    }
+
     /* Responsive Design - Tablets */
     @media (max-width: 992px) {
         .container {
@@ -329,6 +462,31 @@
 
         .modal-content {
             width: min(900px, 92vw);
+        }
+        .patient-modal-content {
+            width: 95%;
+            max-height: 95vh;
+        }
+
+        .patient-modal-header {
+            flex-wrap: wrap;
+        }
+
+        .patient-modal-body {
+            padding: 1rem;
+        }
+
+        .patient-form-section {
+            padding: 1rem;
+        }
+
+        .patient-section-header {
+            margin: -1rem -1rem 1rem -1rem;
+        }
+
+        .patient-modal-footer {
+            flex-wrap: wrap;
+            gap: 0.5rem;
         }
     }
 
@@ -621,6 +779,26 @@
             font-size: 0.75rem;
             padding: 0.4rem 0.6rem;
             margin: -0.65rem -0.65rem 0.65rem -0.65rem;
+        }
+
+                .patient-modal-content {
+            width: 98%;
+        }
+
+        .patient-modal-header {
+            padding: 0.75rem;
+        }
+
+        .patient-modal-title {
+            font-size: 1rem;
+        }
+
+        .patient-modal-body {
+            padding: 0.75rem;
+        }
+
+        .patient-modal-footer {
+            padding: 0.75rem;
         }
 
         .form-group input,
@@ -984,6 +1162,35 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" class="patient-modal">
+    <div class="patient-modal-content" style="max-width: 480px;">
+        <div class="patient-modal-header">
+            <h1 class="patient-modal-title" style="font-size: 1.3rem; color: #ef4444;">
+                Confirm Deletion
+            </h1>
+            <button class="patient-modal-close" onclick="closeDeleteModal()">×</button>
+        </div>
+        <div class="patient-modal-body" style="padding: 1.5rem 2rem;">
+            <p style="margin-bottom: 1rem; color: #374151; line-height: 1.5;">
+                Are you sure you want to delete this time slot?<br>
+                <strong>This action cannot be undone.</strong>
+            </p>
+            <p id="deleteTargetInfo" style="font-weight: 500; color: #1f2937; margin: 1.25rem 0;">
+                <!-- Dynamic content will be inserted here -->
+            </p>
+        </div>
+        <div class="patient-modal-footer" style="padding: 1rem 2rem; gap: 1rem;">
+            <button class="patient-modal-btn patient-modal-btn-cancel" onclick="closeDeleteModal()">
+                Cancel
+            </button>
+            <button id="confirmDeleteBtn" class="patient-modal-btn" style="background-color: #ef4444; color: white;">
+                Yes, Delete
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     if (window.feather && typeof window.feather.replace === 'function') {
@@ -1245,51 +1452,75 @@ function closePastPendingModal() {
 }
 
 // Handle delete past appointment button clicks
+// --- Delete Confirmation Modal logic ---
+let deleteContext = null;
+function openDeleteModal(context) {
+    deleteContext = context;
+    const modal = document.getElementById('deleteConfirmModal');
+    const info = document.getElementById('deleteTargetInfo');
+    if (info && context) {
+        info.innerHTML = context.message;
+    }
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    deleteContext = null;
+}
 document.addEventListener('DOMContentLoaded', function() {
+    // Attach to both delete-past-appointment-btn and delete-appointment-btn
     document.querySelectorAll('.delete-past-appointment-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
             const appointmentId = this.getAttribute('data-appointment-id');
             let patientName = this.getAttribute('data-patient-name');
             const appointmentDate = this.getAttribute('data-appointment-date');
             const appointmentTime = this.getAttribute('data-appointment-time');
-            
-            // Parse JSON if it's encoded
-            try {
-                patientName = JSON.parse(patientName);
-            } catch (e) {
-                // If not JSON, use as-is
-            }
-            
+            try { patientName = JSON.parse(patientName); } catch (e) {}
             const timeStr = appointmentTime ? ` at ${appointmentTime}` : '';
-            if (!confirm(`Are you sure you want to delete the appointment for ${patientName} on ${appointmentDate}${timeStr}? The patient will be notified that their appointment was declined because they did not show up.`)) {
-                return;
-            }
-            
-            // Delete the appointment via AJAX
-            const submitButton = this;
-            const originalText = submitButton.textContent;
-            submitButton.disabled = true;
-            submitButton.textContent = 'Deleting...';
-            
+            openDeleteModal({
+                appointmentId,
+                btn: this,
+                message: `Are you sure you want to delete the appointment for <strong>${patientName}</strong> on <strong>${appointmentDate}${timeStr}</strong>?<br>The patient will be notified that their appointment was declined because they did not show up.`
+            });
+        });
+    });
+    // If you have other delete buttons, add similar logic here
+    // Show past pending appointments modal on page load if there are any
+    @if(isset($pastPendingAppointments) && $pastPendingAppointments->isNotEmpty())
+        openPastPendingModal();
+    @endif
+    // Confirm delete button in modal
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            if (!deleteContext) return closeDeleteModal();
+            const { appointmentId, btn } = deleteContext;
+            if (!appointmentId) return closeDeleteModal();
+            // Disable button
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Deleting...';
             // Create a form to submit DELETE request
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = `/doctor/my-appointments/${appointmentId}`;
-            
             const csrfInput = document.createElement('input');
             csrfInput.type = 'hidden';
             csrfInput.name = '_token';
             csrfInput.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
             form.appendChild(csrfInput);
-            
             const methodInput = document.createElement('input');
             methodInput.type = 'hidden';
             methodInput.name = '_method';
             methodInput.value = 'DELETE';
             form.appendChild(methodInput);
-            
             document.body.appendChild(form);
-            
             fetch(form.action, {
                 method: 'POST',
                 headers: {
@@ -1302,54 +1533,48 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Yes, Delete';
                 if (data.success) {
-                    alert(data.message || 'Appointment deleted successfully! The patient has been notified.');
-                    
                     // Remove the appointment from the modal list if it exists
-                    const appointmentItem = submitButton.closest('div[style*="border: 2px solid #fbbf24"]');
-                    if (appointmentItem) {
-                        appointmentItem.style.transition = 'opacity 0.3s';
-                        appointmentItem.style.opacity = '0';
-                        setTimeout(() => {
-                            appointmentItem.remove();
-                            
-                            // Check if modal list is empty
-                            const pastPendingList = document.getElementById('pastPendingList');
-                            if (pastPendingList && pastPendingList.children.length === 0) {
-                                closePastPendingModal();
-                            }
-                        }, 300);
+                    if (btn) {
+                        const appointmentItem = btn.closest('div[style*="border: 2px solid #fbbf24"]');
+                        if (appointmentItem) {
+                            appointmentItem.style.transition = 'opacity 0.3s';
+                            appointmentItem.style.opacity = '0';
+                            setTimeout(() => {
+                                appointmentItem.remove();
+                                // Check if modal list is empty
+                                const pastPendingList = document.getElementById('pastPendingList');
+                                if (pastPendingList && pastPendingList.children.length === 0) {
+                                    closePastPendingModal();
+                                }
+                            }, 300);
+                        }
                     }
-                    
                     // Reload page to refresh the table
                     setTimeout(() => {
                         window.location.reload();
                     }, 500);
                 } else {
                     alert(data.message || 'Failed to delete appointment. Please try again.');
-                    submitButton.disabled = false;
-                    submitButton.textContent = originalText;
                 }
+                closeDeleteModal();
             })
             .catch(error => {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Yes, Delete';
                 console.error('Error:', error);
                 alert('An error occurred while deleting the appointment. Please try again.');
-                submitButton.disabled = false;
-                submitButton.textContent = originalText;
+                closeDeleteModal();
             })
             .finally(() => {
-                // Clean up the form
                 if (form.parentNode) {
                     form.parentNode.removeChild(form);
                 }
             });
         });
-    });
-
-    // Show past pending appointments modal on page load if there are any
-    @if(isset($pastPendingAppointments) && $pastPendingAppointments->isNotEmpty())
-        openPastPendingModal();
-    @endif
+    }
 });
 </script>
 @endsection

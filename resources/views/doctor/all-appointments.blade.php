@@ -151,7 +151,7 @@
     /* Modal Styles */
     .patient-modal {
         display: none;
-        position: fixed;
+        position: absolute;
         z-index: 1000;
         left: 0;
         top: 0;
@@ -1506,7 +1506,7 @@
         </div>
         <div class="patient-modal-footer">
             <button class="patient-modal-btn patient-modal-btn-cancel" onclick="closePatientModal()">Cancel</button>
-            <button class="patient-modal-btn patient-modal-btn-print" onclick="printPatientInfo()">Print</button>
+            
             <button class="patient-modal-btn patient-modal-btn-download" onclick="downloadPatientInfo()">Download</button>
         </div>
     </div>

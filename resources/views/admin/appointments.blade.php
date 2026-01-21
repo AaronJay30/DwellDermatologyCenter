@@ -138,7 +138,7 @@
     /* Modal Styles */
     .patient-modal {
         display: none;
-        position: fixed;
+        position: absolute;
         z-index: 1000;
         left: 0;
         top: 0;
@@ -857,7 +857,17 @@
                             <td>
                                 <div style="display: flex; gap: 0.5rem; align-items: center;">
                     
-                                    <button onclick="deleteAppointment({{ $appointment->id }})" class="btn-action btn-delete" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Delete</button>
+                                    <button 
+                                        type="button"
+                                        class="delete-appointment-btn" 
+                                        data-appointment-id="{{ $appointment->id }}"
+                                        data-patient-name="{{ json_encode($appointment->patient->name ?? 'N/A') }}"
+                                        data-appointment-date="{{ $appointment->scheduled_date ? \Carbon\Carbon::parse($appointment->scheduled_date)->format('M d, Y') : ($appointment->created_at ? $appointment->created_at->format('M d, Y') : '') }}"
+                                        data-appointment-time="{{ $appointment->scheduled_time ? \Carbon\Carbon::parse($appointment->scheduled_time)->format('g:i A') : '' }}"
+                                        style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;"
+>
+                                        Delete
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -1237,6 +1247,35 @@
         </form>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" class="patient-modal">
+    <div class="patient-modal-content" style="max-width: 480px;">
+        <div class="patient-modal-header">
+            <h1 class="patient-modal-title" style="font-size: 1.3rem; color: #ef4444;">
+                Confirm Deletion
+            </h1>
+            <button class="patient-modal-close" onclick="closeDeleteModal()">×</button>
+        </div>
+        <div class="patient-modal-body" style="padding: 1.5rem 2rem;">
+            <p style="margin-bottom: 1rem; color: #374151; line-height: 1.5;">
+                Are you sure you want to delete this appointment?<br>
+                <strong>This action cannot be undone.</strong>
+            </p>
+            <p id="deleteTargetInfo" style="font-weight: 500; color: #1f2937; margin: 1.25rem 0;"></p>
+            <div id="deleteErrorMsg" style="display:none; color:#ef4444; font-weight:600; margin-top:1rem;"></div>
+        </div>
+        <div class="patient-modal-footer" style="padding: 1rem 2rem; gap: 1rem;">
+            <button class="patient-modal-btn patient-modal-btn-cancel" onclick="closeDeleteModal()">
+                Cancel
+            </button>
+            <button id="confirmDeleteBtn" class="patient-modal-btn" style="background-color: #ef4444; color: white;">
+                Yes, Delete
+            </button>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -2027,35 +2066,6 @@ function resetBulletNotes() {
     });
 }
 
-function deleteAppointment(appointmentId) {
-    if (!confirm('Are you sure you want to delete this appointment? This action cannot be undone.')) {
-        return;
-    }
-    
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
-    
-    fetch(`{{ url('/admin/appointments') }}/${appointmentId}`, {
-        method: 'DELETE',
-        headers: {
-            'X-CSRF-TOKEN': csrfToken,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        } else {
-            alert(data.message || 'Error deleting appointment');
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while deleting the appointment');
-    });
-}
-
 function handleResultSubmit(e) {
     e.preventDefault();
     
@@ -2134,5 +2144,128 @@ function handleResultSubmit(e) {
         submitBtn.textContent = originalText;
     });
 }
+
+// --- Delete Confirmation Modal logic (copied from doctor/my-services-schedules/index.blade.php) ---
+let deleteContext = null;
+function openDeleteModal(context) {
+    deleteContext = context;
+    const modal = document.getElementById('deleteConfirmModal');
+    const info = document.getElementById('deleteTargetInfo');
+    const error = document.getElementById('deleteErrorMsg');
+    if (info && context) {
+        info.innerHTML = context.message;
+    }
+    if (error) {
+        error.style.display = 'none';
+        error.textContent = '';
+    }
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    deleteContext = null;
+}
+document.addEventListener('DOMContentLoaded', function() {
+    // Attach to all delete-appointment-btn buttons
+    document.querySelectorAll('.delete-appointment-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const appointmentId = this.getAttribute('data-appointment-id');
+            let patientName = this.getAttribute('data-patient-name');
+            const appointmentDate = this.getAttribute('data-appointment-date');
+            const appointmentTime = this.getAttribute('data-appointment-time');
+            try { patientName = JSON.parse(patientName); } catch (e) {}
+            const timeStr = appointmentTime ? ` at ${appointmentTime}` : '';
+            openDeleteModal({
+                appointmentId,
+                btn: this,
+                message: `Are you sure you want to delete the appointment for <strong>${patientName}</strong> on <strong>${appointmentDate}${timeStr}</strong>?`
+            });
+        });
+    });
+    // Confirm delete button in modal
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            if (!deleteContext) return closeDeleteModal();
+            const { appointmentId, btn } = deleteContext;
+            if (!appointmentId) return closeDeleteModal();
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Deleting...';
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/appointments/${appointmentId}`;
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            form.appendChild(csrfInput);
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
+            document.body.appendChild(form);
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfInput.value,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(new FormData(form))
+            })
+            .then(response => response.json().catch(() => null))
+            .then(data => {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Yes, Delete';
+                if (data && data.success) {
+                    if (btn) {
+                        const appointmentItem = btn.closest('tr');
+                        if (appointmentItem) {
+                            appointmentItem.style.transition = 'opacity 0.3s';
+                            appointmentItem.style.opacity = '0';
+                            setTimeout(() => {
+                                appointmentItem.remove();
+                            }, 300);
+                        }
+                    }
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                    closeDeleteModal();
+                } else {
+                    // Show error in modal
+                    const error = document.getElementById('deleteErrorMsg');
+                    if (error) {
+                        error.style.display = 'block';
+                        error.textContent = (data && data.message) ? data.message : 'Failed to delete appointment. Please try again.';
+                    }
+                }
+            })
+            .catch(error => {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Yes, Delete';
+                const errorMsg = document.getElementById('deleteErrorMsg');
+                if (errorMsg) {
+                    errorMsg.style.display = 'block';
+                    errorMsg.textContent = 'An error occurred while deleting the appointment. Please try again.';
+                }
+            })
+            .finally(() => {
+                if (form.parentNode) {
+                    form.parentNode.removeChild(form);
+                }
+            });
+        });
+    }
+});
 </script>
 @endpush

@@ -147,7 +147,7 @@
     /* Patient Information Modal Styles */
     .patient-modal {
         display: none;
-        position: fixed;
+        position: absolute;
         z-index: 1000;
         left: 0;
         top: 0;
@@ -701,9 +701,7 @@
                             <td>
                                 <div class="patient-info">
                                     <span
-                                        class="patient-name-link"
-                                        data-appointment-id="{{ $appointment->id }}"
-                                        onclick="openPatientModal({{ $appointment->id }})"
+                                        class="patient-name-link" data-appointment-id="{{ $appointment->id }}" onclick="openPatientModal({{ $appointment->id }})"
                                     >
                                         {{ $patientName }}
                                     </span>
@@ -725,7 +723,7 @@
                             </td>
                             <td>
                                 @php
-                                    $appointmentDate = $appointment->scheduled_date 
+                                    $appointmentDate = $appointment->scheduled_date
                                         ? \Carbon\Carbon::parse($appointment->scheduled_date)->startOfDay()
                                         : $appointment->created_at->startOfDay();
                                     $isPastDate = $appointmentDate < now()->startOfDay();
@@ -734,8 +732,8 @@
                                 @endphp
                                 <div style="display: flex; gap: 0.5rem; align-items: center;">
                                     @if($isPastPending)
-                                        <button type="button" 
-                                                class="delete-past-appointment-btn" 
+                                        <button type="button"
+                                            class="delete-past-appointment-btn"
                                                 data-appointment-id="{{ $appointment->id }}"
                                                 data-patient-name="{{ json_encode($patientName) }}"
                                                 data-appointment-date="{{ $appointmentDate->format('M d, Y') }}"
@@ -745,8 +743,8 @@
                                         </button>
                                     @elseif($isPastConfirmed)
                                         <button onclick="addServiceResult({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Add Result</button>
-                                        <button type="button" 
-                                                class="drop-past-confirmed-btn" 
+                                        <button type="button"
+                                            class="drop-past-confirmed-btn"
                                                 data-appointment-id="{{ $appointment->id }}"
                                                 data-patient-name="{{ json_encode($patientName) }}"
                                                 data-appointment-date="{{ $appointmentDate->format('M d, Y') }}"
@@ -992,6 +990,34 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" class="patient-modal">
+    <div class="patient-modal-content" style="max-width: 480px;">
+        <div class="patient-modal-header">
+            <h1 class="patient-modal-title" style="font-size: 1.3rem; color: #ef4444;">
+                Confirm Deletion
+            </h1>
+            <button class="patient-modal-close" onclick="closeDeleteModal()">×</button>
+        </div>
+        <div class="patient-modal-body" style="padding: 1.5rem 2rem;">
+            <p style="margin-bottom: 1rem; color: #374151; line-height: 1.5;">
+                Are you sure you want to delete this item?<br>
+                <strong>This action cannot be undone.</strong>
+            </p>
+            <p id="deleteTargetInfo" style="font-weight: 500; color: #1f2937; margin: 1.25rem 0;"></p>
+            <div id="deleteErrorMsg" style="display:none; color:#ef4444; font-weight:600; margin-top:1rem;"></div>
+        </div>
+        <div class="patient-modal-footer" style="padding: 1rem 2rem; gap: 1rem;">
+            <button class="patient-modal-btn patient-modal-btn-cancel" onclick="closeDeleteModal()">
+                Cancel
+            </button>
+            <button id="confirmDeleteBtn" class="patient-modal-btn" style="background-color: #ef4444; color: white;">
+                Yes, Delete
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Container -->
 <div id="modalContainer" class="modal-container">
     <!-- Confirm Service Schedule Modal -->
@@ -1159,10 +1185,10 @@
                         $patientName = $patientProfile?->full_name
                             ?? ($composedName !== '' ? $composedName : null)
                             ?? ($appointment->patient->name ?? 'N/A');
-                        $appointmentDate = $appointment->scheduled_date 
+                        $appointmentDate = $appointment->scheduled_date
                             ? \Carbon\Carbon::parse($appointment->scheduled_date)->format('M d, Y')
                             : $appointment->created_at->format('M d, Y');
-                        $appointmentTime = $appointment->scheduled_time 
+                        $appointmentTime = $appointment->scheduled_time
                             ? \Carbon\Carbon::parse($appointment->scheduled_time)->format('g:i A')
                             : '';
                     @endphp
@@ -1177,8 +1203,8 @@
                                     @endif
                                 </div>
                             </div>
-                            <button type="button" 
-                                    class="delete-past-appointment-btn" 
+                                <button type="button"
+                                    class="delete-past-appointment-btn"
                                     data-appointment-id="{{ $appointment->id }}"
                                     data-patient-name="{{ json_encode($patientName) }}"
                                     data-appointment-date="{{ $appointmentDate }}"
@@ -1216,10 +1242,10 @@
                         $patientName = $patientProfile?->full_name
                             ?? ($composedName !== '' ? $composedName : null)
                             ?? ($appointment->patient->name ?? 'N/A');
-                        $appointmentDate = $appointment->scheduled_date 
+                        $appointmentDate = $appointment->scheduled_date
                             ? \Carbon\Carbon::parse($appointment->scheduled_date)->format('M d, Y')
                             : $appointment->created_at->format('M d, Y');
-                        $appointmentTime = $appointment->scheduled_time 
+                        $appointmentTime = $appointment->scheduled_time
                             ? \Carbon\Carbon::parse($appointment->scheduled_time)->format('g:i A')
                             : '';
                     @endphp
@@ -1235,13 +1261,13 @@
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                <button type="button" 
+                                <button type="button"
                                         onclick="addServiceResult({{ $appointment->id }})"
                                         style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">
                                     Add Result
                                 </button>
-                                <button type="button" 
-                                        class="drop-past-confirmed-btn" 
+                                <button type="button"
+                                    class="drop-past-confirmed-btn"
                                         data-appointment-id="{{ $appointment->id }}"
                                         data-patient-name="{{ json_encode($patientName) }}"
                                         data-appointment-date="{{ $appointmentDate }}"
@@ -1329,7 +1355,7 @@ function hideModal() {
 function openPatientModal(appointmentId) {
     const modal = document.getElementById('patientModal');
     modal.classList.add('active');
-    
+    console.log("AARON");
     // Clear previous data
     clearPatientModal();
     
@@ -1419,17 +1445,17 @@ function populatePatientModal(data) {
     
     if (personalInfo.birthday) {
         const birthday = new Date(personalInfo.birthday);
-        document.getElementById('modal-birthday').value = birthday.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+        document.getElementById('modal-birthday').value = birthday.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
     } else if (patient.date_of_birth) {
         const birthday = new Date(patient.date_of_birth);
-        document.getElementById('modal-birthday').value = birthday.toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+        document.getElementById('modal-birthday').value = birthday.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
     } else {
         document.getElementById('modal-birthday').value = '';
@@ -1763,35 +1789,54 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const timeStr = appointmentTime ? ` at ${appointmentTime}` : '';
-            if (!confirm(`Are you sure you want to delete the appointment for ${patientName} on ${appointmentDate}${timeStr}? The patient will be notified that their appointment was declined because they did not show up.`)) {
-                return;
-            }
-            
-            // Delete the appointment via AJAX
-            const submitButton = this;
-            const originalText = submitButton.textContent;
-            submitButton.disabled = true;
-            submitButton.textContent = 'Deleting...';
-            
-            // Create a form to submit DELETE request
+            openDeleteModal({
+                appointmentId,
+                btn: this,
+                type: 'pending',
+                message: `Are you sure you want to delete the appointment for <strong>${patientName}</strong> on <strong>${appointmentDate}${timeStr}</strong>? The patient will be notified that their appointment was declined because they did not show up.`
+            });
+        });
+    });
+    // Attach to all drop-past-confirmed-btn buttons
+    document.querySelectorAll('.drop-past-confirmed-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const appointmentId = this.getAttribute('data-appointment-id');
+            let patientName = this.getAttribute('data-patient-name');
+            const appointmentDate = this.getAttribute('data-appointment-date');
+            const appointmentTime = this.getAttribute('data-appointment-time');
+            try { patientName = JSON.parse(patientName); } catch (e) {}
+            const timeStr = appointmentTime ? ` at ${appointmentTime}` : '';
+            openDeleteModal({
+                appointmentId,
+                btn: this,
+                type: 'confirmed',
+                message: `Are you sure you want to drop the appointment for <strong>${patientName}</strong> on <strong>${appointmentDate}${timeStr}</strong>? This will delete the appointment and notify the patient that their appointment was declined because they did not show up.`
+            });
+        });
+    });
+    // Confirm delete button in modal
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            if (!deleteContext) return closeDeleteModal();
+            const { appointmentId, btn, type } = deleteContext;
+            if (!appointmentId) return closeDeleteModal();
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = (type === 'confirmed') ? 'Dropping...' : 'Deleting...';
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = `/admin/appointments/${appointmentId}`;
-            
+            form.action = `{{ url('/admin/appointments') }}/${appointmentId}`;
             const csrfInput = document.createElement('input');
             csrfInput.type = 'hidden';
             csrfInput.name = '_token';
             csrfInput.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
             form.appendChild(csrfInput);
-            
             const methodInput = document.createElement('input');
             methodInput.type = 'hidden';
             methodInput.name = '_method';
             methodInput.value = 'DELETE';
             form.appendChild(methodInput);
-            
             document.body.appendChild(form);
-            
             fetch(form.action, {
                 method: 'POST',
                 headers: {
@@ -1802,67 +1847,97 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 body: new URLSearchParams(new FormData(form))
             })
-            .then(response => response.json())
+            .then(response => response.json().catch(() => null))
             .then(data => {
-                if (data.success) {
-                    alert(data.message || 'Appointment deleted successfully! The patient has been notified.');
-                    
-                    // Remove the appointment from the modal list if it exists
-                    const appointmentItem = submitButton.closest('div[style*="border: 2px solid #fbbf24"]');
-                    if (appointmentItem) {
-                        appointmentItem.style.transition = 'opacity 0.3s';
-                        appointmentItem.style.opacity = '0';
-                        setTimeout(() => {
-                            appointmentItem.remove();
-                            
-                            // Check if modal list is empty
-                            const pastPendingList = document.getElementById('pastPendingList');
-                            if (pastPendingList && pastPendingList.children.length === 0) {
-                                closePastPendingModal();
-                            }
-                        }, 300);
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = (type === 'confirmed') ? 'Yes, Drop' : 'Yes, Delete';
+                if (data && data.success) {
+                    if (btn) {
+                        // Remove the appointment from the modal list if it exists
+                        let appointmentItem = null;
+                        if (type === 'pending') {
+                            appointmentItem = btn.closest('div[style*="border: 2px solid #fbbf24"]');
+                        } else if (type === 'confirmed') {
+                            appointmentItem = btn.closest('div[style*="border: 2px solid #dc3545"]');
+                        }
+                        if (appointmentItem) {
+                            appointmentItem.style.transition = 'opacity 0.3s';
+                            appointmentItem.style.opacity = '0';
+                            setTimeout(() => {
+                                appointmentItem.remove();
+                                // Check if modal list is empty
+                                if (type === 'pending') {
+                                    const pastPendingList = document.getElementById('pastPendingList');
+                                    if (pastPendingList && pastPendingList.children.length === 0) {
+                                        closePastPendingModal();
+                                    }
+                                } else if (type === 'confirmed') {
+                                    const pastConfirmedList = document.getElementById('pastConfirmedList');
+                                    if (pastConfirmedList && pastConfirmedList.children.length === 0) {
+                                        closePastConfirmedModal();
+                                    }
+                                }
+                            }, 300);
+                        }
                     }
-                    
-                    // Reload page to refresh the table
                     setTimeout(() => {
                         window.location.reload();
                     }, 500);
+                    closeDeleteModal();
                 } else {
-                    alert(data.message || 'Failed to delete appointment. Please try again.');
-                    submitButton.disabled = false;
-                    submitButton.textContent = originalText;
+                    // Show error in modal
+                    const error = document.getElementById('deleteErrorMsg');
+                    if (error) {
+                        error.style.display = 'block';
+                        error.textContent = (data && data.message) ? data.message : 'Failed to delete appointment. Please try again.';
+                    }
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while deleting the appointment. Please try again.');
-                submitButton.disabled = false;
-                submitButton.textContent = originalText;
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = (type === 'confirmed') ? 'Yes, Drop' : 'Yes, Delete';
+                const errorMsg = document.getElementById('deleteErrorMsg');
+                if (errorMsg) {
+                    errorMsg.style.display = 'block';
+                    errorMsg.textContent = 'An error occurred while deleting the appointment. Please try again.';
+                }
             })
             .finally(() => {
-                // Clean up the form
                 if (form.parentNode) {
                     form.parentNode.removeChild(form);
                 }
             });
         });
-    });
-
-    // Show past pending appointments modal on page load if there are any
-    @if(isset($pastPendingAppointments) && $pastPendingAppointments->isNotEmpty())
-        openPastPendingModal();
-    @endif
-
-    // Show past confirmed appointments modal on page load if there are any (after pending modal is closed)
-    @if(isset($pastConfirmedAppointments) && $pastConfirmedAppointments->isNotEmpty())
-        // Wait a bit before showing confirmed modal if pending modal exists
-        @if(isset($pastPendingAppointments) && $pastPendingAppointments->isNotEmpty())
-            // Will be shown after pending modal is closed
-        @else
-            openPastConfirmedModal();
-        @endif
-    @endif
+    }
 });
+
+// --- Delete Confirmation Modal logic ---
+let deleteContext = null;
+function openDeleteModal(context) {
+    deleteContext = context;
+    const modal = document.getElementById('deleteConfirmModal');
+    const info = document.getElementById('deleteTargetInfo');
+    const error = document.getElementById('deleteErrorMsg');
+    if (info && context) {
+        info.innerHTML = context.message;
+    }
+    if (error) {
+        error.style.display = 'none';
+        error.textContent = '';
+    }
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    deleteContext = null;
+}
 
 // Past Confirmed Modal Functions
 function openPastConfirmedModal() {
@@ -1889,96 +1964,13 @@ document.addEventListener('DOMContentLoaded', function() {
             let patientName = this.getAttribute('data-patient-name');
             const appointmentDate = this.getAttribute('data-appointment-date');
             const appointmentTime = this.getAttribute('data-appointment-time');
-            
-            // Parse JSON if it's encoded
-            try {
-                patientName = JSON.parse(patientName);
-            } catch (e) {
-                // If not JSON, use as-is
-            }
-            
+            try { patientName = JSON.parse(patientName); } catch (e) {}
             const timeStr = appointmentTime ? ` at ${appointmentTime}` : '';
-            if (!confirm(`Are you sure you want to drop the appointment for ${patientName} on ${appointmentDate}${timeStr}? This will delete the appointment and notify the patient that their appointment was declined because they did not show up.`)) {
-                return;
-            }
-            
-            // Delete the appointment via AJAX
-            const submitButton = this;
-            const originalText = submitButton.textContent;
-            submitButton.disabled = true;
-            submitButton.textContent = 'Dropping...';
-            
-            // Create a form to submit DELETE request
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `{{ url('/admin/appointments') }}/${appointmentId}`;
-            
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = '_token';
-            csrfInput.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-            form.appendChild(csrfInput);
-            
-            const methodInput = document.createElement('input');
-            methodInput.type = 'hidden';
-            methodInput.name = '_method';
-            methodInput.value = 'DELETE';
-            form.appendChild(methodInput);
-            
-            document.body.appendChild(form);
-            
-            fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfInput.value,
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams(new FormData(form))
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message || 'Appointment dropped successfully! The patient has been notified.');
-                    
-                    // Remove the appointment from the modal list if it exists
-                    const appointmentItem = submitButton.closest('div[style*="border: 2px solid #dc3545"]');
-                    if (appointmentItem) {
-                        appointmentItem.style.transition = 'opacity 0.3s';
-                        appointmentItem.style.opacity = '0';
-                        setTimeout(() => {
-                            appointmentItem.remove();
-                            
-                            // Check if modal list is empty
-                            const pastConfirmedList = document.getElementById('pastConfirmedList');
-                            if (pastConfirmedList && pastConfirmedList.children.length === 0) {
-                                closePastConfirmedModal();
-                            }
-                        }, 300);
-                    }
-                    
-                    // Reload page to refresh the table
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 500);
-                } else {
-                    alert(data.message || 'Failed to drop appointment. Please try again.');
-                    submitButton.disabled = false;
-                    submitButton.textContent = originalText;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while dropping the appointment. Please try again.');
-                submitButton.disabled = false;
-                submitButton.textContent = originalText;
-            })
-            .finally(() => {
-                // Clean up the form
-                if (form.parentNode) {
-                    form.parentNode.removeChild(form);
-                }
+            openDeleteModal({
+                appointmentId,
+                btn: this,
+                type: 'confirmed',
+                message: `Are you sure you want to drop the appointment for <strong>${patientName}</strong> on <strong>${appointmentDate}${timeStr}</strong>? This will delete the appointment and notify the patient that their appointment was declined because they did not show up.`
             });
         });
     });
