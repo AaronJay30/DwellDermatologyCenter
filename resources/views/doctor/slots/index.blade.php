@@ -704,6 +704,10 @@
             box-sizing: border-box;
         }
 
+        .patient-modal {
+            position: fixed;
+        }
+
         .slots-header {
             flex-direction: column;
             align-items: stretch;

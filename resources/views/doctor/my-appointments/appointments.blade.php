@@ -710,6 +710,10 @@
             align-items: stretch;
         }
 
+        .patient-modal {
+            position: fixed;
+        }
+
         .slots-header-right {
             flex-direction: column;
             width: 100%;
@@ -1073,9 +1077,6 @@
                                 <button type="button" class="btn-upload" onclick="document.getElementById('beforeFiles').click()">
                                     <i data-feather="upload"></i> Choose Photo/Video
                                 </button>
-                                <button type="button" class="btn-camera" onclick="openCamera('beforeFiles')">
-                                    <i data-feather="camera"></i> Open Camera
-                                </button>
                             </div>
                             <div class="file-preview" id="beforeFilesPreview"></div>
                         </div>
@@ -1105,9 +1106,6 @@
                                 <input type="file" name="after_files[]" id="afterFiles" multiple accept="image/*,video/*" style="display: none;">
                                 <button type="button" class="btn-upload" onclick="document.getElementById('afterFiles').click()">
                                     <i data-feather="upload"></i> Choose Photo/Video
-                                </button>
-                                <button type="button" class="btn-camera" onclick="openCamera('afterFiles')">
-                                    <i data-feather="camera"></i> Open Camera
                                 </button>
                             </div>
                             <div class="file-preview" id="afterFilesPreview"></div>

@@ -581,6 +581,10 @@
             align-items: stretch;
         }
 
+        .patient-modal {
+            position: fixed;
+        }
+
         .slots-header-right {
             flex-direction: column;
             width: 100%;
@@ -619,14 +623,6 @@
             </form>
         </div>
     </div>
-
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
-    @endif
 
     <div class="card slots-table-card">
         <div class="slots-table-header">
