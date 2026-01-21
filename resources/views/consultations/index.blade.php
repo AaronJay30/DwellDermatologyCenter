@@ -13,7 +13,7 @@
         
         .appointment-header {
             margin-bottom: 15px !important;
-            padding: 0 5px;
+            padding: 0 15px;
         }
         
         .appointment-title {

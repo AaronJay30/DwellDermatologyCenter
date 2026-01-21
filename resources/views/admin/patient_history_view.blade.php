@@ -769,11 +769,60 @@
             gap: 0.5rem;
         }
     }
+    /* --- Responsive Fixes for Mobile Overflow --- */
+@media (max-width: 1024px) {
+    .patient-history-container {
+        grid-template-columns: 1fr;
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+    .annual-report-modal-content {
+        width: 100%;
+        max-width: 800px;
+        box-sizing: border-box;
+    }
+}
+@media (max-width: 768px) {
+    .annual-report-modal.active {
+        padding: 5px;
+    }
+    .annual-report-modal-content {
+        width: 100%;
+        max-width: none;
+        margin: 0 auto;
+        max-height: calc(100vh - 10px);
+        box-sizing: border-box;
+    }
+}
+@media (max-width: 480px) {
+    .annual-report-modal-content {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        margin: 0 !important;
+        border-radius: 0;
+        box-sizing: border-box;
+    }
+    .annual-report-modal-header {
+        padding: 0.5rem;
+    }
+    .annual-report-modal-title {
+        font-size: 1rem;
+    }
+    .annual-report-modal-close {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+    }
+    .annual-report-modal-body {
+        padding: 0.5rem;
+    }
+}
 </style>
 @endpush
 
 @section('content')
-<div class="container">
+<div class="container" style="max-width:100vw;overflow-x:hidden;box-sizing:border-box;">
+
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
@@ -795,7 +844,7 @@
         @endif
     </div>
 
-    <div class="patient-history-container">
+    <div class="patient-history-container" style="box-sizing:border-box;max-width:102vw;overflow-x:scroll;">
         <!-- Left Panel - Patient Information -->
         <div class="patient-info-panel">
             @php
@@ -1930,11 +1979,11 @@
             }
             
             // FOLLOW-UP DATE Section
-            if (data.follow_up_date) {
+            if (item.follow_up_date) {
                 html += `<div class="result-form-section">`;
                 html += `<div class="result-section-header">📅 FOLLOW-UP DATE</div>`;
                 html += `<div class="result-form-group">`;
-                html += `<input type="text" class="result-form-input" value="${escapeHtml(data.follow_up_date)}" readonly>`;
+                html += `<input type="text" class="result-form-input" value="${item.follow_up_date}" readonly>`;
                 html += `</div>`;
                 html += `</div>`;
             }

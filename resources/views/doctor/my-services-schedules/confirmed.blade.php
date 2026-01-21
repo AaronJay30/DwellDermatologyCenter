@@ -604,6 +604,10 @@
             padding: 0 1rem;
         }
 
+        .patient-modal {
+            position: fixed;
+        }
+
         .patient-form-row {
             grid-template-columns: 1fr;
         }

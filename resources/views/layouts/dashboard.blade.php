@@ -592,7 +592,7 @@
             }
 
             .container {
-                padding: 0 15px;
+                padding: 0 4px;
             }
 
             .card {

@@ -460,6 +460,10 @@
             padding: 0 1rem;
         }
 
+        .patient-modal {
+            position: fixed;
+        }
+
         .modal-content {
             width: min(900px, 92vw);
         }

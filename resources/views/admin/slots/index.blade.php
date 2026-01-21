@@ -29,6 +29,10 @@
             padding: 1.5rem;
             max-width: 1200px;
         }
+
+        .patient-modal {
+            position: fixed;
+        }
     }
 
     @media (min-width: 1024px) {
