@@ -1280,14 +1280,21 @@ class DashboardController extends Controller
             ->where('is_booked', false)
             ->whereDoesntHave('appointments')
             ->delete();
-
+        
         $search = $request->get('search');
         $filterDate = $request->get('date');
         $filterStatus = $request->get('status');
 
         $baseQuery = TimeSlot::query()
             ->where('branch_id', $adminBranchId) // Only show slots for admin's branch
-            ->with(['branch', 'doctor', 'appointments.patient'])
+            ->with([
+                'branch',
+                'doctor',
+                'appointments' => function ($q) {
+                    $q->where('status', '!=', 'cancelled');
+                },
+                'appointments.patient'
+            ])
             ->orderByDesc('date')
             ->orderBy('start_time');
 

@@ -400,11 +400,11 @@
                 <label class="form-label">Sex</label>
                 <div class="radio-group">
                     <div class="radio-option">
-                        <input type="radio" id="sex_male" name="sex" value="Male" {{ old('sex') == 'male' ? 'checked' : '' }} required>
+                        <input type="radio" id="sex_male" name="sex" value="male" {{ old('sex') == 'male' ? 'checked' : '' }} required>
                         <label for="sex_male">Male</label>
                     </div>
                     <div class="radio-option">
-                        <input type="radio" id="sex_female" name="sex" value="Female" {{ old('sex') == 'female' ? 'checked' : '' }}>
+                        <input type="radio" id="sex_female" name="sex" value="female" {{ old('sex') == 'female' ? 'checked' : '' }}>
                         <label for="sex_female">Female</label>
                     </div>
                 </div>

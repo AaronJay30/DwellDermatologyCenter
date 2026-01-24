@@ -367,11 +367,11 @@
                     <label>Sex <span class="required-asterisk">*required</span></label>
                     <div class="radio-group">
                         <label>
-                            <input type="radio" name="sex" value="Male" {{ old('sex') == 'Male' ? 'checked' : '' }} required>
+                            <input type="radio" name="sex" value="male" {{ old('sex') == 'male' ? 'checked' : '' }} required>
                             Male
                         </label>
                         <label>
-                            <input type="radio" name="sex" value="Female" {{ old('sex') == 'Female' ? 'checked' : '' }} required>
+                            <input type="radio" name="sex" value="female" {{ old('sex') == 'female' ? 'checked' : '' }} required>
                             Female
                         </label>
                     </div>

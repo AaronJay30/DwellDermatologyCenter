@@ -1248,11 +1248,11 @@
                         <label>Sex</label>
                         <div class="patient-radio-group">
                             <label>
-                                <input type="radio" name="modal-sex" value="Male" disabled>
+                                <input type="radio" name="modal-sex" value="male" disabled>
                                 Male
                             </label>
                             <label>
-                                <input type="radio" name="modal-sex" value="Female" disabled>
+                                <input type="radio" name="modal-sex" value="female" disabled>
                                 Female
                             </label>
                         </div>

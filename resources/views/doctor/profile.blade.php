@@ -88,8 +88,8 @@
                 <label for="gender">Gender</label>
                 <select class="form-control" name="gender" id="gender">
                     <option value="">Select Gender</option>
-                    <option value="male" {{ old('gender', auth()->user()->gender) === 'male' ? 'selected' : '' }}>Male</option>
-                    <option value="female" {{ old('gender', auth()->user()->gender) === 'female' ? 'selected' : '' }}>Female</option>
+                    <option value="male" {{ old('gender', auth()->user()->gender) === 'male' ? 'selected' : '' }}>male</option>
+                    <option value="female" {{ old('gender', auth()->user()->gender) === 'female' ? 'selected' : '' }}>female</option>
                     <option value="other" {{ old('gender', auth()->user()->gender) === 'other' ? 'selected' : '' }}>Other</option>
                 </select>
                 @error('gender')

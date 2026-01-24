@@ -2889,11 +2889,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         <label>Sex</label>
                         <div class="patient-radio-group">
                             <label>
-                                <input type="radio" name="modal-sex" value="Male" ${patient.gender && patient.gender.toLowerCase() === 'male' ? 'checked' : ''} disabled>
+                                <input type="radio" name="modal-sex" value="male" ${patient.gender && patient.gender.toLowerCase() === 'male' ? 'checked' : ''} disabled>
                                 Male
                             </label>
                             <label>
-                                <input type="radio" name="modal-sex" value="Female" ${patient.gender && patient.gender.toLowerCase() === 'female' ? 'checked' : ''} disabled>
+                                <input type="radio" name="modal-sex" value="female" ${patient.gender && patient.gender.toLowerCase() === 'female' ? 'checked' : ''} disabled>
                                 Female
                             </label>
                         </div>

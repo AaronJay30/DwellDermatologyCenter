@@ -2916,6 +2916,17 @@ class DashboardController extends Controller
                 'follow_up_date' => $request->follow_up_date ?? null,
             ]);
 
+
+            // Send notification to patient
+            NotificationService::sendNotification(
+                'Appointment Result Available',
+                'Your appointment result has been added by the doctor. Please check your history for details.',
+                'result',
+                $appointment->patient_id
+            );
+
+
+
             // Update appointment status to completed
             $appointment->update([
                 'status' => 'completed',

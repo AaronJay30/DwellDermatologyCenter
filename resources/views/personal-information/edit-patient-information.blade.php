@@ -312,11 +312,11 @@
                     <label>Sex</label>
                     <div class="radio-group">
                         <label>
-                            <input type="radio" name="sex" value="Male">
+                            <input type="radio" name="sex" value="male">
                             Male
                         </label>
                         <label>
-                            <input type="radio" name="sex" value="Female">
+                            <input type="radio" name="sex" value="female">
                             Female
                         </label>
                     </div>

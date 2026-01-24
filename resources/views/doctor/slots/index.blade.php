@@ -1168,157 +1168,157 @@
     }
     /* Pagination Responsive Styles */
 
-/* Base pagination styles enhancement */
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-top: 1.5rem;
-    padding: 1rem 0;
-}
-
-.pagination .page-item {
-    display: inline-flex;
-}
-
-.pagination .page-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 40px;
-    min-height: 40px;
-    padding: 0.5rem 0.75rem;
-    border: 2px solid #e9ecef;
-    background: #ffffff;
-    color: #2c3e50;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    border-radius: 4px;
-}
-
-.pagination .page-link:hover {
-    border-color: #FFD700;
-    background: rgba(255, 215, 0, 0.1);
-    color: #197a8c;
-}
-
-.pagination .page-item.active .page-link {
-    background: #197a8c;
-    border-color: #197a8c;
-    color: #ffffff;
-}
-
-.pagination .page-item.disabled .page-link {
-    background: #f8f9fa;
-    border-color: #e9ecef;
-    color: #9ca3af;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-
-/* Responsive Design - Tablets */
-@media (max-width: 992px) {
+    /* Base pagination styles enhancement */
     .pagination {
-        gap: 0.4rem;
-        padding: 0.75rem 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+        padding: 1rem 0;
+    }
+
+    .pagination .page-item {
+        display: inline-flex;
     }
 
     .pagination .page-link {
-        min-width: 38px;
-        min-height: 38px;
-        padding: 0.4rem 0.65rem;
-        font-size: 0.9rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .pagination {
-        gap: 0.35rem;
-        padding: 0.75rem 0;
-        margin-top: 1rem;
-    }
-
-    .pagination .page-link {
-        min-width: 44px;
-        min-height: 44px;
-        padding: 0.5rem;
-        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        min-height: 40px;
+        padding: 0.5rem 0.75rem;
+        border: 2px solid #e9ecef;
+        background: #ffffff;
+        color: #2c3e50;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-radius: 4px;
     }
 
-    /* Hide page numbers except first, last, and current on mobile */
-    .pagination .page-item:not(.active):not(:first-child):not(:last-child):not(.page-item:has(.page-link[rel="prev"])):not(.page-item:has(.page-link[rel="next"])) {
+    .pagination .page-link:hover {
+        border-color: #FFD700;
+        background: rgba(255, 215, 0, 0.1);
+        color: #197a8c;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: #197a8c;
+        border-color: #197a8c;
+        color: #ffffff;
+    }
+
+    .pagination .page-item.disabled .page-link {
+        background: #f8f9fa;
+        border-color: #e9ecef;
+        color: #9ca3af;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    /* Responsive Design - Tablets */
+    @media (max-width: 992px) {
+        .pagination {
+            gap: 0.4rem;
+            padding: 0.75rem 0;
+        }
+
+        .pagination .page-link {
+            min-width: 38px;
+            min-height: 38px;
+            padding: 0.4rem 0.65rem;
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .pagination {
+            gap: 0.35rem;
+            padding: 0.75rem 0;
+            margin-top: 1rem;
+        }
+
+        .pagination .page-link {
+            min-width: 44px;
+            min-height: 44px;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        /* Hide page numbers except first, last, and current on mobile */
+        .pagination .page-item:not(.active):not(:first-child):not(:last-child):not(.page-item:has(.page-link[rel="prev"])):not(.page-item:has(.page-link[rel="next"])) {
+            display: none;
+        }
+
+        /* Show dots indicator */
+        .pagination .page-item.disabled:not(:first-child):not(:last-child) {
+            display: inline-flex;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .pagination {
+            gap: 0.25rem;
+            padding: 0.5rem 0;
+        }
+
+        .pagination .page-link {
+            min-width: 40px;
+            min-height: 40px;
+            padding: 0.4rem;
+            font-size: 0.8rem;
+        }
+
+        /* Simplify pagination even more on small screens */
+        .pagination .page-item {
+            flex-shrink: 0;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .pagination {
+            gap: 0.2rem;
+        }
+
+        .pagination .page-link {
+            min-width: 36px;
+            min-height: 36px;
+            padding: 0.3rem;
+            font-size: 0.75rem;
+        }
+    }
+
+    /* Laravel pagination specific styling */
+    nav[role="navigation"] {
+        width: 100%;
+    }
+
+    nav[role="navigation"] .flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    nav[role="navigation"] .hidden {
         display: none;
     }
 
-    /* Show dots indicator */
-    .pagination .page-item.disabled:not(:first-child):not(:last-child) {
-        display: inline-flex;
+    @media (max-width: 768px) {
+        nav[role="navigation"] .flex {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        nav[role="navigation"] p {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
     }
-}
-
-@media (max-width: 576px) {
-    .pagination {
-        gap: 0.25rem;
-        padding: 0.5rem 0;
-    }
-
-    .pagination .page-link {
-        min-width: 40px;
-        min-height: 40px;
-        padding: 0.4rem;
-        font-size: 0.8rem;
-    }
-
-    /* Simplify pagination even more on small screens */
-    .pagination .page-item {
-        flex-shrink: 0;
-    }
-}
-
-@media (max-width: 400px) {
-    .pagination {
-        gap: 0.2rem;
-    }
-
-    .pagination .page-link {
-        min-width: 36px;
-        min-height: 36px;
-        padding: 0.3rem;
-        font-size: 0.75rem;
-    }
-}
-
-/* Laravel pagination specific styling */
-nav[role="navigation"] {
-    width: 100%;
-}
-
-nav[role="navigation"] .flex {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-nav[role="navigation"] .hidden {
-    display: none;
-}
-
-@media (max-width: 768px) {
-    nav[role="navigation"] .flex {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    nav[role="navigation"] p {
-        font-size: 0.875rem;
-        margin-bottom: 0.5rem;
-    }
-}
 </style>
 @endpush
 
@@ -2734,11 +2734,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         <label>Sex</label>
                         <div class="patient-radio-group">
                             <label>
-                                <input type="radio" name="modal-sex" value="Male" ${patient.gender && patient.gender.toLowerCase() === 'male' ? 'checked' : ''} disabled>
+                                <input type="radio" name="modal-sex" value="male" ${patient.gender && patient.gender.toLowerCase() === 'male' ? 'checked' : ''} disabled>
                                 Male
                             </label>
                             <label>
-                                <input type="radio" name="modal-sex" value="Female" ${patient.gender && patient.gender.toLowerCase() === 'female' ? 'checked' : ''} disabled>
+                                <input type="radio" name="modal-sex" value="female" ${patient.gender && patient.gender.toLowerCase() === 'female' ? 'checked' : ''} disabled>
                                 Female
                             </label>
                         </div>

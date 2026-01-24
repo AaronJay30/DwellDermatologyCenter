@@ -14,6 +14,7 @@ class PersonalInformation extends Model
         'last_name',
         'address',
         'birthday',
+        'sex',
         'civil_status',
         'preferred_pronoun',
         'contact_number',

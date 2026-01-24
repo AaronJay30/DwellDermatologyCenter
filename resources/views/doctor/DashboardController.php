@@ -900,6 +900,8 @@ class DashboardController extends Controller
             ->with(['timeSlot.branch', 'patient'])
             ->get();
 
+        
+
         return view('doctor.slots.index', [
             'slots' => $slots,
             'branches' => $branches,
@@ -2838,6 +2840,14 @@ class DashboardController extends Controller
             $appointment->update([
                 'status' => 'completed',
             ]);
+
+            // Send notification to patient
+            NotificationService::sendNotification(
+                'Appointment Result Available',
+                'Your appointment result has been added by the doctor. Please check your history for details.',
+                'result',
+                $appointment->patient_id
+            );
 
             return response()->json([
                 'success' => true,

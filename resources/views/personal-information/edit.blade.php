@@ -322,11 +322,11 @@
                     <label>Sex</label>
                     <div class="radio-group">
                         <label>
-                            <input type="radio" name="sex" value="Male" {{ old('sex', 'Male') == 'Male' ? 'checked' : '' }} required>
+                            <input type="radio" name="sex" value="male" {{ old('sex', $personalInformation->sex ) == 'male' ? 'checked' : '' }} required>
                             Male
                         </label>
                         <label>
-                            <input type="radio" name="sex" value="Female" {{ old('sex') == 'Female' ? 'checked' : '' }} required>
+                            <input type="radio" name="sex" value="female" {{ old('sex', $personalInformation->sex ) == 'female' ? 'checked' : '' }} required>
                             Female
                         </label>
                     </div>

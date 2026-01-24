@@ -1374,11 +1374,11 @@
                         <label>Sex</label>
                         <div class="patient-radio-group">
                             <label>
-                                <input type="radio" name="modal-sex" value="Male" disabled>
+                                <input type="radio" name="modal-sex" value="male" disabled>
                                 Male
                             </label>
                             <label>
-                                <input type="radio" name="modal-sex" value="Female" disabled>
+                                <input type="radio" name="modal-sex" value="female" disabled>
                                 Female
                             </label>
                         </div>
@@ -2007,7 +2007,12 @@ function populateModal(data) {
 }
 
 function printPatientInfo() {
-    const modalContent = document.querySelector('.patient-modal-content');
+    const modalContent = document.querySelector('#patientModal .patient-modal-content');
+    if (!modalContent) {
+        notifyUser('No patient information to print.', 'error');
+        return;
+    }
+    
     const printWindow = window.open('', '_blank');
     
     // Clone the content to avoid modifying the original
@@ -2020,7 +2025,6 @@ function printPatientInfo() {
     if (closeBtn) closeBtn.style.display = 'none';
     
     // Convert readonly inputs to display their values as text for printing
-    // Get values from original modal to ensure they're captured correctly
     const originalInputs = modalContent.querySelectorAll('input[readonly], textarea[readonly]');
     const clonedInputs = clonedContent.querySelectorAll('input[readonly], textarea[readonly]');
     
@@ -2054,277 +2058,262 @@ function printPatientInfo() {
     printWindow.document.write(`
         <!DOCTYPE html>
         <html>
-            <head>
-                <meta charset="utf-8">
-                <title>Patient Information Sheet</title>
-                <style>
-                    @page {
-                        size: letter;
-                        margin: 0.25in;
-                    }
-                    
-                    * {
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                        color-adjust: exact !important;
-                        box-sizing: border-box;
-                    }
-                    
-                    body {
-                        font-family: 'Figtree', Arial, sans-serif;
-                        margin: 0;
-                        padding: 0;
-                        color: #2c3e50;
-                        background: white;
-                        font-size: 11px;
-                        line-height: 1.3;
-                    }
-                    
-                    .patient-modal-content {
-                        background-color: #ffffff;
-                        margin: 0;
-                        padding: 0;
-                        border: 2px solid #FFD700;
-                        width: 100%;
-                        max-width: 100%;
-                        box-shadow: none;
-                    }
-                    
-                    .patient-modal-header {
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                        padding: 0.5rem 0.8rem;
-                        border-bottom: 1px solid #e0e0e0;
-                        background-color: #ffffff;
-                    }
-                    
-                    .patient-modal-logo {
-                        display: flex;
-                        align-items: center;
-                        gap: 0.3rem;
-                    }
-                    
-                    .patient-modal-logo img {
-                        width: 35px;
-                        height: 35px;
-                    }
-                    
-                    .patient-modal-logo-text {
-                        font-size: 0.9rem;
-                        font-weight: bold;
-                        color: #197a8c;
-                    }
-                    
-                    .patient-modal-title {
-                        font-size: 1rem;
-                        font-weight: bold;
-                        color: #000000;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                        margin: 0;
-                    }
-                    
-                    .patient-modal-close {
-                        display: none !important;
-                    }
-                    
-                    .patient-modal-body {
-                        padding: 0.6rem 0.8rem;
-                    }
-                    
-                    .patient-form-section {
-                        background-color: #E6F3F5 !important;
-                        border: 2px solid #FFD700 !important;
-                        border-radius: 3px;
-                        padding: 0.6rem;
-                        margin-bottom: 0.6rem;
-                        page-break-inside: avoid;
-                    }
-                    
-                    .patient-section-header {
-                        background-color: #008080 !important;
-                        color: #ffffff !important;
-                        padding: 0.4rem 0.6rem;
-                        margin: -0.6rem -0.6rem 0.6rem -0.6rem;
-                        font-weight: bold;
-                        font-size: 0.75rem;
-                        text-transform: uppercase;
-                        letter-spacing: 0.3px;
-                    }
-                    
-                    .patient-form-row {
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 0.5rem;
-                        margin-bottom: 0.5rem;
-                    }
-                    
-                    .patient-form-group {
-                        margin-bottom: 0.4rem;
-                    }
-                    
-                    .patient-form-group label {
-                        display: block;
-                        margin-bottom: 0.2rem;
-                        font-weight: 600;
-                        color: #333;
-                        font-size: 0.7rem;
-                    }
-                    
-                    .patient-form-group input[type="text"],
-                    .patient-form-group input[type="email"],
-                    .patient-form-group input[type="date"],
-                    .patient-form-group textarea,
-                    .patient-form-group div {
-                        width: 100%;
-                        padding: 0.3rem 0.4rem;
-                        border: 1px solid #ccc;
-                        border-radius: 2px;
-                        font-size: 0.85rem;
-                        background-color: #ffffff;
-                        min-height: 1.5rem;
-                        display: block;
-                    }
-                    
-                    .patient-form-group textarea {
-                        min-height: 40px;
-                        resize: none;
-                    }
-                    
-                    .patient-radio-group {
-                        display: flex;
-                        gap: 1rem;
-                        align-items: center;
-                        flex-wrap: wrap;
-                    }
-                    
-                    .patient-radio-group label {
-                        display: flex;
-                        align-items: center;
-                        gap: 0.3rem;
-                        font-weight: normal;
-                        font-size: 0.8rem;
-                        cursor: default;
-                    }
-                    
-                    .patient-checkbox-group {
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 0.8rem;
-                        margin-bottom: 0.3rem;
-                    }
-                    
-                    .patient-checkbox-group label {
-                        display: flex;
-                        align-items: center;
-                        gap: 0.3rem;
-                        font-weight: normal;
-                        font-size: 0.8rem;
-                        cursor: default;
-                    }
-                    
-                    .patient-certification-section {
-                        margin-top: 0.8rem;
-                        padding-top: 0.6rem;
-                        border-top: 1px solid #e0e0e0;
-                    }
-                    
-                    .patient-certification-text {
-                        margin-bottom: 0.6rem;
-                        font-size: 0.8rem;
-                        color: #333;
-                    }
-                    
-                    .patient-signature-section {
-                        display: grid;
-                        grid-template-columns: 2fr 1fr;
-                        gap: 1rem;
-                        margin-top: 0.5rem;
-                    }
-                    
-                    .patient-signature-field {
-                        display: flex;
-                        flex-direction: column;
-                    }
-                    
-                    .patient-signature-field label {
-                        margin-bottom: 0.3rem;
-                        font-weight: 600;
-                        color: #333;
-                        font-size: 0.7rem;
-                    }
-                    
-                    .patient-signature-display {
-                        border: 1px solid #ccc;
-                        border-radius: 3px;
-                        padding: 0.4rem;
-                        background: white;
-                        min-height: 50px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                    }
-                    
-                    .patient-signature-display img {
-                        max-width: 100%;
-                        max-height: 80px;
-                    }
-                    
-                    .patient-modal-footer {
-                        display: none !important;
-                    }
-                    
-                    input[type="radio"],
-                    input[type="checkbox"] {
-                        width: auto;
-                        margin: 0;
-                        padding: 0;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-                    
-                    input[type="radio"]:checked::before,
-                    input[type="checkbox"]:checked::before {
-                        content: '✓';
-                        display: inline-block;
-                        width: 12px;
-                        height: 12px;
-                        background-color: #008080;
-                        color: white;
-                        text-align: center;
-                        line-height: 12px;
-                        font-size: 10px;
-                        border: 1px solid #008080;
-                    }
-                    
-                    .print-value-display {
-                        width: 100%;
-                        padding: 0.3rem 0.4rem;
-                        border: 1px solid #ccc;
-                        border-radius: 3px;
-                        font-size: 0.85rem;
-                        background-color: #ffffff;
-                        min-height: 1.5rem;
-                        display: flex;
-                        align-items: center;
-                        color: #2c3e50;
-                    }
-                </style>
-            </head>
-            <body>
-                ${clonedContent.innerHTML}
-            </body>
+        <head>
+            <meta charset="utf-8">
+            <title>Patient Information Sheet</title>
+            <style>
+                @page {
+                    size: 8.5in 13in;
+                    margin: 0.25in;
+                }
+                
+                * {
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                    color-adjust: exact !important;
+                    box-sizing: border-box;
+                }
+                
+                body {
+                    font-family: 'Figtree', Arial, sans-serif;
+                    margin: 0;
+                    padding: 0;
+                    color: #2c3e50;
+                    background: white;
+                    font-size: 10px;
+                    line-height: 1.2;
+                }
+                
+                .patient-modal-content {
+                    background-color: #ffffff;
+                    margin: 0;
+                    padding: 0;
+                    border: 2px solid #FFD700;
+                    width: 100%;
+                    max-width: 100%;
+                    box-shadow: none;
+                }
+                
+                .patient-modal-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 0.4rem 0.6rem;
+                    border-bottom: 1px solid #e0e0e0;
+                    background-color: #ffffff;
+                }
+                
+                .patient-modal-logo {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.3rem;
+                }
+                
+                .patient-modal-logo img {
+                    width: 30px;
+                    height: 30px;
+                }
+                
+                .patient-modal-logo-text {
+                    font-size: 0.8rem;
+                    font-weight: bold;
+                    color: #197a8c;
+                }
+                
+                .patient-modal-title {
+                    font-size: 0.9rem;
+                    font-weight: bold;
+                    color: #000000;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    margin: 0;
+                }
+                
+                .patient-modal-close {
+                    display: none !important;
+                }
+                
+                .patient-modal-body {
+                    padding: 0.5rem 0.6rem;
+                }
+                
+                .patient-form-section {
+                    background-color: #E6F3F5 !important;
+                    border: 2px solid #FFD700 !important;
+                    border-radius: 3px;
+                    padding: 0.5rem;
+                    margin-bottom: 0.5rem;
+                    page-break-inside: avoid;
+                }
+                
+                .patient-section-header {
+                    background-color: #008080 !important;
+                    color: #ffffff !important;
+                    padding: 0.3rem 0.5rem;
+                    margin: -0.5rem -0.5rem 0.5rem -0.5rem;
+                    font-weight: bold;
+                    font-size: 0.7rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.3px;
+                }
+                
+                .patient-form-row {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 0.4rem;
+                    margin-bottom: 0.4rem;
+                }
+                
+                .patient-form-group {
+                    margin-bottom: 0.3rem;
+                }
+                
+                .patient-form-group label {
+                    display: block;
+                    margin-bottom: 0.15rem;
+                    font-weight: 600;
+                    color: #333;
+                    font-size: 0.65rem;
+                }
+                
+                .patient-form-group input[type="text"],
+                .patient-form-group input[type="email"],
+                .patient-form-group input[type="date"],
+                .patient-form-group textarea,
+                .patient-form-group div {
+                    width: 100%;
+                    padding: 0.25rem 0.3rem;
+                    border: 1px solid #ccc;
+                    border-radius: 2px;
+                    font-size: 0.75rem;
+                    background-color: #ffffff;
+                    min-height: 1.2rem;
+                    display: block;
+                }
+                
+                .patient-form-group textarea {
+                    min-height: 35px;
+                    resize: none;
+                }
+                
+                .patient-radio-group {
+                    display: flex;
+                    gap: 0.8rem;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
+                
+                .patient-radio-group label {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.25rem;
+                    font-weight: normal;
+                    font-size: 0.7rem;
+                    cursor: default;
+                }
+                
+                .patient-checkbox-group {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.6rem;
+                    margin-bottom: 0.25rem;
+                }
+                
+                .patient-checkbox-group label {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.25rem;
+                    font-weight: normal;
+                    font-size: 0.7rem;
+                    cursor: default;
+                }
+                
+                .patient-certification-section {
+                    margin-top: 0.6rem;
+                    padding-top: 0.5rem;
+                    border-top: 1px solid #e0e0e0;
+                }
+                
+                .patient-certification-text {
+                    margin-bottom: 0.5rem;
+                    font-size: 0.7rem;
+                    color: #333;
+                }
+                
+                .patient-signature-section {
+                    display: grid;
+                    grid-template-columns: 2fr 1fr;
+                    gap: 0.8rem;
+                    margin-top: 0.4rem;
+                }
+                
+                .patient-signature-field {
+                    display: flex;
+                    flex-direction: column;
+                }
+                
+                .patient-signature-field label {
+                    margin-bottom: 0.25rem;
+                    font-weight: 600;
+                    color: #333;
+                    font-size: 0.65rem;
+                }
+                
+                .patient-signature-display {
+                    border: 1px solid #ccc;
+                    border-radius: 3px;
+                    padding: 0.3rem;
+                    background: white;
+                    min-height: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .patient-signature-display img {
+                    max-width: 100%;
+                    max-height: 60px;
+                }
+                
+                .patient-modal-footer {
+                    display: none !important;
+                }
+                
+                input[type="radio"],
+                input[type="checkbox"] {
+                    width: auto;
+                    margin: 0;
+                    padding: 0;
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                }
+                
+                .print-value-display {
+                    width: 100%;
+                    padding: 0.25rem 0.3rem;
+                    border: 1px solid #ccc;
+                    border-radius: 3px;
+                    font-size: 0.75rem;
+                    background-color: #ffffff;
+                    min-height: 1.2rem;
+                    display: flex;
+                    align-items: center;
+                    color: #2c3e50;
+                }
+            </style>
+        </head>
+        <body>
+            ${clonedContent.innerHTML.replace(/`/g, '\\`')}
+        </body>
         </html>
     `);
     printWindow.document.close();
     
-    // Wait for images to load before printing
-    printWindow.onload = function() {
-        setTimeout(function() {
-            printWindow.print();
-        }, 250);
-    };
+    // Wait for content to load and print
+    setTimeout(function() {
+        printWindow.focus();
+        printWindow.print();
+    }, 500);
 }
 
 function downloadPatientInfo() {
