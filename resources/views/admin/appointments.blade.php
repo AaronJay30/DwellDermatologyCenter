@@ -1776,7 +1776,7 @@ function printPatientInfo() {
                     
                     .patient-signature-display img {
                         max-width: 100%;
-                        max-height: 80px;
+                        max-height: 50px;
                     }
                     
                     .patient-modal-footer {
