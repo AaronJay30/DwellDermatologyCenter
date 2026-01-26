@@ -32,4 +32,9 @@ class Branch extends Model
     {
         return $this->hasMany(Category::class);
     }
+
+    public function appointments()
+    {
+        return $this->hasMany(\App\Models\Appointment::class, 'branch_id');
+    }
 }

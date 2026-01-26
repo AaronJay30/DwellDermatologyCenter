@@ -61,9 +61,10 @@ class DashboardController extends Controller
             });
 
         // Branch cards
-        $branches = Branch::withCount(['users' => function($q){
-            $q->where('role', 'patient');
+        $branches = Branch::withCount(['appointments as user_count' => function($q) {
+            $q->select(DB::raw('COUNT(DISTINCT patient_id)'));
         }])->orderBy('name')->get();
+
 
         // Available slots (unbooked) for quick list
         $availableSlots = TimeSlot::where('branch_id', $branchId)
@@ -95,6 +96,7 @@ class DashboardController extends Controller
                 return '9999-99-99 99:99';
             })
             ->take(15);
+
     
         return view('admin.dashboard', compact(
             'upcomingCount',
@@ -370,7 +372,17 @@ class DashboardController extends Controller
 
     public function patientsByBranch(Branch $branch)
     {
-        $patients = $branch->users()->where('role', 'patient')->orderBy('name')->get();
+        // Get unique patients who have appointments in this branch
+        $patientIds = $branch->appointments()
+            ->whereNotNull('patient_id')
+            ->pluck('patient_id')
+            ->unique()
+            ->toArray();
+
+        $patients = \App\Models\User::whereIn('id', $patientIds)
+            ->where('role', 'patient')
+            ->orderBy('name')
+            ->get();
         return view('admin.patients_by_branch', compact('branch', 'patients'));
     }
 

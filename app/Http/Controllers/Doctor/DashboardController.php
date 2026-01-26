@@ -51,7 +51,7 @@ class DashboardController extends Controller
                 
                 // Last activity (most recent appointment update)
                 $lastActivity = $appointments->max('updated_at');
-                
+
                 return [
                     'id' => $admin->id,
                     'name' => $admin->name,

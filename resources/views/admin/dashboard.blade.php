@@ -31,7 +31,7 @@
                         <div class="branch-name">{{ $branch->name }}</div>
                         <div class="branch-address">{{ $branch->address }}</div>
                         <div class="branch-patients">
-                            Patients: <span class="branch-patients-count">{{ $branch->users_count }}</span>
+                            Patients: <span class="branch-patients-count">{{ $branch->user_count }}</span>
                         </div>
                     </a>
                 @endforeach
