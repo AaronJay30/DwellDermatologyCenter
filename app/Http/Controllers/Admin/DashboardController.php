@@ -9,6 +9,7 @@ use App\Models\Branch;
 use App\Models\User;
 use App\Models\PatientHistory;
 use App\Services\NotificationService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -56,7 +57,7 @@ class DashboardController extends Controller
                 } elseif ($appointment->doctorSlot) {
                     return $appointment->doctorSlot->start_time;
                 }
-                return '99:99';
+                return '99:99 AM';
             });
 
         // Branch cards
@@ -94,7 +95,7 @@ class DashboardController extends Controller
                 return '9999-99-99 99:99';
             })
             ->take(15);
-
+    
         return view('admin.dashboard', compact(
             'upcomingCount',
             'todaysSchedule',
@@ -169,7 +170,7 @@ class DashboardController extends Controller
                 // For service appointments (with scheduled_date)
                 elseif ($appointment->service_id && !$appointment->time_slot_id) {
                     $appointmentDate = $appointment->scheduled_date 
-                        ? \Carbon\Carbon::parse($appointment->scheduled_date)->startOfDay()
+                        ? Carbon::parse($appointment->scheduled_date)->startOfDay()
                         : $appointment->created_at->startOfDay();
                     if ($appointmentDate < $today) {
                         $isPastAppointment = true;
@@ -180,7 +181,7 @@ class DashboardController extends Controller
                 // For service appointments (with scheduled_date)
                 if ($appointment->service_id && !$appointment->time_slot_id) {
                     $appointmentDate = $appointment->scheduled_date 
-                        ? \Carbon\Carbon::parse($appointment->scheduled_date)->startOfDay()
+                        ? Carbon::parse($appointment->scheduled_date)->startOfDay()
                         : $appointment->created_at->startOfDay();
                     if ($appointmentDate < $today) {
                         $isPastAppointment = true;
@@ -204,10 +205,10 @@ class DashboardController extends Controller
                 } else {
                     // Service appointment
                     $appointmentDate = $appointment->scheduled_date 
-                        ? \Carbon\Carbon::parse($appointment->scheduled_date)->format('M d, Y')
+                        ? Carbon::parse($appointment->scheduled_date)->format('M d, Y')
                         : $appointment->created_at->format('M d, Y');
                     $timeStr = $appointment->scheduled_time 
-                        ? \Carbon\Carbon::parse($appointment->scheduled_time)->format('g:i A')
+                        ? Carbon::parse($appointment->scheduled_time)->format('g:i A')
                         : '';
                     $serviceName = $appointment->service ? $appointment->service->name : 'service';
                     $message = "Your {$serviceName} appointment scheduled for {$appointmentDate}" . ($timeStr ? " at {$timeStr}" : '') . " has been declined because you did not show up. Please book another appointment if you still need the service.";
@@ -837,7 +838,7 @@ class DashboardController extends Controller
         $appointments = $query->latest()->paginate(5)->withQueryString();
 
         // Check for past dates with pending appointments
-        $today = \Carbon\Carbon::today();
+        $today = Carbon::today();
         $pastPendingAppointments = Appointment::where('status', 'pending')
             ->where('branch_id', $branchId)
             ->whereNotNull('service_id')
@@ -894,7 +895,7 @@ class DashboardController extends Controller
         $appointments = $query->latest()->paginate(5)->withQueryString();
         
         // Check for past dates with pending appointments
-        $today = \Carbon\Carbon::today();
+        $today = Carbon::today();
         $pastPendingAppointments = Appointment::where('status', 'pending')
             ->where('branch_id', $branchId)
             ->whereNotNull('service_id')
@@ -979,8 +980,8 @@ class DashboardController extends Controller
         $appointment->update($updateData);
 
         // Send notification to patient
-        $dateStr = \Carbon\Carbon::parse($updateData['scheduled_date'])->format('M d, Y');
-        $timeStr = \Carbon\Carbon::parse($request->scheduled_time)->format('g:i A');
+        $dateStr = Carbon::parse($updateData['scheduled_date'])->format('M d, Y');
+        $timeStr = Carbon::parse($request->scheduled_time)->format('g:i A');
         
         NotificationService::sendNotification(
             'Service Appointment Confirmed',
@@ -1430,6 +1431,30 @@ class DashboardController extends Controller
             return redirect()->route('admin.dashboard')->with('error', 'You are not assigned to a branch.');
         }
 
+            
+        function normalizeTo12Hour($time)
+        {
+            try {
+                // If frontend sends 24-hour (16:00)
+                return Carbon::createFromFormat('H:i', $time)->format('h:i A');
+            } catch (\Exception $e) {
+                // If already 12-hour (04:00 PM)
+                return Carbon::createFromFormat('h:i A', $time)->format('h:i A');
+            }
+        }
+
+        if ($request->filled('start_time')) {
+            $request->merge([
+                'start_time' => normalizeTo12Hour($request->start_time),
+            ]);
+        }
+
+        if ($request->filled('end_time')) {
+            $request->merge([
+                'end_time' => normalizeTo12Hour($request->end_time),
+            ]);
+        }
+
         // Force branch_id to admin's branch
         $request->merge(['branch_id' => $adminBranchId]);
 
@@ -1450,14 +1475,14 @@ class DashboardController extends Controller
             // Ensure dates are in Y-m-d format
             if ($rangeStart) {
                 try {
-                    $rangeStart = \Carbon\Carbon::parse($rangeStart)->format('Y-m-d');
+                    $rangeStart = Carbon::parse($rangeStart)->format('Y-m-d');
                 } catch (\Exception $e) {
                     // If parsing fails, use as-is
                 }
             }
             if ($rangeEnd) {
                 try {
-                    $rangeEnd = \Carbon\Carbon::parse($rangeEnd)->format('Y-m-d');
+                    $rangeEnd = Carbon::parse($rangeEnd)->format('Y-m-d');
                 } catch (\Exception $e) {
                     // If parsing fails, use as-is
                 }
@@ -1516,7 +1541,7 @@ class DashboardController extends Controller
                 foreach ($slotsData as $slotData) {
                     // Ensure date is in Y-m-d format
                     try {
-                        $parsedDate = \Carbon\Carbon::parse($slotData['date']);
+                        $parsedDate = Carbon::parse($slotData['date']);
                         $formattedDate = $parsedDate->format('Y-m-d');
                     } catch (\Exception $e) {
                         $skippedCount++;
@@ -1534,7 +1559,7 @@ class DashboardController extends Controller
 
                     // Validate date - compare date strings directly to avoid timezone issues
                     $selectedDateStr = $formattedDate;
-                    $todayStr = \Carbon\Carbon::today()->format('Y-m-d');
+                    $todayStr = Carbon::today()->format('Y-m-d');
                     
                     // Allow today and future dates only
                     if ($selectedDateStr < $todayStr) {
@@ -1606,8 +1631,8 @@ class DashboardController extends Controller
                 'date',
                 function ($attribute, $value, $fail) {
                     // Compare date strings directly to avoid timezone issues
-                    $selectedDateStr = \Carbon\Carbon::parse($value)->format('Y-m-d');
-                    $todayStr = \Carbon\Carbon::today()->format('Y-m-d');
+                    $selectedDateStr = Carbon::parse($value)->format('Y-m-d');
+                    $todayStr = Carbon::today()->format('Y-m-d');
                     // Allow today and future dates
                     if ($selectedDateStr < $todayStr) {
                         $fail('The start date must be today or a future date.');
@@ -1617,27 +1642,27 @@ class DashboardController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'start_time' => [
                 'required',
-                'date_format:H:i',
+                'date_format:h:i A',
                 function ($attribute, $value, $fail) use ($request) {
                     // If the selected date is today, check if the time has passed
                     $startDate = $request->input('start_date');
                     if ($startDate && $value) {
                         try {
                             // Parse the selected date
-                            $selectedDate = \Carbon\Carbon::parse($startDate);
+                            $selectedDate = Carbon::parse($startDate);
                             $selectedDateStr = $selectedDate->format('Y-m-d');
                             
                             // Get today's date
-                            $today = \Carbon\Carbon::today();
+                            $today = Carbon::today();
                             $todayStr = $today->format('Y-m-d');
                             
                             // If the selected date is today, check if the time has passed
                             if ($selectedDateStr === $todayStr) {
                                 // Get current date and time
-                                $now = \Carbon\Carbon::now();
+                                $now = Carbon::now();
                                 
                                 // Combine the selected date with the selected time
-                                $selectedDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $selectedDateStr . ' ' . $value);
+                                $selectedDateTime = Carbon::createFromFormat('Y-m-d h:i A', $selectedDateStr . ' ' . $value);
                                 
                                 // Compare: if selected time is before current time, it's in the past
                                 if ($selectedDateTime->lt($now)) {
@@ -1650,13 +1675,13 @@ class DashboardController extends Controller
                     }
                 },
             ],
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'end_time' => 'required|date_format:h:i A|after:start_time',
             'consultation_fee' => 'required|numeric|min:0',
         ]);
 
         // Create slots for each date in the range
-        $startDate = \Carbon\Carbon::parse($validated['start_date']);
-        $endDate = \Carbon\Carbon::parse($validated['end_date']);
+        $startDate = Carbon::parse($validated['start_date']);
+        $endDate = Carbon::parse($validated['end_date']);
         $currentDate = $startDate->copy();
         
         $createdCount = 0;
@@ -1665,7 +1690,7 @@ class DashboardController extends Controller
         
         while ($currentDate->lte($endDate)) {
             $dateStr = $currentDate->format('Y-m-d');
-            $todayStr = \Carbon\Carbon::today()->format('Y-m-d');
+            $todayStr = Carbon::today()->format('Y-m-d');
             
             // Skip past dates
             if ($dateStr < $todayStr) {
@@ -1676,8 +1701,8 @@ class DashboardController extends Controller
             
             // Check if time has passed for today's date
             if ($dateStr === $todayStr) {
-                $now = \Carbon\Carbon::now();
-                $selectedDateTime = \Carbon\Carbon::createFromFormat('Y-m-d H:i', $dateStr . ' ' . $validated['start_time']);
+                $now = Carbon::now();
+                $selectedDateTime = Carbon::createFromFormat('Y-m-d h:i A', $dateStr . ' ' . $validated['start_time']);
                 if ($selectedDateTime->lt($now)) {
                     $skippedCount++;
                     $currentDate->addDay();
@@ -1747,11 +1772,34 @@ class DashboardController extends Controller
     public function updateTimeSlot(Request $request, TimeSlot $slot)
     {
         $adminBranchId = Auth::user()->branch_id;
-        
+
         if (!$adminBranchId) {
             return redirect()->route('admin.dashboard')->with('error', 'You are not assigned to a branch.');
         }
+    
+         function normalizeTo12Hour($time)
+        {
+            try {
+                // If frontend sends 24-hour (16:00)
+                return Carbon::createFromFormat('H:i', $time)->format('h:i A');
+            } catch (\Exception $e) {
+                // If already 12-hour (04:00 PM)
+                return Carbon::createFromFormat('h:i A', $time)->format('h:i A');
+            }
+        }
 
+        if ($request->filled('start_time')) {
+            $request->merge([
+                'start_time' => normalizeTo12Hour($request->start_time),
+            ]);
+        }
+
+        if ($request->filled('end_time')) {
+            $request->merge([
+                'end_time' => normalizeTo12Hour($request->end_time),
+            ]);
+        }
+        
         // Ensure admin can only update slots for their branch
         if ($slot->branch_id !== $adminBranchId) {
             return redirect()->route('admin.slots')->with('error', 'You can only update slots for your branch.');
@@ -1763,24 +1811,14 @@ class DashboardController extends Controller
         // Normalize time format - ensure it's in H:i format
         $startTime = $request->input('start_time');
         $endTime = $request->input('end_time');
-        
-        // If time includes seconds, remove them
-        if ($startTime && strlen($startTime) > 5) {
-            $startTime = substr($startTime, 0, 5);
-            $request->merge(['start_time' => $startTime]);
-        }
-        
-        if ($endTime && strlen($endTime) > 5) {
-            $endTime = substr($endTime, 0, 5);
-            $request->merge(['end_time' => $endTime]);
-        }
 
         $validated = $request->validate([
             'date' => 'required|date|after_or_equal:today',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'start_time' => 'required|date_format:h:i A',
+            'end_time' => 'required|date_format:h:i A|after:start_time',
             'consultation_fee' => 'required|numeric|min:0',
         ]);
+
 
         $overlapping = TimeSlot::where('branch_id', $adminBranchId)
             ->where('date', $validated['date'])

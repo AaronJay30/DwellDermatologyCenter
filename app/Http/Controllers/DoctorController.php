@@ -6,6 +6,7 @@ use App\Models\Appointment;
 use App\Models\TimeSlot;
 use App\Models\Branch;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -117,11 +118,30 @@ class DoctorController extends Controller
 
     public function storeSlot(Request $request)
     {
+
+        if ($request->filled('start_time')) {
+            try {
+                $request->merge([
+                    'start_time' => Carbon::createFromFormat('H:i', $request->start_time)
+                        ->format('h:i A'),
+                ]);
+            } catch (\Exception $e) {}
+        }
+
+        if ($request->filled('end_time')) {
+            try {
+                $request->merge([
+                    'end_time' => Carbon::createFromFormat('H:i', $request->end_time)
+                        ->format('h:i A'),
+                ]);
+            } catch (\Exception $e) {}
+        }
+
         $validated = $request->validate([
             'branch_id' => 'required|exists:branches,id',
             'date' => 'required|date',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'start_time' => 'required|date_format:h:i A',
+            'end_time' => 'required|date_format:h:i A|after:start_time',
         ]);
 
         TimeSlot::create([

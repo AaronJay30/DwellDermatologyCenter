@@ -477,8 +477,8 @@ class AdminController extends Controller
         $validated = $request->validate([
             'branch_id' => 'required|exists:branches,id',
             'date' => 'required|date|after_or_equal:today',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'start_time' => 'required|date_format:h:i A',
+            'end_time' => 'required|date_format:h:i A|after:start_time',
         ]);
 
         // Check for overlapping slots
@@ -546,7 +546,7 @@ class AdminController extends Controller
         $validated = $request->validate([
             'branch_id' => 'required|exists:branches,id',
             'date' => 'required|date|after_or_equal:today',
-            'start_time' => 'required|date_format:H:i',
+            'start_time' => 'required|date_format:h:i A',
             'end_time' => 'required|date_format:H:i|after:start_time',
         ]);
 

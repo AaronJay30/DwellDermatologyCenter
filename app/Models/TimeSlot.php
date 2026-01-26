@@ -63,4 +63,20 @@ class TimeSlot extends Model
     {
         return $query->where('date', $date);
     }
+
+    /**
+     * Get the start time in 12-hour format (g:i A).
+     */
+    public function getStartTime12Attribute()
+    {
+        return \Carbon\Carbon::createFromFormat('H:i:s', $this->start_time)->format('g:i A');
+    }
+
+    /**
+     * Get the end time in 12-hour format (g:i A).
+     */
+    public function getEndTime12Attribute()
+    {
+        return \Carbon\Carbon::createFromFormat('H:i:s', $this->end_time)->format('g:i A');
+    }
 }

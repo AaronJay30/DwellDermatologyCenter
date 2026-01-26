@@ -743,7 +743,7 @@ class DashboardController extends Controller
             'images.*' => 'image|mimes:jpg,jpeg,png,webp',
         ]);
 
-        $validated['is_active'] = $request->has('is_active');
+        $validated['is_active'] = true;
 
         DB::transaction(function () use ($validated, $request) {
             $service = Service::create([
@@ -801,7 +801,8 @@ class DashboardController extends Controller
             'remove_image_ids.*' => 'integer|exists:service_images,id',
         ]);
 
-        $validated['is_active'] = $request->has('is_active');
+        
+        $validated['is_active'] = true;
 
         DB::transaction(function () use ($validated, $request, $service) {
             $service->update([
@@ -1005,6 +1006,29 @@ class DashboardController extends Controller
 
     public function storeTimeSlot(Request $request)
     {
+        function normalizeTo12Hour($time)
+        {
+            try {
+                // If frontend sends 24-hour (16:00)
+                return Carbon::createFromFormat('H:i', $time)->format('h:i A');
+            } catch (\Exception $e) {
+                // If already 12-hour (04:00 PM)
+                return Carbon::createFromFormat('h:i A', $time)->format('h:i A');
+            }
+        }
+
+        if ($request->filled('start_time')) {
+            $request->merge([
+                'start_time' => normalizeTo12Hour($request->start_time),
+            ]);
+        }
+
+        if ($request->filled('end_time')) {
+            $request->merge([
+                'end_time' => normalizeTo12Hour($request->end_time),
+            ]);
+        }
+
         // Handle date range input - support both single dates and date ranges
         if ($request->filled('date_range')) {
             $dateRange = trim($request->date_range);
@@ -1196,7 +1220,7 @@ class DashboardController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
             'start_time' => [
                 'required',
-                'date_format:H:i',
+                'date_format:h:i A',
                 function ($attribute, $value, $fail) use ($request) {
                     // If the selected date is today, check if the time has passed
                     $startDate = $request->input('start_date');
@@ -1229,7 +1253,7 @@ class DashboardController extends Controller
                     }
                 },
             ],
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'end_time' => 'required|date_format:h:i A|after:start_time',
             'consultation_fee' => 'required|numeric|min:0',
         ]);
 
@@ -1315,12 +1339,30 @@ class DashboardController extends Controller
 
     public function updateTimeSlot(Request $request, TimeSlot $slot)
     {
+        if ($request->filled('start_time')) {
+            try {
+                $request->merge([
+                    'start_time' => Carbon::createFromFormat('H:i', $request->start_time)
+                        ->format('h:i A'),
+                ]);
+            } catch (\Exception $e) {}
+        }
+
+        if ($request->filled('end_time')) {
+            try {
+                $request->merge([
+                    'end_time' => Carbon::createFromFormat('H:i', $request->end_time)
+                        ->format('h:i A'),
+                ]);
+            } catch (\Exception $e) {}
+        }
+        
         // Allow doctors to update any slot (including admin-created slots)
         $validated = $request->validate([
             'branch_id' => 'required|exists:branches,id',
             'date' => 'required|date|after_or_equal:today',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'start_time' => 'required|date_format:h:i A',
+            'end_time' => 'required|date_format:h:i A|after:start_time',
             'consultation_fee' => 'required|numeric|min:0',
         ]);
 

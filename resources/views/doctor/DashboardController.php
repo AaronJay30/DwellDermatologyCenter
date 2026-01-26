@@ -661,6 +661,8 @@ class DashboardController extends Controller
             'images.*' => 'image|mimes:jpg,jpeg,png,webp',
         ]);
 
+        dd($validated);
+
         $validated['is_active'] = $request->has('is_active');
 
         DB::transaction(function () use ($validated, $request) {
@@ -1235,12 +1237,31 @@ class DashboardController extends Controller
 
     public function updateTimeSlot(Request $request, TimeSlot $slot)
     {
+        
+        if ($request->filled('start_time')) {
+            try {
+                $request->merge([
+                    'start_time' => Carbon::createFromFormat('H:i', $request->start_time)
+                        ->format('h:i A'),
+                ]);
+            } catch (\Exception $e) {}
+        }
+
+        if ($request->filled('end_time')) {
+            try {
+                $request->merge([
+                    'end_time' => Carbon::createFromFormat('H:i', $request->end_time)
+                        ->format('h:i A'),
+                ]);
+            } catch (\Exception $e) {}
+        }
+
         // Allow doctors to update any slot (including admin-created slots)
         $validated = $request->validate([
             'branch_id' => 'required|exists:branches,id',
             'date' => 'required|date|after_or_equal:today',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'start_time' => 'required|date_format:h:i A',
+            'end_time' => 'required|date_format:h:i A|after:start_time',
             'consultation_fee' => 'required|numeric|min:0',
         ]);
 
