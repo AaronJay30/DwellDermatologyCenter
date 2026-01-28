@@ -169,6 +169,7 @@
                         <i class="fas fa-building input-icon"></i>
                         <select id="branch_id" name="branch_id" required>
                             <option value="">Select a branch</option>
+                            <option value="all">All Branches</option>
                             @foreach($branches as $branch)
                                 <option value="{{ $branch->id }}" {{ (string) old('branch_id', $category->branch_id) === (string) $branch->id ? 'selected' : '' }}>
                                     {{ $branch->name }}

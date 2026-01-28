@@ -199,5 +199,86 @@
 </div>
 
 <script src="{{ asset('js/promo-form.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure service_id is included in the form submission with proper indexing
+    document.querySelectorAll('.service-checkbox').forEach((checkbox, index) => {
+        checkbox.setAttribute('data-index', index);
+        checkbox.addEventListener('change', function() {
+            const serviceItem = this.closest('.service-item');
+            const priceInputs = serviceItem.querySelector('.price-inputs');
+
+            if (this.checked) {
+                serviceItem.classList.add('selected');
+                priceInputs.style.display = 'grid';
+                // Dynamically set the name attribute with the correct index
+                this.setAttribute('name', `services[${index}][service_id]`);
+                priceInputs.querySelectorAll('input').forEach((input) => {
+                    const inputName = input.classList.contains('promo-price-input')
+                        ? `services[${index}][promo_price]`
+                        : `services[${index}][discount_percent]`;
+                    input.setAttribute('name', inputName);
+                });
+            } else {
+                serviceItem.classList.remove('selected');
+                priceInputs.style.display = 'none';
+                priceInputs.querySelectorAll('input').forEach(input => {
+                    input.value = '';
+                    input.removeAttribute('name');
+                });
+                this.removeAttribute('name');
+            }
+        });
+    });
+
+    // Filter out empty services before form submission
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(event) {
+        document.querySelectorAll('.service-checkbox').forEach((checkbox, index) => {
+            if (!checkbox.checked) {
+                checkbox.removeAttribute('name');
+                const serviceItem = checkbox.closest('.service-item');
+                const priceInputs = serviceItem.querySelector('.price-inputs');
+                priceInputs.querySelectorAll('input').forEach(input => {
+                    input.removeAttribute('name');
+                });
+            }
+        });
+    });
+
+    // Price calculation logic remains the same
+    document.querySelectorAll('.promo-price-input, .discount-percent-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const priceInputs = this.closest('.price-inputs');
+            const promoPriceInput = priceInputs.querySelector('.promo-price-input');
+            const discountPercentInput = priceInputs.querySelector('.discount-percent-input');
+            const calculatedPrice = priceInputs.querySelector('.calculated-price');
+            const originalPrice = parseFloat(this.dataset.original);
+
+            if (this.classList.contains('promo-price-input')) {
+                const promoPrice = parseFloat(this.value);
+                if (!isNaN(promoPrice)) {
+                    const discountPercent = ((originalPrice - promoPrice) / originalPrice) * 100;
+                    discountPercentInput.value = discountPercent.toFixed(2);
+                    calculatedPrice.textContent = `Original: ₱${originalPrice.toFixed(2)} → Promo: ₱${promoPrice.toFixed(2)} (${discountPercent.toFixed(2)}% off)`;
+                } else {
+                    discountPercentInput.value = '';
+                    calculatedPrice.textContent = '-';
+                }
+            } else if (this.classList.contains('discount-percent-input')) {
+                const discountPercent = parseFloat(this.value);
+                if (!isNaN(discountPercent)) {
+                    const promoPrice = originalPrice * (1 - (discountPercent / 100));
+                    promoPriceInput.value = promoPrice.toFixed(2);
+                    calculatedPrice.textContent = `Original: ₱${originalPrice.toFixed(2)} → Promo: ₱${promoPrice.toFixed(2)} (${discountPercent.toFixed(2)}% off)`;
+                } else {
+                    promoPriceInput.value = '';
+                    calculatedPrice.textContent = '-';
+                }
+            }
+        });
+    });
+});
+</script>
 @endsection
 

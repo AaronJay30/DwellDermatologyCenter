@@ -238,6 +238,19 @@ class PromoController extends Controller
             abort(403, 'You are not allowed to update this promotion.');
         }
 
+        $request->merge([
+            'services' => collect($request->input('services', []))
+                ->filter(function ($service) {
+                    return !empty($service['service_id'])
+                        && (
+                            !is_null($service['promo_price'])
+                            || !is_null($service['discount_percent'])
+                        );
+                })
+                ->values()
+                ->toArray(),
+        ]);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',

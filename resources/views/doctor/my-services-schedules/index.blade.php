@@ -888,7 +888,11 @@
                 <tbody>
                     @forelse($appointments as $appointment)
                         @php
-                            $patientName = $appointment->patient->name ?? trim(($appointment->first_name ?? '') . ' ' . ($appointment->middle_initial ?? '') . ' ' . ($appointment->last_name ?? '')) ?? 'N/A';
+                            $patientProfile = $appointment->personalInformation;
+                            $composedName = trim(($appointment->first_name ?? '') . ' ' . ($appointment->middle_initial ?? '') . ' ' . ($appointment->last_name ?? ''));
+                            $patientName = $patientProfile?->full_name
+                                ?? ($composedName !== '' ? $composedName : null)
+                                ?? ($appointment->patient->name ?? 'N/A');
                         @endphp
                         <tr>
                             <td>
@@ -1127,7 +1131,11 @@
             <div id="pastPendingList" style="max-height: 400px; overflow-y: auto;">
                 @foreach($pastPendingAppointments ?? [] as $appointment)
                     @php
-                        $patientName = $appointment->patient->name ?? trim(($appointment->first_name ?? '') . ' ' . ($appointment->middle_initial ?? '') . ' ' . ($appointment->last_name ?? '')) ?? 'N/A';
+                        $patientProfile = $appointment->personalInformation;
+                        $composedName = trim(($appointment->first_name ?? '') . ' ' . ($appointment->middle_initial ?? '') . ' ' . ($appointment->last_name ?? ''));
+                        $patientName = $patientProfile?->full_name
+                            ?? ($composedName !== '' ? $composedName : null)
+                            ?? ($appointment->patient->name ?? 'N/A');
                         $appointmentDate = $appointment->scheduled_date 
                             ? \Carbon\Carbon::parse($appointment->scheduled_date)->format('M d, Y')
                             : $appointment->created_at->format('M d, Y');

@@ -587,7 +587,7 @@ class DashboardController extends Controller
     {
         $branches = Branch::orderBy('name')->get();
         $query = Category::query()->with(['branch'])->withCount('services');
-        if (request('branch_id')) {
+        if (request('branch_id') && request('branch_id') !== 'all') {
             $query->where('branch_id', request('branch_id'));
         }
         if (request('q')) {
@@ -621,36 +621,76 @@ class DashboardController extends Controller
     public function storeCategory(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name',
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id' => 'required',
         ]);
 
-        $data = [
-            'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
-            'branch_id' => $validated['branch_id'],
-        ];
-
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('categories', 'public');
-            $data['image_path'] = $path;
+        // Check if branch_id is 'all' or a valid branch id
+        if ($validated['branch_id'] !== 'all' && !Branch::where('id', $validated['branch_id'])->exists()) {
+            return back()->withErrors(['branch_id' => 'Invalid branch selected.']);
         }
 
-        Category::create($data);
+        $branches = $validated['branch_id'] === 'all' ? Branch::all() : collect([Branch::find($validated['branch_id'])]);
 
-        return redirect()->route('doctor.categories')->with('success', 'Category created successfully!');
+        $createdCategories = [];
+        foreach ($branches as $branch) {
+            // Check uniqueness per branch
+            $existingCategory = Category::where('name', $validated['name'])
+                ->where('branch_id', $branch->id)
+                ->first();
+            if ($existingCategory) {
+                return back()->withErrors(['name' => "Category '{$validated['name']}' already exists for branch '{$branch->name}'."]);
+            }
+
+            $data = [
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'branch_id' => $branch->id,
+            ];
+
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store('categories', 'public');
+                $data['image_path'] = $path;
+            }
+
+            $category = Category::create($data);
+            $createdCategories[] = $category;
+        }
+
+        $message = count($createdCategories) > 1
+            ? 'Categories created successfully for all branches!'
+            : 'Category created successfully!';
+
+        return redirect()->route('doctor.categories')->with('success', $message);
     }
 
     public function updateCategory(Request $request, Category $category)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-            'branch_id' => 'required|exists:branches,id',
+            'branch_id' => 'required',
         ]);
+
+        // Check if branch_id is 'all' or a valid branch id
+        if ($validated['branch_id'] === 'all') {
+            return back()->withErrors(['branch_id' => 'Cannot assign category to all branches. Please select a specific branch.']);
+        }
+        if (!Branch::where('id', $validated['branch_id'])->exists()) {
+            return back()->withErrors(['branch_id' => 'Invalid branch selected.']);
+        }
+
+        // Check uniqueness per branch
+        $existingCategory = Category::where('name', $validated['name'])
+            ->where('branch_id', $validated['branch_id'])
+            ->where('id', '!=', $category->id)
+            ->first();
+        if ($existingCategory) {
+            return back()->withErrors(['name' => "Category '{$validated['name']}' already exists for the selected branch."]);
+        }
 
         $data = [
             'name' => $validated['name'],
@@ -687,7 +727,7 @@ class DashboardController extends Controller
         $selectedBranchId = request('branch_id');
 
         // Categories available for the selected branch (or all if none selected)
-        $categories = Category::when($selectedBranchId, function($q) use ($selectedBranchId) {
+        $categories = Category::when($selectedBranchId && $selectedBranchId !== 'all', function($q) use ($selectedBranchId) {
                 $q->where('branch_id', $selectedBranchId);
             })
             ->orderBy('name')
@@ -695,7 +735,7 @@ class DashboardController extends Controller
 
         $query = Service::query()->with(['category.branch', 'images']);
 
-        if ($selectedBranchId) {
+        if ($selectedBranchId && $selectedBranchId !== 'all') {
             $query->whereHas('category', function($q) use ($selectedBranchId) {
                 $q->where('branch_id', $selectedBranchId);
             });

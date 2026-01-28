@@ -181,6 +181,20 @@ class PromoController extends Controller
 
     public function update(Request $request, Promotion $promo)
     {
+
+        $request->merge([
+            'services' => collect($request->input('services', []))
+                ->filter(function ($service) {
+                    return !empty($service['service_id'])
+                        && (
+                            !is_null($service['promo_price'])
+                            || !is_null($service['discount_percent'])
+                        );
+                })
+                ->values()
+                ->toArray(),
+        ]);
+        
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -188,10 +202,7 @@ class PromoController extends Controller
             'ends_at' => 'required|date|after:starts_at',
             'promo_code' => 'nullable|string|max:50|unique:promotions,promo_code,' . $promo->id,
             'max_claims_per_patient' => 'nullable|integer|min:1',
-            'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:5120',
-            'remove_image_ids' => 'nullable|array',
-            'remove_image_ids.*' => 'exists:promotion_images,id',
+
             'services' => 'required|array|min:1',
             'services.*.service_id' => 'required|exists:services,id',
             'services.*.promo_price' => 'nullable|numeric|min:0',

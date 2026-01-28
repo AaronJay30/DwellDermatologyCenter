@@ -34,7 +34,7 @@
             <div class="filter-group">
                 <label for="branch_id" class="filter-label">Clinic / Branch</label>
                 <select id="branch_id" name="branch_id" class="filter-select">
-                    <option value="">All Branches</option>
+                    <option value="all" {{ !request('branch_id') || request('branch_id') == 'all' ? 'selected' : '' }}>All Branches</option>
                     @foreach($branches as $branch)
                         <option value="{{ $branch->id }}" {{ (string)request('branch_id') === (string)$branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>
                     @endforeach

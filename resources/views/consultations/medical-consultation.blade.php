@@ -854,20 +854,20 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="description" class="form-label">Description of Symptoms/Condition <span class="required-indicator">*required</span></label>
+                        <label for="description" class="form-label">Description of Symptoms/Condition</label>
                         <textarea name="description" id="description" class="form-textarea" 
-                                  placeholder="Please describe your symptoms or the reason for consultation..." required></textarea>
+                                  placeholder="Please describe your symptoms or the reason for consultation..."></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="medical_background" class="form-label">Medical Background <span class="required-indicator">*required</span></label>
+                        <label for="medical_background" class="form-label">Medical Background</label>
                         <textarea name="medical_background" id="medical_background" class="form-textarea" 
-                                  placeholder="Do you have any previous medical conditions, allergies, or ongoing treatments?" required></textarea>
+                                  placeholder="Do you have any previous medical conditions, allergies, or ongoing treatments?"></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="referral_source" class="form-label">How did you hear about Dwell? <span class="required-indicator">*required</span></label>
-                        <select name="referral_source" id="referral_source" class="form-select" required>
+                        <label for="referral_source" class="form-label">How did you hear about Dwell?</label>
+                        <select name="referral_source" id="referral_source" class="form-select">
                             <option value="">Select referral source</option>
                             <option value="Google Search">Google Search</option>
                             <option value="Social Media">Social Media</option>
