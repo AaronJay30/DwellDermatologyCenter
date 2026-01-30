@@ -1843,7 +1843,7 @@ function closePatientModal() {
 }
 
 function printPatientInfo() {
-    const modalContent = document.querySelector('.patient-modal-content');
+    const modalContent = document.querySelector('#patientModal .patient-modal-content');
     if (!modalContent) {
         notifyUser('No patient information to print.', 'error');
         return;
@@ -2104,6 +2104,7 @@ function printPatientInfo() {
                     display: flex;
                     align-items: center;
                     justify-content: center;
+                    max-height: 130px;
                 }
                 
                 .patient-signature-display img {
@@ -2139,19 +2140,19 @@ function printPatientInfo() {
             </style>
         </head>
         <body>
-            ${clonedContent.innerHTML}
+            ${clonedContent.innerHTML.replace(/`/g, '\\`')}
         </body>
         </html>
     `);
     printWindow.document.close();
     
-    // Wait for images to load before printing
-    printWindow.onload = function() {
-        setTimeout(function() {
-            printWindow.print();
-        }, 250);
-    };
+    // Wait for content to load and print
+    setTimeout(function() {
+        printWindow.focus();
+        printWindow.print();
+    }, 500);
 }
+
 
 function downloadPatientInfo() {
     // For now, trigger print which allows saving as PDF
