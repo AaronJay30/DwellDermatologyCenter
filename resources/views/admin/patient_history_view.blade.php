@@ -148,6 +148,16 @@
         gap: 0.5rem;
     }
     
+    @media (max-width: 576px) {
+        .history-title {
+            width: 100%;
+        }
+        .profile-filter-form {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+
     .profile-history-section {
         margin-bottom: 2.5rem;
     }

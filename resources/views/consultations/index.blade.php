@@ -212,9 +212,9 @@
         </div>
         @endif
     @else
-        <div class="text-center py-8">
+        <div class="text-center py-8 mx-auto" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
             <p class="no-appointments">You haven't booked any consultations yet.</p>
-            <a href="{{ route('consultations.create') }}" class="btn btn-primary" style="margin-top: 1rem;">
+            <a href="{{ route('consultations.create') }}" class="btn btn-primary mx-auto" style="margin-top: 1rem;">
                 Book Your First Consultation
             </a>
         </div>

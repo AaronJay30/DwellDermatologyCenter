@@ -7,7 +7,7 @@
         <div class="about-content" style="max-width: 1000px; margin: 0 auto; padding: 0 20px;">
             <!-- Header -->
             <div class="about-header" style="text-align: center; margin-bottom: 60px;">
-                <h1 style="font-size: 3rem; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; font-family: serif;">About Dr. Dianne Paraz</h1>
+                <h1 style="font-size: 3rem; font-weight: bold; color: var(--primary-color); margin-bottom: 20px; font-family: serif;">About Dr. Dianne Paras</h1>
                 <div style="width: 100px; height: 4px; background: linear-gradient(135deg, var(--primary-color), var(--accent-color)); margin: 0 auto; border-radius: 2px;"></div>
             </div>
 
@@ -16,10 +16,10 @@
                 <!-- Doctor Photo -->
                 <div class="doctor-photo">
                     <div class="doctor-photo-container">
-                        <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop&crop=face" alt="Dr. Dianne Paraz" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop&crop=face" alt="Dr. Dianne Paras" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <div style="margin-top: 30px;">
-                        <h3 style="font-size: 1.5rem; font-weight: bold; color: var(--black); margin-bottom: 10px;">Dr. Dianne Paraz</h3>
+                        <h3 style="font-size: 1.5rem; font-weight: bold; color: var(--black); margin-bottom: 10px;">Dr. Dianne Paras</h3>
                         <p style="color: var(--primary-color); font-size: 1.1rem; font-weight: 500;">Chief Dermatologist & Founder</p>
                     </div>
                 </div>
@@ -31,19 +31,19 @@
                         
                         <div style="font-size: 1.1rem; line-height: 1.8; color: var(--dark-text);">
                             <p style="margin-bottom: 25px;">
-                                Dr. Dianne Paraz is a board-certified dermatologist with over 15 years of experience in medical and cosmetic dermatology. She founded Dwell Dermatology Center with a vision to provide personalized, comprehensive skin care that combines the latest medical advances with a warm, patient-centered approach.
+                                Dr. Dianne Paras is a board-certified dermatologist with over 15 years of experience in medical and cosmetic dermatology. She founded Dwell Dermatology Center with a vision to provide personalized, comprehensive skin care that combines the latest medical advances with a warm, patient-centered approach.
                             </p>
                             
                             <p style="margin-bottom: 25px;">
-                                After completing her medical degree at the University of the Philippines and her dermatology residency at the Philippine General Hospital, Dr. Paraz pursued advanced training in cosmetic dermatology in the United States. Her expertise spans across acne treatment, anti-aging therapies, skin cancer screening, and advanced laser procedures.
+                                After completing her medical degree at the University of the Philippines and her dermatology residency at the Philippine General Hospital, Dr. Paras pursued advanced training in cosmetic dermatology in the United States. Her expertise spans across acne treatment, anti-aging therapies, skin cancer screening, and advanced laser procedures.
                             </p>
                             
                             <p style="margin-bottom: 25px;">
-                                Dr. Paraz believes that healthy, beautiful skin is achievable for everyone through proper education, personalized treatment plans, and cutting-edge technology. She is passionate about empowering her patients with knowledge about their skin and providing them with the most effective, safe, and innovative treatments available.
+                                Dr. Paras believes that healthy, beautiful skin is achievable for everyone through proper education, personalized treatment plans, and cutting-edge technology. She is passionate about empowering her patients with knowledge about their skin and providing them with the most effective, safe, and innovative treatments available.
                             </p>
                             
                             <p>
-                                When not treating patients, Dr. Paraz enjoys spending time with her family, practicing yoga, and staying updated with the latest developments in dermatology through continuous education and research.
+                                When not treating patients, Dr. Paras enjoys spending time with her family, practicing yoga, and staying updated with the latest developments in dermatology through continuous education and research.
                             </p>
                         </div>
                     </div>
@@ -106,7 +106,7 @@
             <!-- Call to Action -->
             <div class="cta-section">
                 <h2 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 20px;">Ready to Start Your Skin Journey?</h2>
-                <p style="font-size: 1.2rem; margin-bottom: 40px; opacity: 0.9;">Book a consultation with Dr. Paraz and discover the personalized care that will transform your skin.</p>
+                <p style="font-size: 1.2rem; margin-bottom: 40px; opacity: 0.9;">Book a consultation with Dr. Paras and discover the personalized care that will transform your skin.</p>
                 <div class="cta-buttons">
                     <a href="{{ route('consultations.create') }}" class="btn btn-primary">
                         Book Consultation

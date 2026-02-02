@@ -93,10 +93,10 @@
                                     <form method="POST" action="{{ route('cart.update', $item) }}" class="quantity-form">
                                         @csrf
                                         @method('PATCH')
-                                        <label for="quantity-{{ $item->id }}" style="font-size: 0.9rem; color: var(--light-text); margin-right: 0.5rem; display:none; ">Qty:</label>
+                                        <label for="quantity-{{ $item->id }}" style="font-size: 0.9rem; color: var(--light-text); margin-right: 0.5rem; ">Qty:</label>
                                         <input type="number" name="quantity" id="quantity-{{ $item->id }}" value="{{ $item->quantity }}" min="1" max="10" 
                                                class="quantity-input"
-                                               style="width: 60px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; text-align: center; display:none; ">
+                                               style="width: 60px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
                                     </form>
                                     
                                     <span class="item-total" style="font-weight: bold; color: var(--primary-color); min-width: 80px; text-align: right;">

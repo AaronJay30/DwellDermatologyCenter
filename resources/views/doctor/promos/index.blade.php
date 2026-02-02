@@ -231,18 +231,6 @@
         </a>
     </div>
     
-    @if(session('success'))
-        <div class="alert alert-success" style="background-color: #d4edda; color: #155724; padding: 1rem; margin-bottom: 1.5rem; border-radius: 8px; border: 1px solid #c3e6cb;">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="alert alert-error" style="background-color: #f8d7da; color: #721c24; padding: 1rem; margin-bottom: 1.5rem; border-radius: 8px; border: 1px solid #f5c6cb;">
-            {{ session('error') }}
-        </div>
-    @endif
-    
     <div class="card">
         <div class="table-wrapper">
             <table>

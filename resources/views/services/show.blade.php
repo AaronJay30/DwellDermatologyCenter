@@ -1,6 +1,13 @@
 @extends('layouts.patient')
 
 @section('content')
+<style>
+    @media (max-width: 768px) {
+        .service-grid {
+            grid-template-columns: 1fr !important;
+        }
+    }
+</style>
 <div class="container">
     <div style="margin-bottom: 1rem;">
         <a href="{{ route('services.index') }}" style="color: var(--primary-color); text-decoration: none;">← Back to Services</a>
@@ -54,7 +61,7 @@
             </span>
         </div>
 
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+        <div class="service-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2rem;">
             <div>
                 <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Service Description</h3>
                 <p style="color: var(--light-text); line-height: 1.6;">

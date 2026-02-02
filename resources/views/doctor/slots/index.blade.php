@@ -1568,7 +1568,7 @@
                 <div class="patient-form-group">
                     <label for="doctor_name">Doctor Name <span style="color: #ef4444;">*</span></label>
                     <input type="text" id="doctor_name" name="doctor_name" required 
-                          value="Dr. Dianne Paraz"
+                          value="Dr. Dianne Paras"
                           placeholder="Enter doctor name"
                           style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 4px; font-family: 'Figtree', sans-serif; font-size: 0.95rem;">
                     <div id="doctor_name_error" style="color: #ef4444; font-size: 0.85rem; margin-top: 0.25rem; display: none;"></div>
@@ -1758,7 +1758,7 @@ function openAcceptModal(appointmentId, patientName, slotDate, slotTime) {
             patientNameDisplay.textContent = displayName;
         }
         if (doctorNameInput) {
-            doctorNameInput.value = 'Dr. Dianne Paraz';
+            doctorNameInput.value = 'Dr. Dianne Paras';
         }
         document.getElementById('doctor_name_error').style.display = 'none';
         modal.classList.add('active');
@@ -1775,7 +1775,7 @@ function closeAcceptModal() {
         if (form) {
             const doctorNameInput = document.getElementById('doctor_name');
             if (doctorNameInput) {
-                doctorNameInput.value = 'Dr. Dianne Paraz';
+                doctorNameInput.value = 'Dr. Dianne Paras';
             }
             document.getElementById('doctor_name_error').style.display = 'none';
         }

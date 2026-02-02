@@ -55,7 +55,7 @@
     }
     .image-preview-item img {
         width: 100%;
-        height: 150px;
+        height: 120px;
         object-fit: cover;
     }
     .remove-image-btn {
@@ -72,6 +72,40 @@
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 768px) {
+        .datetime-fields-container {
+            grid-template-columns: 1fr;
+        }
+        .price-inputs {
+            grid-template-columns: 1fr;
+        }
+        .image-preview-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.75rem;
+        }
+        .image-preview-item img {
+            height: 100px;
+        }
+        .form-actions {
+            flex-direction: column;
+        }
+        .form-actions button,
+        .form-actions a {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .image-preview-grid {
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 0.5rem;
+        }
+        .image-preview-item img {
+            height: 80px;
+        }
     }
 </style>
 @endpush
@@ -98,7 +132,7 @@
         @csrf
 
         <!-- A. Promo Details -->
-        <div class="form-section">
+        <div class="form-section" >
             <h3>A. Promo Details</h3>
             
             <div class="modern-input-wrapper">
@@ -123,7 +157,7 @@
                 @enderror
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+            <div class="datetime-fields-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
                 <div class="modern-input-wrapper">
                     <label for="starts_at">Start Date & Time <span style="color: red;">*</span></label>
                     <div class="modern-input-container">
@@ -214,7 +248,7 @@
         </div>
 
         <!-- D. Additional Options -->
-        <div class="form-section">
+        <div class="form-section" style="display: none;">
             <h3>D. Additional Options</h3>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -241,7 +275,7 @@
         </div>
 
         <!-- Form Actions -->
-        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
             <button type="submit" class="btn btn-primary" style="flex: 1; padding: 1rem; font-size: 1.1rem; font-weight: 600;">
                 <i class="fas fa-save"></i> Create Promotion
             </button>

@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::create([
-            'name' => 'Dr. Dianne Paraz',
+            'name' => 'Dr. Dianne Paras',
             'email' => 'dwelldermatology@gmail.com',
             'password' => Hash::make('password123'), // login password: password123
             'role' => 'doctor',

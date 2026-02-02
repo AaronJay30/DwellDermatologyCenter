@@ -12,9 +12,50 @@
     .price-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem; }
     .image-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; margin-top: 1rem; }
     .image-preview-item { position: relative; border-radius: 8px; overflow: hidden; border: 2px solid #ddd; }
-    .image-preview-item img { width: 100%; height: 150px; object-fit: cover; }
+    .image-preview-item img { width: 100%; height: 120px; object-fit: cover; }
     .remove-image-btn { position: absolute; top: 5px; right: 5px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
     .existing-image { position: relative; }
+    .existing-image img { width: 100%; height: 120px; object-fit: cover; }
+
+    /* Responsive styles */
+    @media (max-width: 768px) {
+        .datetime-fields-container {
+            grid-template-columns: 1fr !important;
+        }
+        .price-inputs {
+            grid-template-columns: 1fr !important;
+        }
+        .image-preview-grid {
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 0.75rem;
+        }
+        .image-preview-item img {
+            height: 100px;
+        }
+        .existing-image img {
+            height: 100px;
+        }
+        .form-actions {
+            flex-direction: column;
+        }
+        .form-actions button,
+        .form-actions a {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .image-preview-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.5rem;
+        }
+        .image-preview-item img {
+            height: 300px;
+        }
+        .existing-image img {
+            height: 300px;
+        }
+    }
 </style>
 @endpush
 
@@ -60,7 +101,7 @@
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+            <div class="datetime-fields-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
                 <div class="modern-input-wrapper">
                     <label for="starts_at">Start Date & Time <span style="color: red;">*</span></label>
                     <div class="modern-input-container">
@@ -166,7 +207,7 @@
         </div>
 
         <!-- D. Additional Options -->
-        <div class="form-section">
+        <div class="form-section" style="display: none;">
             <h3>D. Additional Options</h3>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="modern-input-wrapper">
@@ -187,7 +228,7 @@
             </div>
         </div>
 
-        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 2rem;">
             <button type="submit" class="btn btn-primary" style="flex: 1; padding: 1rem; font-size: 1.1rem;">
                 <i class="fas fa-save"></i> Update Promotion
             </button>

@@ -349,6 +349,17 @@
             width: 18px;
             height: 18px;
         }
+
+        /* Responsive alert */
+        @media (max-width: 768px) {
+            .crud-alert-indicator .crud-alert-text {
+                display: none;
+            }
+            .crud-alert-indicator {
+                padding: 0.35rem 0.5rem;
+                gap: 0;
+            }
+        }
         .crud-alert-text {
             white-space: nowrap;
         }

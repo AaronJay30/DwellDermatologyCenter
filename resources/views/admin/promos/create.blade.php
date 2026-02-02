@@ -55,7 +55,7 @@
     }
     .image-preview-item img {
         width: 100%;
-        height: 150px;
+        height: 120px;
         object-fit: cover;
     }
     .remove-image-btn {
@@ -106,12 +106,12 @@
         }
 
         .image-preview-grid {
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             gap: 0.75rem;
         }
 
         .image-preview-item img {
-            height: 120px;
+            height: 100px;
         }
 
         /* Form actions responsive */
@@ -143,12 +143,12 @@
         }
 
         .image-preview-grid {
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             gap: 0.5rem;
         }
 
         .image-preview-item img {
-            height: 100px;
+            height: 80px;
         }
     }
 </style>
@@ -201,7 +201,7 @@
                 @enderror
             </div>
 
-            <div class="datetime-fields-container">
+            <div class="datetime-fields-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
                 <div class="modern-input-wrapper">
                     <label for="starts_at">Start Date & Time <span style="color: red;">*</span></label>
                     <div class="modern-input-container">

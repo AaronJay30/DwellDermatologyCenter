@@ -54,9 +54,6 @@
                 <a href="{{ route('social.redirect', ['provider' => 'google']) }}" class="btn btn-google">
                     <img src="{{ asset('images/google.png') }}" alt="Google" style="width:20px; height:20px; margin-right:8px;">Sign up with Google
                 </a>
-                <a href="{{ route('social.redirect', ['provider' => 'facebook']) }}" class="btn btn-facebook">
-                    <img src="{{ asset('images/facebook.png') }}" alt="Facebook" style="width:20px; height:20px; margin-right:8px;">Sign up with Facebook
-                </a>
             </div>
 
             <div class="register-link">
