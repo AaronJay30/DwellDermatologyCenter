@@ -841,17 +841,6 @@
         <a href="{{ route('admin.patients') }}" class="back-button">
             ← Back to Patient History
         </a>
-        @if($canEdit)
-            <div class="d-flex gap-2">
-                <a href="{{ route('admin.patients.history.update', $patient->id) }}" class="btn btn-primary">
-                    Update History
-                </a>
-            </div>
-        @else
-            <div class="alert alert-info mb-0" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
-                <i class="fas fa-info-circle"></i> View-only mode: This patient belongs to a different branch. You can view but cannot edit or delete.
-            </div>
-        @endif
     </div>
 
     <div class="patient-history-container" style="box-sizing:border-box;max-width:102vw;overflow-x:scroll;">
@@ -1120,7 +1109,7 @@
                                                 }
                                                 
                                                 $doctorName = $item->doctor->name ?? 'N/A';
-                                                $location = $item->appointment && $item->appointment->branch ? $item->appointment->branch->name : 'N/A';
+                                                $location = $item->doctor && $item->doctor->branch ? $item->doctor->branch->name : 'N/A';
                                                 
                                                 // Prepare consultation data
                                                 $consultationData = null;
@@ -1193,7 +1182,14 @@
                                         }
                                         
                                         $doctorName = $item->doctor->name ?? 'N/A';
-                                        $location = $item->appointment && $item->appointment->branch ? $item->appointment->branch->name : 'N/A';
+                                        // Prefer appointment branch, fallback to doctor's branch
+                                        if ($item->appointment && $item->appointment->branch) {
+                                            $location = $item->appointment->branch->name;
+                                        } elseif ($item->doctor && $item->doctor->branch) {
+                                            $location = $item->doctor->branch->name;
+                                        } else {
+                                            $location = 'N/A';
+                                        }
                                         
                                         // Prepare consultation data
                                         $consultationData = null;
@@ -1448,8 +1444,6 @@
                 
                 try {
                     const historyDataStr = historyItem.getAttribute('data-history');
-                    console.log('History data string:', historyDataStr);
-                    console.log('History data string length:', historyDataStr ? historyDataStr.length : 0);
                     
                     if (historyDataStr && historyDataStr.trim() !== '') {
                         // Try to parse the JSON

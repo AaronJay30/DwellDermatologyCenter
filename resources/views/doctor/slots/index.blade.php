@@ -1664,15 +1664,32 @@
                         if (empty($patientName)) {
                             $patientName = $appointment->patient->name ?? 'Unknown Patient';
                         }
+                        // Determine display date/time/branch
+                        $displayDate = null;
+                        $displayTime = null;
+                        $displayBranch = null;
+                        if (isset($appointment->timeSlot)) {
+                            $displayDate = optional($appointment->timeSlot->date)->format('M d, Y');
+                            $displayTime = $appointment->timeSlot->start_time;
+                            $displayBranch = $appointment->timeSlot->branch->name ?? null;
+                        } else {
+                            // Service appointment: use scheduled_date or created_at
+                            $displayDate = $appointment->scheduled_date ? \Carbon\Carbon::parse($appointment->scheduled_date)->format('M d, Y') : \Carbon\Carbon::parse($appointment->created_at)->format('M d, Y');
+                            $displayTime = null;
+                            $displayBranch = $appointment->branch->name ?? null;
+                        }
                     @endphp
                     <div style="padding: 1rem; margin-bottom: 0.75rem; border: 2px solid #fbbf24; border-radius: 6px; background: #fffbeb;">
                         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                             <div>
                                 <strong style="color: #78350f;">{{ $patientName }}</strong>
                                 <div style="font-size: 0.9rem; color: #6c757d; margin-top: 0.25rem;">
-                                    {{ $appointment->timeSlot->date->format('M d, Y') }} at {{ $appointment->timeSlot->start_time }}
-                                    @if($appointment->timeSlot->branch)
-                                        - {{ $appointment->timeSlot->branch->name }}
+                                    {{ $displayDate }}
+                                    @if($displayTime)
+                                        at {{ $displayTime }}
+                                    @endif
+                                    @if($displayBranch)
+                                        - {{ $displayBranch }}
                                     @endif
                                 </div>
                             </div>
@@ -1681,8 +1698,8 @@
                                     title="Delete"
                                     data-appointment-id="{{ $appointment->id }}"
                                     data-patient-name="{{ json_encode($patientName) }}"
-                                    data-slot-date="{{ $appointment->timeSlot->date->format('M d, Y') }}"
-                                    data-slot-time="{{ $appointment->timeSlot->start_time }}">
+                                    data-slot-date="{{ $displayDate }}"
+                                    data-slot-time="{{ $displayTime }}">
                                 Delete
                             </button>
                         </div>

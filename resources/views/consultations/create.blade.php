@@ -652,7 +652,7 @@ function initializeBookingForm() {
         }
         
         // Enable/disable book button
-        const isFormValid = firstName && lastName && dateInput.value;
+        const isFormValid = firstName && dateInput.value;
         
         bookButton.disabled = !isFormValid;
     }

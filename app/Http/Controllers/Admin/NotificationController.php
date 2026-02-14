@@ -17,7 +17,12 @@ class NotificationController extends Controller
 
     public function index()
     {
-        $notifications = Notification::where('user_id', Auth::id())
+        $adminBranchId = Auth::user()->branch_id;
+        $notifications = Notification::where(function($query) use ($adminBranchId) {
+                $query->whereHas('user', function($q) use ($adminBranchId) {
+                    $q->where('branch_id', $adminBranchId);
+                });
+            })
             ->orWhereNull('user_id') // Global notifications
             ->latest()
             ->paginate(5);

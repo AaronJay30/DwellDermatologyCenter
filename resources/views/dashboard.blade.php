@@ -691,6 +691,25 @@ function updatePromoInfo(promoIndex) {
 
 <link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 <style>
+@media (max-width: 600px) {
+    .promo-carousel img {
+        object-fit: contain !important;
+        max-height: 220px;
+        width: 100%;
+        height: auto !important;
+        background: #fff;
+    }
+    .promo-carousel {
+        height: auto !important;
+        min-height: 180px;
+        max-height: 240px;
+    }
+    .carousel-slide {
+        height: auto !important;
+        min-height: 180px;
+        max-height: 240px;
+    }
+}
 /* Enhanced Service Card Styles */
 .service-card {
     background: var(--card-bg, white);

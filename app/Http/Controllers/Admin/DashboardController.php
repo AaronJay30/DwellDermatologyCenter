@@ -389,21 +389,29 @@ class DashboardController extends Controller
     public function patients(Request $request)
     {
         $search = $request->get('search', '');
+        $adminBranchId = Auth::user()->branch_id;
         
-        $query = User::where('role', 'patient')
-            ->whereHas('appointments')
+        // Get patient IDs from appointments in admin's branch
+        $appointmentQuery = \App\Models\Appointment::where('branch_id', $adminBranchId)
+            ->whereNotNull('patient_id');
+        
+        $patientIds = $appointmentQuery->pluck('patient_id')->unique()->toArray();
+        
+        // Query patients by those IDs, must have history
+        $userQuery = \App\Models\User::whereIn('id', $patientIds)
+            ->where('role', 'patient')
             ->whereHas('patientHistory')
             ->with(['appointments.service', 'patientHistory']);
         
         // Apply search filter
         if (!empty($search)) {
-            $query->where(function($q) use ($search) {
+            $userQuery->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
             });
         }
         
-        $patients = $query->orderBy('name')->paginate(5)->withQueryString();
+        $patients = $userQuery->orderBy('name')->paginate(5)->withQueryString();
         
         // Add canEdit flag for each patient
         $patients->getCollection()->transform(function($patient) {
@@ -512,7 +520,13 @@ class DashboardController extends Controller
         }
 
         $query = $patient->patientHistory()
-            ->with(['doctor', 'appointment.service', 'appointment.branch', 'personalInformation']);
+            ->with([
+                'doctor',
+                'doctor.branch', // Eager load doctor's branch
+                'appointment.service',
+                'appointment.branch',
+                'personalInformation'
+            ]);
 
         // Filter by personal_information_id (patient profile) if selected
         // This ensures histories are separated by patient profile as per requirement
@@ -561,6 +575,8 @@ class DashboardController extends Controller
 
         // Check if admin can perform CRUD operations (only if patient belongs to admin's branch)
         $canEdit = $this->patientBelongsToAdminBranch($patient);
+
+        // dd($history);
 
         return view('admin.patient_history_view', compact('patient', 'history', 'personalInfo', 'medicalInfo', 'emergencyContact', 'canEdit', 'profiles', 'historyByProfile', 'selectedProfileId'));
     }

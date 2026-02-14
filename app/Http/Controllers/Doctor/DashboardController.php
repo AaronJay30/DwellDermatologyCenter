@@ -1017,8 +1017,7 @@ class DashboardController extends Controller
         $pastPendingAppointments = Appointment::where('status', 'pending')
             ->whereNotNull('time_slot_id')
             ->whereHas('timeSlot', function ($query) use ($today) {
-                $query->where('date', '<', $today)
-                    ->where('doctor_id', Auth::id());
+                $query->where('date', '<', $today);
             })
             ->with(['timeSlot.branch', 'patient'])
             ->get();

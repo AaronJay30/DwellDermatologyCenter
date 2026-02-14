@@ -82,11 +82,11 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <div class="action-buttons">
-                                        <a href="{{ route('admin.patients.history', $patient->id) }}" class="btn-view-history">
-                                            View History
-                                        </a>
-                                    </div>
+                                            <div class="action-buttons">
+                                                <a href="{{ route('admin.patients.history', $patient->id) }}" class="btn-view-history">
+                                                    View History
+                                                </a>
+                                            </div>
                                 </td>
                             </tr>
                         @endforeach
