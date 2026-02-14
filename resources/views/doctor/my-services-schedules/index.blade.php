@@ -1521,7 +1521,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create a form to submit DELETE request
             const form = document.createElement('form');
             form.method = 'POST';
-            form.action = `/doctor/my-appointments/${appointmentId}`;
+            form.action = `/doctor/all-appointments/${appointmentId}`;
             const csrfInput = document.createElement('input');
             csrfInput.type = 'hidden';
             csrfInput.name = '_token';
