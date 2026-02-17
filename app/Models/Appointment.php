@@ -71,4 +71,14 @@ class Appointment extends Model
     {
         return $this->belongsTo(PersonalInformation::class);
     }
+
+    public function conditionPhotos(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AppointmentConditionPhoto::class);
+    }
+
+    public function progressPhotos(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AppointmentProgressPhoto::class);
+    }
 }

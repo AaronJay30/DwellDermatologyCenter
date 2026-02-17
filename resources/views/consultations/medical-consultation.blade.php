@@ -823,7 +823,7 @@
             <!-- Consultation Details Section -->
             <div class="personal-info-card">
                 <h2 class="card-title">Consultation Details</h2>
-                <form id="consultation-form" action="{{ route('consultations.store') }}" method="POST">
+                <form id="consultation-form" action="{{ route('consultations.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" id="selected_profile_id" name="personal_information_id" value="{{ $defaultProfile ? $defaultProfile->id : '' }}">
                     
@@ -901,6 +901,12 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
+
+                    <div class="form-group">
+                        <label for="condition_photos" class="form-label">Photos of your condition (optional)</label>
+                        <input type="file" name="condition_photos[]" id="condition_photos" class="form-input" accept="image/*" multiple>
+                        <small style="color: #6c757d; font-size: 0.85rem;">You may upload multiple photos so the doctor can better understand your condition.</small>
+                    </div>
                 </form>
             </div>
         </div>
@@ -942,6 +948,16 @@
             <button type="button" id="book-consultation-btn" class="book-button" disabled>
                 BOOK NOW
             </button>
+            <form id="add-consultation-to-cart-form" method="POST" action="{{ route('cart.add') }}" style="margin-top: 1rem;">
+                @csrf
+                <input type="hidden" name="item_type" value="consultation">
+                <input type="hidden" name="branch_id" id="cart-branch-id" value="{{ $branches->first()->id ?? '' }}">
+                <script>document.getElementById('branch_id')&&document.getElementById('branch_id').addEventListener('change',function(){ var b=document.getElementById('cart-branch-id'); if(b) b.value=this.value; });</script>
+                <button type="submit" class="book-button" style="background: #6c757d; width: 100%;">
+                    Add Consultation to Cart
+                </button>
+            </form>
+            <p style="font-size: 0.85rem; color: #6c757d; margin-top: 0.5rem;">Add consultation to cart to book it together with services later.</p>
         </div>
     </div>
 </div>

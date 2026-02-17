@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class CartController extends Controller
 {
@@ -22,23 +24,68 @@ class CartController extends Controller
                 'service.category.branch',
                 'service.images',
                 'service.promoServices.promotion',
+                'branch',
             ])
             ->get();
-        
-        // Group items by branch
-        $itemsByBranch = $cartItems->groupBy(function ($item) {
-            return $item->service->category->branch->id ?? 'no-branch';
-        });
-        
-        $total = $cartItems->sum(function ($item) {
-            return $item->service->pricing['display_price'] * $item->quantity;
+
+        $consultationItems = Schema::hasColumn('carts', 'item_type')
+            ? $cartItems->filter(fn ($item) => $item->isConsultation())
+            : $cartItems->filter(fn ($item) => $item->service_id === null);
+        $serviceItems = $cartItems->filter(fn ($item) => $item->service_id !== null);
+
+        // Group service items by branch
+        $itemsByBranch = $serviceItems->groupBy(function ($item) {
+            return $item->service && $item->service->category && $item->service->category->branch
+                ? $item->service->category->branch->id
+                : 'no-branch';
         });
 
-        return view('cart.index', compact('cartItems', 'itemsByBranch', 'total'));
+        $total = $serviceItems->sum(function ($item) {
+            return $item->service ? ($item->service->pricing['display_price'] * $item->quantity) : 0;
+        });
+
+        return view('cart.index', compact('cartItems', 'itemsByBranch', 'total', 'consultationItems'));
     }
 
     public function add(Request $request)
     {
+        if ($request->get('item_type') === Cart::TYPE_CONSULTATION) {
+            if (!Schema::hasColumn('carts', 'item_type')) {
+                try {
+                    Artisan::call('migrate', ['--force' => true]);
+                } catch (\Throwable $e) {
+                    if ($request->wantsJson() || $request->ajax()) {
+                        return response()->json(['success' => false, 'message' => 'Database update required. Please run: php artisan migrate'], 500);
+                    }
+                    return back()->with('error', 'Database update required. Please run in terminal: php artisan migrate');
+                }
+            }
+            $request->validate([
+                'branch_id' => 'nullable|exists:branches,id',
+            ]);
+            $existing = Cart::where('user_id', Auth::id())
+                ->where('item_type', Cart::TYPE_CONSULTATION)
+                ->first();
+            if ($existing) {
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json(['success' => true, 'count' => Cart::where('user_id', Auth::id())->sum('quantity')]);
+                }
+                return back()->with('info', 'Consultation is already in your cart.');
+            }
+            Cart::create([
+                'user_id' => Auth::id(),
+                'service_id' => null,
+                'branch_id' => $request->branch_id,
+                'item_type' => Cart::TYPE_CONSULTATION,
+                'quantity' => 1,
+            ]);
+            $count = Cart::where('user_id', Auth::id())->sum('quantity');
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => true, 'count' => $count]);
+            }
+            return back()->with('success', 'Consultation added to cart. You can add services and checkout together.');
+        }
+
         $request->validate([
             'service_id' => 'required|exists:services,id',
             'quantity' => 'integer|min:1|max:10'
@@ -50,19 +97,28 @@ class CartController extends Controller
             return back()->with('error', 'This service is currently unavailable.');
         }
 
-        $cartItem = Cart::where('user_id', Auth::id())
-            ->where('service_id', $request->service_id)
-            ->first();
+        $cartQuery = Cart::where('user_id', Auth::id())->where('service_id', $request->service_id);
+        if (Schema::hasColumn('carts', 'item_type')) {
+            $cartQuery->where('item_type', Cart::TYPE_SERVICE);
+        }
+        $cartItem = $cartQuery->first();
 
         if ($cartItem) {
             $cartItem->quantity += $request->quantity ?? 1;
             $cartItem->save();
         } else {
-            Cart::create([
+            $data = [
                 'user_id' => Auth::id(),
                 'service_id' => $request->service_id,
                 'quantity' => $request->quantity ?? 1,
-            ]);
+            ];
+            if (Schema::hasColumn('carts', 'item_type')) {
+                $data['item_type'] = Cart::TYPE_SERVICE;
+            }
+            if (Schema::hasColumn('carts', 'branch_id')) {
+                $data['branch_id'] = $service->category->branch_id ?? null;
+            }
+            Cart::create($data);
         }
 
         $count = Cart::where('user_id', Auth::id())->sum('quantity');
@@ -74,7 +130,6 @@ class CartController extends Controller
             ]);
         }
 
-        // Silent fallback for non-AJAX requests
         return back();
     }
 

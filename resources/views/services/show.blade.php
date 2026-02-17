@@ -13,6 +13,19 @@
         <a href="{{ route('services.index') }}" style="color: var(--primary-color); text-decoration: none;">← Back to Services</a>
     </div>
 
+    @if(isset($branches) && $branches->count() > 0)
+        @php
+            $branchForImage = $service->category && $service->category->branch ? $service->category->branch : $branches->first();
+            $scheduleImage = $branchForImage && $branchForImage->image_path ? asset('storage/' . $branchForImage->image_path) : ($branches->first()->image_path ? asset('storage/' . $branches->first()->image_path) : null);
+        @endphp
+        @if($scheduleImage)
+            <div id="available-doctor-banner" style="margin-bottom: 1.5rem; text-align: center;">
+                <p style="font-size: 0.95rem; color: var(--primary-color); margin-bottom: 0.5rem; font-weight: 600;">Available Doctor Schedule</p>
+                <img src="{{ $scheduleImage }}" alt="Available doctor schedule" style="max-width: 100%; border-radius: 12px; border: 2px solid #e5e7eb;">
+            </div>
+        @endif
+    @endif
+
     <div class="card">
         @php($images = $service->images)
         @if($images && $images->count())
@@ -98,6 +111,12 @@
                         <a href="{{ route('consultations.create') }}?cart_items[]={{ $service->id }}" class="btn btn-accent" style="width: 100%; padding: 0.75rem; font-size: 1rem; text-align: center;">
                             Book Services Now
                         </a>
+                        <form method="POST" action="{{ route('cart.add') }}" style="margin-top: 0.5rem;">
+                            @csrf
+                            <input type="hidden" name="item_type" value="consultation">
+                            <input type="hidden" name="branch_id" value="{{ $service->category && $service->category->branch ? $service->category->branch->id : ($branches->first()->id ?? '') }}">
+                            <button type="submit" class="btn btn-accent" style="width: 100%; padding: 0.5rem; font-size: 0.9rem;">Add Consultation to Cart</button>
+                        </form>
                     </div>
                 @else
                     <button disabled style="width: 100%; padding: 0.75rem; font-size: 1rem; background: #ccc; color: #666; border: none; border-radius: 4px; cursor: not-allowed;">

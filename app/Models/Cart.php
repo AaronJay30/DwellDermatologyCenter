@@ -13,8 +13,17 @@ class Cart extends Model
     protected $fillable = [
         'user_id',
         'service_id',
+        'branch_id',
+        'item_type',
         'quantity',
     ];
+
+    protected $attributes = [
+        'item_type' => 'service',
+    ];
+
+    public const TYPE_SERVICE = 'service';
+    public const TYPE_CONSULTATION = 'consultation';
 
     public function user(): BelongsTo
     {
@@ -24,5 +33,15 @@ class Cart extends Model
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    public function isConsultation(): bool
+    {
+        return $this->item_type === self::TYPE_CONSULTATION;
     }
 }

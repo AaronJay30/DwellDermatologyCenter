@@ -400,7 +400,7 @@
             <!-- Booking Details Section -->
             <div class="personal-info-card">
                 <h2 class="card-title">Booking Details</h2>
-                <form id="booking-form" action="{{ route('consultations.store') }}" method="POST">
+                <form id="booking-form" action="{{ route('consultations.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="branch_id" value="{{ $branch->id }}">
                     <input type="hidden" id="selected_profile_id" name="personal_information_id" value="{{ $defaultProfile ? $defaultProfile->id : '' }}">
@@ -420,15 +420,28 @@
                         @endforeach
                     @else
                         @foreach($cartItems as $cartItem)
-                            <input type="hidden" name="cart_items[]" value="{{ $cartItem->id }}">
+                            @if(is_numeric($cartItem->id))
+                                <input type="hidden" name="cart_items[]" value="{{ $cartItem->id }}">
+                            @endif
                         @endforeach
                     @endif
 
                     <div class="form-group">
-                        <label for="date" class="form-label">Select Date</label>
+                        <label for="date" class="form-label">Select Date <span class="required-indicator">*required</span></label>
                         <input type="date" name="date" id="date" class="form-input" 
                                min="{{ date('Y-m-d') }}" required>
+                        <small style="color: #6c757d; font-size: 0.85rem;">Pick your preferred appointment date first.</small>
                     </div>
+
+                    @if($hasConsultation ?? false)
+                        <div class="form-group">
+                            <label for="time_slot_id" class="form-label">Select Time (Consultation) <span class="required-indicator">*required</span></label>
+                            <select name="time_slot_id" id="time_slot_id" class="form-select">
+                                <option value="">Select date first</option>
+                            </select>
+                            <small style="color: #6c757d; font-size: 0.85rem;">Time slots appear after you choose a date.</small>
+                        </div>
+                    @endif
 
                     <div class="form-group">
                         <label for="description" class="form-label">Additional Notes (Optional)</label>
@@ -454,6 +467,12 @@
                             <option value="Other">Other</option>
                         </select>
                     </div>
+
+                    <div class="form-group">
+                        <label for="condition_photos" class="form-label">Photos of condition (Optional)</label>
+                        <input type="file" name="condition_photos[]" id="condition_photos" class="form-input" accept="image/*" multiple style="padding: 0.5rem 0;">
+                        <small style="color: #6c757d; font-size: 0.85rem;">You may add photos to show the doctor why you're booking this consultation/services.</small>
+                    </div>
                 </form>
             </div>
         </div>
@@ -463,28 +482,58 @@
             <h2 class="card-title">Booking Summary</h2>
             
             <div class="service-list" id="service-summary">
-                @foreach($cartItems as $cartItem)
+                @if($hasConsultation ?? false)
                     <div class="service-item">
                         <div class="service-detail">
-                            <span class="detail-label">Service:</span>
-                            <span class="detail-value">{{ $cartItem->service->name }}</span>
+                            <span class="detail-label">Consultation:</span>
+                            <span class="detail-value">Medical Consultation (time slot at checkout)</span>
                         </div>
                         <div class="service-detail">
-                            <span class="detail-label">Quantity:</span>
-                            <span class="detail-value">{{ $cartItem->quantity }}</span>
-                        </div>
-                        <div class="service-detail">
-                            <span class="detail-label">Price:</span>
-                            <span class="detail-value" style="display: flex; flex-direction: column; gap: 0.25rem;">
-                                @include('components.service-price', ['pricing' => $cartItem->service->pricing, 'layout' => 'compact'])
-                                <small style="color: var(--light-text);">
-                                    x{{ $cartItem->quantity }} = ₱{{ number_format($cartItem->service->pricing['display_price'] * $cartItem->quantity, 2) }}
-                                </small>
-                            </span>
+                            <span class="detail-label">Duration:</span>
+                            <span class="detail-value">~20 min</span>
                         </div>
                     </div>
+                @endif
+                @foreach($serviceCartItems ?? $cartItems as $cartItem)
+                    @if(isset($cartItem->service) && $cartItem->service)
+                        <div class="service-item">
+                            <div class="service-detail">
+                                <span class="detail-label">Service:</span>
+                                <span class="detail-value">{{ $cartItem->service->name }}</span>
+                            </div>
+                            @if(isset($cartItem->service->duration_minutes) && $cartItem->service->duration_minutes)
+                            <div class="service-detail">
+                                <span class="detail-label">Duration:</span>
+                                <span class="detail-value">{{ (int) $cartItem->service->duration_minutes * (isset($cartItem->quantity) ? (int) $cartItem->quantity : 1) }} min</span>
+                            </div>
+                            @endif
+                            <div class="service-detail">
+                                <span class="detail-label">Quantity:</span>
+                                <span class="detail-value">{{ $cartItem->quantity }}</span>
+                            </div>
+                            <div class="service-detail">
+                                <span class="detail-label">Price:</span>
+                                <span class="detail-value" style="display: flex; flex-direction: column; gap: 0.25rem;">
+                                    @include('components.service-price', ['pricing' => $cartItem->service->pricing, 'layout' => 'compact'])
+                                    <small style="color: var(--light-text);">
+                                        x{{ $cartItem->quantity }} = ₱{{ number_format($cartItem->service->pricing['display_price'] * $cartItem->quantity, 2) }}
+                                    </small>
+                                </span>
+                            </div>
+                        </div>
+                    @endif
                 @endforeach
             </div>
+
+            @if(isset($totalDurationMinutes) && $totalDurationMinutes > 0)
+            <div class="service-item" style="margin-bottom: 1rem;">
+                <div class="service-detail">
+                    <span class="detail-label">Estimated duration:</span>
+                    <span class="detail-value">{{ $totalDurationMinutes }} min</span>
+                </div>
+                <small style="color: #6c757d; font-size: 0.85rem;">Consultation + services total</small>
+            </div>
+            @endif
 
             <div class="service-fee">
                 <div class="fee-label">Total Amount</div>
@@ -652,13 +701,48 @@ function initializeBookingForm() {
         }
         
         // Enable/disable book button
-        const isFormValid = firstName && dateInput.value;
+        let isFormValid = firstName && dateInput.value;
+        @if($hasConsultation ?? false)
+        const timeSlotSelect = document.getElementById('time_slot_id');
+        if (timeSlotSelect) isFormValid = isFormValid && timeSlotSelect.value;
+        @endif
         
         bookButton.disabled = !isFormValid;
     }
 
     // Event listeners
-    dateInput.addEventListener('change', updateSummary);
+    dateInput.addEventListener('change', function() {
+        updateSummary();
+        @if($hasConsultation ?? false)
+        loadTimeSlotsForConsultation();
+        @endif
+    });
+
+    @if($hasConsultation ?? false)
+    function loadTimeSlotsForConsultation() {
+        const branchId = form.querySelector('input[name="branch_id"]').value;
+        const dateVal = dateInput.value;
+        const slotSelect = document.getElementById('time_slot_id');
+        if (!slotSelect) return;
+        slotSelect.innerHTML = '<option value="">Loading...</option>';
+        if (!dateVal) {
+            slotSelect.innerHTML = '<option value="">Select date first</option>';
+            return;
+        }
+        fetch(`{{ url('consultations/available-slots') }}?branch_id=${branchId}&date=${dateVal}`)
+            .then(r => r.json())
+            .then(data => {
+                slotSelect.innerHTML = '<option value="">Choose time slot</option>';
+                (data.slots || []).forEach(slot => {
+                    const opt = document.createElement('option');
+                    opt.value = slot.id;
+                    opt.textContent = slot.start_time + ' - ' + slot.end_time;
+                    slotSelect.appendChild(opt);
+                });
+            })
+            .catch(() => { slotSelect.innerHTML = '<option value="">Error loading slots</option>'; });
+    }
+    @endif
 
     // Book service
     bookButton.addEventListener('click', function() {

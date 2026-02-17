@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers; 
+namespace App\Http\Controllers;
 
+use App\Models\Branch;
 use App\Models\Category;
 use App\Models\Service;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ class ServiceController extends Controller
     public function index()
     {
         $categories = Category::withCount('services')->get();
+        $branches = Branch::all();
 
         $categoryId = request('category_id');
 
@@ -31,17 +33,20 @@ class ServiceController extends Controller
             'categories' => $categories,
             'services' => $services,
             'selectedCategoryId' => $categoryId,
+            'branches' => $branches,
         ]);
     }
 
     public function show(Service $service)
     {
         $service->load([
+            'category.branch',
             'category.services.images',
             'category.services.promoServices.promotion',
             'images',
             'promoServices.promotion',
         ]);
-        return view('services.show', compact('service'));
+        $branches = Branch::all();
+        return view('services.show', compact('service', 'branches'));
     }
 }

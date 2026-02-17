@@ -259,7 +259,7 @@
         <h1 class="form-title">NEW PATIENT INFORMATION SHEET</h1>
     </div>
 
-    <form action="{{ route('add-patient-information.store') }}" method="POST" id="patient-info-form">
+    <form action="{{ route('add-patient-information.store') }}" method="POST" id="patient-info-form" enctype="multipart/form-data">
         @csrf
 
         <!-- PERSONAL INFORMATION Section -->
@@ -432,21 +432,22 @@
             </div>
         </div>
 
-        <!-- Certification and Signature Section -->
+        <!-- Certification and Signature / ID Section -->
         <div class="certification-section">
-            <p class="certification-text">I certify that all the information I wrote on this form are true and correct.</p>
-            
+            <p class="certification-text">I certify that all the information I wrote on this form are true and correct. Provide either <strong>Digital Signature</strong> or <strong>Upload ID (photo)</strong> — at least one required.</p>
             <div class="signature-section">
                 <div class="signature-field">
-                    <label>Signature over Printed Name</label>
+                    <label>Digital Signature</label>
                     <div class="signature-canvas-container">
                         <canvas id="signature-canvas"></canvas>
                         <button type="button" class="clear-signature-btn" onclick="clearSignature()">Clear</button>
                     </div>
-                    <input type="hidden" id="signature" name="signature" required>
+                    <input type="hidden" id="signature" name="signature">
                 </div>
                 <div class="signature-field">
-                    <label>Date</label>
+                    <label>Upload ID (photo)</label>
+                    <input type="file" name="id_photo" id="id_photo" accept="image/*">
+                    <label style="margin-top: 1rem;">Date</label>
                     <input type="date" id="date" name="date" required value="{{ date('Y-m-d') }}">
                 </div>
             </div>
@@ -543,12 +544,13 @@
         }
     }
 
-    // Validate signature before submit
     document.getElementById('patient-info-form').addEventListener('submit', function(e) {
+        saveSignature();
         const signature = document.getElementById('signature').value;
-        if (!signature) {
+        const idPhoto = document.getElementById('id_photo').files.length;
+        if ((!signature || !signature.trim()) && !idPhoto) {
             e.preventDefault();
-            alert('Please provide your signature before submitting.');
+            alert('Please provide either your Digital Signature or Upload ID (photo).');
             return false;
         }
     });

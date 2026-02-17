@@ -11,6 +11,7 @@ use App\Models\Service;
 use App\Models\ServiceImage;
 use App\Models\TimeSlot;
 use App\Models\Appointment;
+use App\Models\AppointmentProgressPhoto;
 use App\Models\PatientHistory;
 use App\Services\NotificationService;
 use Carbon\Carbon;
@@ -278,7 +279,7 @@ class DashboardController extends Controller
 
     public function getPatientDetails($appointmentId)
     {
-        $appointment = Appointment::with(['patient', 'service', 'timeSlot', 'branch', 'patientHistory'])
+        $appointment = Appointment::with(['patient', 'service', 'timeSlot', 'branch', 'patientHistory', 'conditionPhotos', 'progressPhotos'])
             ->findOrFail($appointmentId);
         
         $patient = $appointment->patient;
@@ -334,10 +335,18 @@ class DashboardController extends Controller
                 'first_name' => $appointment->first_name,
                 'middle_initial' => $appointment->middle_initial,
                 'last_name' => $appointment->last_name,
-                'date_of_birth' => $appointment->date_of_birth,
+                'date_of_birth' => $appointment->date_of_birth ?? null,
                 'address' => $appointment->address,
+                'consultation_type' => $appointment->consultation_type,
+                'description' => $appointment->description,
                 'medical_background' => $appointment->medical_background,
+                'referral_source' => $appointment->referral_source,
                 'status' => $appointment->status,
+                'condition_photos' => $appointment->conditionPhotos ? $appointment->conditionPhotos->pluck('image_path')->toArray() : [],
+                'progress_photos' => [
+                    'before' => $appointment->progressPhotos ? $appointment->progressPhotos->where('type', 'before')->pluck('file_path')->values()->toArray() : [],
+                    'after' => $appointment->progressPhotos ? $appointment->progressPhotos->where('type', 'after')->pluck('file_path')->values()->toArray() : [],
+                ],
             ],
             'patient' => $patient ? [
                 'id' => $patient->id,
@@ -358,8 +367,10 @@ class DashboardController extends Controller
                 'birthday' => $personalInfo->birthday ? $personalInfo->birthday->format('Y-m-d') : null,
                 'contact_number' => $personalInfo->contact_number,
                 'civil_status' => $personalInfo->civil_status,
+                'sex' => $personalInfo->sex ?? null,
                 'preferred_pronoun' => $personalInfo->preferred_pronoun,
                 'signature' => $personalInfo->signature,
+                'id_photo_path' => $personalInfo->id_photo_path,
             ] : null,
             'medical_information' => $medicalInfo ? [
                 'hypertension' => $medicalInfo->hypertension,
@@ -1774,6 +1785,21 @@ class DashboardController extends Controller
         return redirect()->route('doctor.my-appointments')->with('success', 'Appointment confirmed successfully!');
     }
 
+    public function updateAppointment(Request $request, Appointment $appointment)
+    {
+        if ($appointment->doctor_id !== Auth::id() && (!$appointment->timeSlot || $appointment->timeSlot->doctor_id !== Auth::id())) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized to update this appointment.'], 403);
+        }
+
+        $validStatuses = ['pending', 'ongoing', 'confirmed', 'completed', 'cancelled'];
+        $request->validate([
+            'status' => 'required|string|in:' . implode(',', $validStatuses),
+        ]);
+
+        $appointment->update(['status' => $request->status]);
+        return response()->json(['success' => true, 'message' => 'Status updated.', 'status' => $appointment->fresh()->status]);
+    }
+
     public function cancelAppointment(Request $request, Appointment $appointment)
     {
         $request->validate([
@@ -2020,6 +2046,52 @@ class DashboardController extends Controller
             return redirect()->route('doctor.my-services-schedules.confirmed')->with('success', 'Service appointment cancelled successfully!');
         }
         return redirect()->route('doctor.my-services-schedules')->with('success', 'Service appointment cancelled successfully!');
+    }
+
+    public function updateServiceScheduleAppointment(Request $request, Appointment $appointment)
+    {
+        $validStatuses = ['pending', 'ongoing', 'confirmed', 'completed', 'cancelled'];
+        $request->validate([
+            'status' => 'required|string|in:' . implode(',', $validStatuses),
+        ]);
+
+        $appointment->update(['status' => $request->status]);
+        return response()->json(['success' => true, 'message' => 'Status updated.', 'status' => $appointment->fresh()->status]);
+    }
+
+    public function storeProgressPhotos(Request $request, Appointment $appointment)
+    {
+        $request->validate([
+            'before_files.*' => 'nullable|mimes:jpeg,jpg,png,gif|max:20480',
+            'after_files.*' => 'nullable|mimes:jpeg,jpg,png,gif|max:20480',
+        ]);
+
+        try {
+            $storageUrl = 'appointment-progress';
+            if ($request->hasFile('before_files')) {
+                foreach ($request->file('before_files') as $file) {
+                    $path = $file->store($storageUrl . '/before', 'public');
+                    AppointmentProgressPhoto::create([
+                        'appointment_id' => $appointment->id,
+                        'type' => 'before',
+                        'file_path' => $path,
+                    ]);
+                }
+            }
+            if ($request->hasFile('after_files')) {
+                foreach ($request->file('after_files') as $file) {
+                    $path = $file->store($storageUrl . '/after', 'public');
+                    AppointmentProgressPhoto::create([
+                        'appointment_id' => $appointment->id,
+                        'type' => 'after',
+                        'file_path' => $path,
+                    ]);
+                }
+            }
+            return response()->json(['success' => true, 'message' => 'Photos added.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
     public function storeServiceResult(Request $request, Appointment $appointment)
@@ -2704,7 +2776,7 @@ class DashboardController extends Controller
 
     public function getPatientInfo(Appointment $appointment)
     {
-        $appointment->load(['patient', 'timeSlot', 'branch']);
+        $appointment->load(['patient', 'timeSlot', 'branch', 'conditionPhotos', 'progressPhotos']);
         
         $patient = $appointment->patient;
         
@@ -2754,10 +2826,18 @@ class DashboardController extends Controller
                 'first_name' => $appointment->first_name,
                 'middle_initial' => $appointment->middle_initial,
                 'last_name' => $appointment->last_name,
-                'date_of_birth' => $appointment->date_of_birth,
+                'date_of_birth' => $appointment->date_of_birth ?? null,
                 'address' => $appointment->address,
+                'consultation_type' => $appointment->consultation_type,
+                'description' => $appointment->description,
                 'medical_background' => $appointment->medical_background,
+                'referral_source' => $appointment->referral_source,
                 'status' => $appointment->status,
+                'condition_photos' => $appointment->conditionPhotos ? $appointment->conditionPhotos->pluck('image_path')->toArray() : [],
+                'progress_photos' => [
+                    'before' => $appointment->progressPhotos ? $appointment->progressPhotos->where('type', 'before')->pluck('file_path')->values()->toArray() : [],
+                    'after' => $appointment->progressPhotos ? $appointment->progressPhotos->where('type', 'after')->pluck('file_path')->values()->toArray() : [],
+                ],
             ],
             'patient' => $patient ? [
                 'id' => $patient->id,
@@ -2778,8 +2858,10 @@ class DashboardController extends Controller
                 'birthday' => $personalInfo->birthday ? $personalInfo->birthday->format('Y-m-d') : null,
                 'contact_number' => $personalInfo->contact_number,
                 'civil_status' => $personalInfo->civil_status,
+                'sex' => $personalInfo->sex ?? null,
                 'preferred_pronoun' => $personalInfo->preferred_pronoun,
                 'signature' => $personalInfo->signature,
+                'id_photo_path' => $personalInfo->id_photo_path,
             ] : null,
             'medical_information' => $medicalInfo ? [
                 'hypertension' => $medicalInfo->hypertension,

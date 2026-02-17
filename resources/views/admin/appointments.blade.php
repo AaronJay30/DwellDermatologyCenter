@@ -828,7 +828,13 @@
                 <tbody>
                     @forelse($appointments as $appointment)
                         @php
-                            $patientName = $appointment->patient->name ?? trim(($appointment->first_name ?? '') . ' ' . ($appointment->middle_initial ?? '') . ' ' . ($appointment->last_name ?? '')) ?? 'N/A';
+                            $patientName = trim(($appointment->first_name ?? '') . ' ' . ($appointment->middle_initial ?? '') . ' ' . ($appointment->last_name ?? '')) ?: ($appointment->patient->name ?? 'N/A');
+                            $displayDate = $appointment->scheduled_date
+                                ? \Carbon\Carbon::parse($appointment->scheduled_date)->format('Y-m-d')
+                                : ($appointment->timeSlot ? $appointment->timeSlot->date->format('Y-m-d') : ($appointment->doctorSlot && $appointment->doctorSlot->slot_date ? $appointment->doctorSlot->slot_date->format('Y-m-d') : $appointment->created_at->format('Y-m-d')));
+                            $displayTime = $appointment->scheduled_time
+                                ? \Carbon\Carbon::parse($appointment->scheduled_time)->format('H:i')
+                                : ($appointment->timeSlot ? \Carbon\Carbon::parse($appointment->timeSlot->start_time)->format('H:i') : ($appointment->doctorSlot ? optional($appointment->doctorSlot)->start_time?->format('H:i') : ''));
                         @endphp
                         <tr>
                             <td>
@@ -838,25 +844,19 @@
                             </td>
                             <td>{{ $appointment->service->name ?? ($appointment->consultation_type ?? 'N/A') }}</td>
                             <td>
-                                @if($appointment->timeSlot)
-                                    {{ $appointment->timeSlot->date->format('M d, Y') }}
-                                @elseif($appointment->doctorSlot && $appointment->doctorSlot->slot_date)
-                                    {{ $appointment->doctorSlot->slot_date->format('M d, Y') }}
-                                @else
-                                    {{ $appointment->created_at->format('M d, Y') }}
-                                @endif
+                                <input type="date" class="admin-edit-date" data-appointment-id="{{ $appointment->id }}" value="{{ $displayDate }}" style="max-width: 140px; padding: 0.35rem;">
                             </td>
                             <td>
-                                @if($appointment->timeSlot)
-                                    {{ $appointment->timeSlot->start_time }} - {{ $appointment->timeSlot->end_time }}
-                                @elseif($appointment->doctorSlot)
-                                    {{ optional($appointment->doctorSlot)->start_time?->format('H:i') ?? 'N/A' }} - {{ optional($appointment->doctorSlot)->end_time?->format('H:i') ?? 'N/A' }}
-                                @else
-                                    N/A
-                                @endif
+                                <input type="time" class="admin-edit-time" data-appointment-id="{{ $appointment->id }}" value="{{ $displayTime }}" style="max-width: 100px; padding: 0.35rem;">
                             </td>
                             <td>
-                                <span class="status-badge status-booked">{{ ucfirst($appointment->status) }}</span>
+                                <select class="admin-status-select" data-appointment-id="{{ $appointment->id }}" data-prev-status="{{ $appointment->status }}" style="padding: 0.35rem 0.5rem; min-width: 110px;">
+                                    <option value="pending" {{ $appointment->status === 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="ongoing" {{ $appointment->status === 'ongoing' ? 'selected' : '' }}>Ongoing</option>
+                                    <option value="confirmed" {{ $appointment->status === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                                    <option value="completed" {{ $appointment->status === 'completed' ? 'selected' : '' }}>Done</option>
+                                    <option value="cancelled" {{ $appointment->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                </select>
                             </td>
                             <td>
                                 <div style="display: flex; gap: 0.5rem; align-items: center;">
@@ -975,6 +975,50 @@
                 </div>
             </div>
 
+            <!-- CONSULTATION DETAILS (from booking) -->
+            <div class="patient-form-section" id="modal-consultation-details-section">
+                <div class="patient-section-header">CONSULTATION DETAILS</div>
+                <div class="patient-form-group">
+                    <label for="modal-consultation-type">Type of Consultation</label>
+                    <input type="text" id="modal-consultation-type" readonly>
+                </div>
+                <div class="patient-form-group">
+                    <label for="modal-consultation-description">Description of Symptoms/Condition</label>
+                    <textarea id="modal-consultation-description" readonly rows="3"></textarea>
+                </div>
+                <div class="patient-form-group">
+                    <label for="modal-consultation-medical-background">Medical Background</label>
+                    <textarea id="modal-consultation-medical-background" readonly rows="2"></textarea>
+                </div>
+                <div class="patient-form-group">
+                    <label for="modal-consultation-referral-source">How did you hear about Dwell?</label>
+                    <input type="text" id="modal-consultation-referral-source" readonly>
+                </div>
+                <div class="patient-form-group" id="modal-condition-photos-wrap">
+                    <label>Photos of condition (optional)</label>
+                    <div id="modal-condition-photos" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;"></div>
+                </div>
+                <div class="patient-form-section" style="margin-top: 1rem;">
+                    <div class="patient-section-header">BEFORE / AFTER PHOTOS (for doctor to see current condition and progress)</div>
+                    <div id="modal-progress-photos-before" style="margin-bottom: 0.75rem;"><strong>Before:</strong> <span id="modal-progress-before-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></span></div>
+                    <div id="modal-progress-photos-after" style="margin-bottom: 0.75rem;"><strong>After:</strong> <span id="modal-progress-after-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></span></div>
+                    <form id="progressPhotosForm" enctype="multipart/form-data" style="margin-top: 0.5rem;">
+                        <div class="patient-form-row">
+                            <div class="patient-form-group">
+                                <label>Add Before photo(s)</label>
+                                <input type="file" name="before_files[]" accept="image/*" multiple>
+                            </div>
+                            <div class="patient-form-group">
+                                <label>Add After photo(s)</label>
+                                <input type="file" name="after_files[]" accept="image/*" multiple>
+                            </div>
+                        </div>
+                        <button type="submit" class="patient-modal-btn" style="margin-top: 0.5rem;">Add Before/After Photos</button>
+                    </form>
+                    <p style="font-size: 0.85rem; color: #6b7280; margin-top: 0.5rem;">These photos are for viewing on this appointment. Use &quot;Add Result&quot; below when ready to save to patient history.</p>
+                </div>
+            </div>
+
             <!-- PERTINENT MEDICAL INFORMATION Section -->
             <div class="patient-form-section">
                 <div class="patient-section-header">PERTINENT MEDICAL INFORMATION</div>
@@ -1083,7 +1127,7 @@
             <div class="patient-certification-section">
                 <p class="patient-certification-text">I certify that all the information I wrote on this form are true and correct.</p>
                 
-                <div class="patient-signature-section">
+                <div class="patient-signature-section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="patient-signature-field">
                         <label>Signature over Printed Name</label>
                         <div class="patient-signature-display" id="modal-signature-display">
@@ -1091,9 +1135,15 @@
                         </div>
                     </div>
                     <div class="patient-signature-field">
-                        <label>Date</label>
-                        <input type="text" id="modal-date" readonly>
+                        <label>Upload ID (photo)</label>
+                        <div class="patient-signature-display" id="modal-id-photo-display" style="max-width: 100%; max-height: 150px;">
+                            <span style="color: #999;">No ID uploaded</span>
+                        </div>
                     </div>
+                </div>
+                <div class="patient-signature-field" style="margin-top: 0.5rem;">
+                    <label>Date</label>
+                    <input type="text" id="modal-date" readonly>
                 </div>
             </div>
         </div>
@@ -1274,6 +1324,23 @@
     </div>
 </div>
 
+<!-- Mark as Done / Add to History Confirmation Modal -->
+<div id="doneConfirmModal" class="patient-modal">
+    <div class="patient-modal-content" style="max-width: 440px;">
+        <div class="patient-modal-header">
+            <h1 class="patient-modal-title" style="font-size: 1.2rem;">Mark as Done</h1>
+            <button class="patient-modal-close" onclick="closeDoneConfirmModal()">×</button>
+        </div>
+        <div class="patient-modal-body" style="padding: 1.5rem 2rem;">
+            <p style="margin: 0; color: #374151; line-height: 1.5;">This will be marked as done. Add to patient history?</p>
+        </div>
+        <div class="patient-modal-footer" style="padding: 1rem 2rem; gap: 1rem;">
+            <button type="button" id="doneConfirmNoBtn" class="patient-modal-btn patient-modal-btn-cancel">No, just mark done</button>
+            <button type="button" id="doneConfirmYesBtn" class="patient-modal-btn" style="background: #197a8c; color: white;">Yes, add to history</button>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -1364,6 +1431,15 @@ function clearModal() {
     document.getElementById('modal-contact-number').value = '';
     document.getElementById('modal-email').value = '';
     document.getElementById('modal-preferred-pronoun').value = '';
+    if (document.getElementById('modal-consultation-type')) document.getElementById('modal-consultation-type').value = '';
+    if (document.getElementById('modal-consultation-description')) document.getElementById('modal-consultation-description').value = '';
+    if (document.getElementById('modal-consultation-medical-background')) document.getElementById('modal-consultation-medical-background').value = '';
+    if (document.getElementById('modal-consultation-referral-source')) document.getElementById('modal-consultation-referral-source').value = '';
+    if (document.getElementById('modal-condition-photos')) document.getElementById('modal-condition-photos').innerHTML = '';
+    const beforeList = document.getElementById('modal-progress-before-list');
+    const afterList = document.getElementById('modal-progress-after-list');
+    if (beforeList) beforeList.innerHTML = '';
+    if (afterList) afterList.innerHTML = '';
     document.getElementById('modal-comorbidities-others').value = '';
     document.getElementById('modal-allergies-others').value = '';
     document.getElementById('modal-previous-hospitalizations').value = '';
@@ -1381,8 +1457,9 @@ function clearModal() {
     document.getElementById('modal-allergies-anesthetics').checked = false;
     document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
     
-    // Clear signature
     document.getElementById('modal-signature-display').innerHTML = '<span style="color: #999;">No signature available</span>';
+    const idPhotoEl = document.getElementById('modal-id-photo-display');
+    if (idPhotoEl) idPhotoEl.innerHTML = '<span style="color: #999;">No ID uploaded</span>';
 }
 
 function closePatientModal() {
@@ -1423,6 +1500,50 @@ function populateModal(data) {
     document.getElementById('modal-contact-number').value = personalInfo.contact_number || patient.phone || patient.contact_phone || '';
     document.getElementById('modal-email').value = patient.email || '';
     
+    const appointment = data.appointment || {};
+    document.getElementById('modal-consultation-type').value = appointment.consultation_type || '';
+    document.getElementById('modal-consultation-description').value = appointment.description || '';
+    document.getElementById('modal-consultation-medical-background').value = appointment.medical_background || '';
+    document.getElementById('modal-consultation-referral-source').value = appointment.referral_source || '';
+    
+    const conditionPhotosDiv = document.getElementById('modal-condition-photos');
+    if (conditionPhotosDiv) {
+        conditionPhotosDiv.innerHTML = '';
+        const storageUrl = '{{ asset("storage") }}';
+        (appointment.condition_photos || []).forEach(function(path) {
+            const img = document.createElement('img');
+            img.src = storageUrl + '/' + path;
+            img.alt = 'Condition';
+            img.style.cssText = 'max-width: 120px; max-height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;';
+            conditionPhotosDiv.appendChild(img);
+        });
+        document.getElementById('modal-condition-photos-wrap').style.display = (appointment.condition_photos && appointment.condition_photos.length) ? 'block' : 'none';
+    }
+
+    const storageUrl = '{{ asset("storage") }}';
+    const beforeList = document.getElementById('modal-progress-before-list');
+    const afterList = document.getElementById('modal-progress-after-list');
+    if (beforeList) {
+        beforeList.innerHTML = '';
+        (appointment.progress_photos && appointment.progress_photos.before ? appointment.progress_photos.before : []).forEach(function(path) {
+            const img = document.createElement('img');
+            img.src = storageUrl + '/' + path;
+            img.alt = 'Before';
+            img.style.cssText = 'max-width: 120px; max-height: 120px; object-fit: cover; border-radius: 4px;';
+            beforeList.appendChild(img);
+        });
+    }
+    if (afterList) {
+        afterList.innerHTML = '';
+        (appointment.progress_photos && appointment.progress_photos.after ? appointment.progress_photos.after : []).forEach(function(path) {
+            const img = document.createElement('img');
+            img.src = storageUrl + '/' + path;
+            img.alt = 'After';
+            img.style.cssText = 'max-width: 120px; max-height: 120px; object-fit: cover; border-radius: 4px;';
+            afterList.appendChild(img);
+        });
+    }
+
     // Civil Status
     if (personalInfo.civil_status) {
         const civilStatusRadios = document.querySelectorAll('input[name="modal-civil-status"]');
@@ -1433,13 +1554,12 @@ function populateModal(data) {
         });
     }
     
-    // Sex
-    if (patient.gender) {
+    // Sex (from form personal_information.sex or patient.gender)
+    const sexValue = (personalInfo.sex || patient.gender || '').toString().toLowerCase();
+    if (sexValue) {
         const sexRadios = document.querySelectorAll('input[name="modal-sex"]');
         sexRadios.forEach(radio => {
-            if (radio.value.toLowerCase() === patient.gender.toLowerCase()) {
-                radio.checked = true;
-            }
+            radio.checked = (radio.value.toLowerCase() === sexValue);
         });
     }
     
@@ -1504,6 +1624,17 @@ function populateModal(data) {
         signatureDisplay.innerHTML = `<img src="${signatureSrc}" alt="Signature" style="max-width: 100%; max-height: 150px;" />`;
     } else {
         signatureDisplay.innerHTML = '<span style="color: #999;">No signature available</span>';
+    }
+
+    const idPhotoDisplay = document.getElementById('modal-id-photo-display');
+    if (idPhotoDisplay) {
+        if (personalInfo.id_photo_path) {
+            const storageUrl = '{{ asset("storage") }}';
+            const idPhotoUrl = storageUrl + '/' + personalInfo.id_photo_path;
+            idPhotoDisplay.innerHTML = '<img src="' + idPhotoUrl + '" alt="ID" style="max-width: 100%; max-height: 150px; object-fit: contain;" />';
+        } else {
+            idPhotoDisplay.innerHTML = '<span style="color: #999;">No ID uploaded</span>';
+        }
     }
     
     // Date - use current date formatted as "MM/DD/YYYY"
@@ -2171,6 +2302,114 @@ function closeDeleteModal() {
     deleteContext = null;
 }
 document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    const baseUrl = '{{ url("/admin/appointments") }}';
+
+    function patchAppointment(appointmentId, data) {
+        return fetch(`${baseUrl}/${appointmentId}`, {
+            method: 'PATCH',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        }).then(r => r.json());
+    }
+
+    let doneConfirmContext = null;
+    function openDoneConfirmModal(appointmentId, selectEl, previousStatus) {
+        doneConfirmContext = { appointmentId, selectEl, previousStatus };
+        document.getElementById('doneConfirmModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    function closeDoneConfirmModal() {
+        if (doneConfirmContext && doneConfirmContext.selectEl) {
+            doneConfirmContext.selectEl.value = doneConfirmContext.previousStatus || 'pending';
+        }
+        doneConfirmContext = null;
+        document.getElementById('doneConfirmModal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    document.querySelectorAll('.admin-status-select').forEach(function(sel) {
+        sel.addEventListener('change', function() {
+            const id = this.getAttribute('data-appointment-id');
+            const status = this.value;
+            const prev = this.getAttribute('data-prev-status');
+            if (status === 'completed') {
+                openDoneConfirmModal(id, this, prev || 'pending');
+                return;
+            }
+            this.setAttribute('data-prev-status', status);
+            patchAppointment(id, { status }).then(function(res) {
+                if (!res.success) alert(res.message || 'Failed to update status');
+            }).catch(function() { alert('Failed to update status'); });
+        });
+    });
+    document.getElementById('doneConfirmNoBtn').addEventListener('click', function() {
+        if (!doneConfirmContext) return closeDoneConfirmModal();
+        const { appointmentId, selectEl } = doneConfirmContext;
+        patchAppointment(appointmentId, { status: 'completed' }).then(function(res) {
+            closeDoneConfirmModal();
+            if (!res.success) alert(res.message || 'Failed to update status');
+            else if (selectEl) selectEl.setAttribute('data-prev-status', 'completed');
+        }).catch(function() { alert('Failed to update status'); closeDoneConfirmModal(); });
+    });
+    document.getElementById('doneConfirmYesBtn').addEventListener('click', function() {
+        if (!doneConfirmContext) return closeDoneConfirmModal();
+        const { appointmentId, selectEl } = doneConfirmContext;
+        patchAppointment(appointmentId, { status: 'completed' }).then(function(res) {
+            closeDoneConfirmModal();
+            if (res.success && selectEl) selectEl.setAttribute('data-prev-status', 'completed');
+            if (!res.success) { alert(res.message || 'Failed to update status'); return; }
+            currentAppointmentId = appointmentId;
+            openAddResultModal(appointmentId);
+        }).catch(function() { alert('Failed to update status'); closeDoneConfirmModal(); });
+    });
+    document.querySelectorAll('.admin-edit-date').forEach(function(inp) {
+        inp.addEventListener('change', function() {
+            const id = this.getAttribute('data-appointment-id');
+            patchAppointment(id, { scheduled_date: this.value }).then(function(res) {
+                if (!res.success) alert(res.message || 'Failed to update date');
+            }).catch(function() { alert('Failed to update date'); });
+        });
+    });
+    document.querySelectorAll('.admin-edit-time').forEach(function(inp) {
+        inp.addEventListener('change', function() {
+            const id = this.getAttribute('data-appointment-id');
+            patchAppointment(id, { scheduled_time: this.value }).then(function(res) {
+                if (!res.success) alert(res.message || 'Failed to update time');
+            }).catch(function() { alert('Failed to update time'); });
+        });
+    });
+
+    const progressPhotosForm = document.getElementById('progressPhotosForm');
+    if (progressPhotosForm) {
+        progressPhotosForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!currentAppointmentId) return;
+            const formData = new FormData(this);
+            if (!formData.has('before_files[]') && !formData.has('after_files[]')) {
+                const beforeInput = this.querySelector('input[name="before_files[]"]');
+                const afterInput = this.querySelector('input[name="after_files[]"]');
+                if (!beforeInput.files.length && !afterInput.files.length) {
+                    alert('Please select at least one photo.');
+                    return;
+                }
+            }
+            fetch(`{{ url('/admin/appointments') }}/${currentAppointmentId}/progress-photos`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+                body: formData
+            }).then(r => r.json()).then(function(res) {
+                if (res.success) {
+                    openPatientModal(currentAppointmentId);
+                    progressPhotosForm.reset();
+                } else alert(res.message || 'Failed to add photos');
+            }).catch(function() { alert('Failed to add photos'); });
+        });
+    }
+
     // Attach to all delete-appointment-btn buttons
     document.querySelectorAll('.delete-appointment-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {

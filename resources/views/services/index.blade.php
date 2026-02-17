@@ -2,7 +2,19 @@
 
 @section('content')
 <div class="container">
-    <h1 style="color: var(--primary-color); margin-bottom: 2rem;">Our Services</h1>
+    <h1 style="color: var(--primary-color); margin-bottom: 1rem;">Our Services</h1>
+    @if(isset($branches) && $branches->count() > 0)
+        @php
+            $firstBranch = $branches->first();
+            $scheduleImage = $firstBranch->image_path ? asset('storage/' . $firstBranch->image_path) : null;
+        @endphp
+        @if($scheduleImage)
+            <div id="available-doctor-banner" style="margin-bottom: 2rem; text-align: center;">
+                <p style="font-size: 0.95rem; color: var(--primary-color); margin-bottom: 0.5rem; font-weight: 600;">Available Doctor Schedule</p>
+                <img src="{{ $scheduleImage }}" alt="Available doctor schedule" style="max-width: 100%; border-radius: 12px; border: 2px solid #e5e7eb;">
+            </div>
+        @endif
+    @endif
 
     <!-- Categories Section styled like containers/cards with image -->
     <div class="card" style="margin-bottom: 2rem;">
@@ -76,7 +88,13 @@
                                         <input type="hidden" name="service_id" value="{{ $service->id }}">
                                         <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Add to Cart</button>
                                     </form>
-                                    <a href="{{ route('consultations.create') }}?service={{ $service->id }}" class="btn btn-accent" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Book Consultation</a>
+                                    <a href="{{ route('consultations.create') }}?service={{ $service->id }}" class="btn btn-accent" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Book Now</a>
+                                    <form method="POST" action="{{ route('cart.add') }}" style="display: inline;">
+                                        @csrf
+                                        <input type="hidden" name="item_type" value="consultation">
+                                        <input type="hidden" name="branch_id" value="{{ $service->category && $service->category->branch ? $service->category->branch->id : '' }}">
+                                        <button type="submit" class="btn btn-accent" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Add Consultation to Cart</button>
+                                    </form>
                                 @else
                                     <button disabled style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #ccc; color: #666; border: none; border-radius: 4px; cursor: not-allowed;">Unavailable</button>
                                 @endif

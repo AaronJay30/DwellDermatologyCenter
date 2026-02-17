@@ -1391,6 +1391,31 @@
                 </div>
             </div>
 
+            <!-- CONSULTATION DETAILS -->
+            <div class="patient-form-section">
+                <div class="patient-section-header">CONSULTATION DETAILS</div>
+                <div class="patient-form-group">
+                    <label for="modal-consultation-type">Type of Consultation</label>
+                    <input type="text" id="modal-consultation-type" readonly>
+                </div>
+                <div class="patient-form-group">
+                    <label for="modal-consultation-description">Description of Symptoms/Condition</label>
+                    <textarea id="modal-consultation-description" readonly rows="3"></textarea>
+                </div>
+                <div class="patient-form-group">
+                    <label for="modal-consultation-medical-background">Medical Background</label>
+                    <textarea id="modal-consultation-medical-background" readonly rows="2"></textarea>
+                </div>
+                <div class="patient-form-group">
+                    <label for="modal-consultation-referral-source">How did you hear about Dwell?</label>
+                    <input type="text" id="modal-consultation-referral-source" readonly>
+                </div>
+                <div class="patient-form-group" id="modal-condition-photos-wrap">
+                    <label>Photos of condition (optional)</label>
+                    <div id="modal-condition-photos" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;"></div>
+                </div>
+            </div>
+
             <!-- PERTINENT MEDICAL INFORMATION Section -->
             <div class="patient-form-section">
                 <div class="patient-section-header">PERTINENT MEDICAL INFORMATION</div>
@@ -1499,7 +1524,7 @@
             <div class="patient-certification-section">
                 <p class="patient-certification-text">I certify that all the information I wrote on this form are true and correct.</p>
                 
-                <div class="patient-signature-section">
+                <div class="patient-signature-section" style="grid-template-columns: 1fr 1fr;">
                     <div class="patient-signature-field">
                         <label>Signature over Printed Name</label>
                         <div class="patient-signature-display" id="modal-signature-display">
@@ -1507,9 +1532,15 @@
                         </div>
                     </div>
                     <div class="patient-signature-field">
-                        <label>Date</label>
-                        <input type="text" id="modal-date" readonly>
+                        <label>Upload ID (photo)</label>
+                        <div class="patient-signature-display" id="modal-id-photo-display" style="max-height: 150px;">
+                            <span style="color: #999;">No ID uploaded</span>
+                        </div>
                     </div>
+                </div>
+                <div class="patient-signature-field" style="margin-top: 0.5rem;">
+                    <label>Date</label>
+                    <input type="text" id="modal-date" readonly>
                 </div>
             </div>
         </div>
@@ -1757,6 +1788,11 @@ function clearModal() {
     document.getElementById('modal-contact-number').value = '';
     document.getElementById('modal-email').value = '';
     document.getElementById('modal-preferred-pronoun').value = '';
+    if (document.getElementById('modal-consultation-type')) document.getElementById('modal-consultation-type').value = '';
+    if (document.getElementById('modal-consultation-description')) document.getElementById('modal-consultation-description').value = '';
+    if (document.getElementById('modal-consultation-medical-background')) document.getElementById('modal-consultation-medical-background').value = '';
+    if (document.getElementById('modal-consultation-referral-source')) document.getElementById('modal-consultation-referral-source').value = '';
+    if (document.getElementById('modal-condition-photos')) document.getElementById('modal-condition-photos').innerHTML = '';
     document.getElementById('modal-comorbidities-others').value = '';
     document.getElementById('modal-allergies-others').value = '';
     document.getElementById('modal-previous-hospitalizations').value = '';
@@ -1776,6 +1812,8 @@ function clearModal() {
     
     // Clear signature
     document.getElementById('modal-signature-display').innerHTML = '<span style="color: #999;">No signature available</span>';
+    const idPhotoEl = document.getElementById('modal-id-photo-display');
+    if (idPhotoEl) idPhotoEl.innerHTML = '<span style="color: #999;">No ID uploaded</span>';
 }
 
 function closePatientModal() {
@@ -1925,17 +1963,35 @@ function populateModal(data) {
         });
     }
     
-    // Sex
-    if (patient.gender) {
+    // Sex (from form personal_information.sex or patient.gender)
+    const sexValue = (personalInfo.sex || patient.gender || '').toString().toLowerCase();
+    if (sexValue) {
         const sexRadios = document.querySelectorAll('input[name="modal-sex"]');
         sexRadios.forEach(radio => {
-            if (radio.value.toLowerCase() === patient.gender.toLowerCase()) {
-                radio.checked = true;
-            }
+            radio.checked = (radio.value.toLowerCase() === sexValue);
         });
     }
     
     document.getElementById('modal-preferred-pronoun').value = personalInfo.preferred_pronoun || '';
+    
+    const appointment = data.appointment || {};
+    if (document.getElementById('modal-consultation-type')) document.getElementById('modal-consultation-type').value = appointment.consultation_type || '';
+    if (document.getElementById('modal-consultation-description')) document.getElementById('modal-consultation-description').value = appointment.description || '';
+    if (document.getElementById('modal-consultation-medical-background')) document.getElementById('modal-consultation-medical-background').value = appointment.medical_background || '';
+    if (document.getElementById('modal-consultation-referral-source')) document.getElementById('modal-consultation-referral-source').value = appointment.referral_source || '';
+    
+    const conditionPhotosDiv = document.getElementById('modal-condition-photos');
+    if (conditionPhotosDiv) {
+        conditionPhotosDiv.innerHTML = '';
+        (appointment.condition_photos || []).forEach(function(path) {
+            const img = document.createElement('img');
+            img.src = '{{ asset("storage") }}/' + path;
+            img.alt = 'Condition';
+            img.style.cssText = 'max-width: 120px; max-height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;';
+            conditionPhotosDiv.appendChild(img);
+        });
+        document.getElementById('modal-condition-photos-wrap').style.display = (appointment.condition_photos && appointment.condition_photos.length) ? 'block' : 'none';
+    }
     
     // Medical Information
     document.getElementById('modal-hypertension').checked = medicalInfo.hypertension || false;
@@ -1996,6 +2052,14 @@ function populateModal(data) {
         signatureDisplay.innerHTML = `<img src="${signatureSrc}" alt="Signature" style="max-width: 100%; max-height: 150px;" />`;
     } else {
         signatureDisplay.innerHTML = '<span style="color: #999;">No signature available</span>';
+    }
+    const idPhotoDisplay = document.getElementById('modal-id-photo-display');
+    if (idPhotoDisplay) {
+        if (personalInfo.id_photo_path) {
+            idPhotoDisplay.innerHTML = '<img src="{{ asset("storage") }}/' + personalInfo.id_photo_path + '" alt="ID" style="max-width: 100%; max-height: 150px; object-fit: contain;" />';
+        } else {
+            idPhotoDisplay.innerHTML = '<span style="color: #999;">No ID uploaded</span>';
+        }
     }
     
     // Date - use current date formatted as "MM/DD/YYYY"

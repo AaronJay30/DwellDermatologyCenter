@@ -26,7 +26,44 @@
             <!-- Cart Items -->
             <div class="card" style="background: var(--card-bg, #ffffff); border: 1px solid var(--border-color, #e9ecef); color: var(--dark-text, #2c3e50);">
                 <h2 style="color: var(--primary-color); margin-bottom: 1.5rem;">Cart Items</h2>
-                
+
+                @if($consultationItems->isNotEmpty())
+                    <div class="branch-header" style="background: #e5f7fa; padding: 1rem; margin-bottom: 1rem; border-left: 4px solid var(--primary-color); border-radius: 4px;">
+                        <h3 style="color: var(--primary-color); margin: 0; font-size: 1.1rem;">Medical Consultation</h3>
+                        <p style="color: var(--light-text); margin: 0.25rem 0 0 0; font-size: 0.9rem;">Book a time slot at checkout</p>
+                    </div>
+                    @foreach($consultationItems as $item)
+                        <div class="cart-item" data-cart-id="{{ $item->id }}" data-price="0" data-quantity="1">
+                            <div style="flex-shrink: 0;">
+                                <input type="checkbox" class="cart-item-checkbox" data-cart-id="{{ $item->id }}" checked style="width: 20px; height: 20px; cursor: pointer;">
+                            </div>
+                            <div class="cart-item-image" style="flex-shrink: 0;">
+                                <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--primary-color), #1a6b7a); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-stethoscope" style="font-size: 2rem; color: white;"></i>
+                                </div>
+                            </div>
+                            <div class="cart-item-details" style="flex: 1;">
+                                <h3 style="color: var(--primary-color); margin-bottom: 0.5rem; font-size: 1.1rem;">Medical Consultation</h3>
+                                <p style="color: var(--light-text); margin-bottom: 0.5rem; font-size: 0.9rem;">Schedule a consultation with our doctor. Time slot will be selected at checkout.</p>
+                                <span style="font-weight: 600; color: var(--primary-color);">Included in booking</span>
+                            </div>
+                            <div class="cart-item-actions">
+                                <div class="cart-item-actions-row">
+                                    <span class="item-total" style="font-weight: bold; color: var(--primary-color); min-width: 80px; text-align: right;">—</span>
+                                </div>
+                                <form method="POST" action="{{ route('cart.remove', $item) }}" class="remove-form">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" style="background: #dc3545; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; width: 100%;">Remove</button>
+                                </form>
+                            </div>
+                        </div>
+                    @endforeach
+                    @if($itemsByBranch->isNotEmpty())
+                        <div style="margin: 1rem 0; border-top: 2px dashed #e9ecef;"></div>
+                    @endif
+                @endif
+
                 @foreach($itemsByBranch as $branchId => $branchItems)
                     @php
                         $branch = $branchItems->first()->service->category->branch ?? null;

@@ -913,10 +913,13 @@
                                 @endif
                             </td>
                             <td>
-                                @php
-                                    $statusClass = 'status-' . strtolower($appointment->status);
-                                @endphp
-                                <span class="status-badge {{ $statusClass }}">{{ ucfirst($appointment->status) }}</span>
+                                <select class="doctor-schedule-status-select" data-appointment-id="{{ $appointment->id }}" data-prev-status="{{ $appointment->status }}" style="padding: 0.35rem 0.5rem; min-width: 110px;">
+                                    <option value="pending" {{ $appointment->status === 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="ongoing" {{ $appointment->status === 'ongoing' ? 'selected' : '' }}>Ongoing</option>
+                                    <option value="confirmed" {{ $appointment->status === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                                    <option value="completed" {{ $appointment->status === 'completed' ? 'selected' : '' }}>Done</option>
+                                    <option value="cancelled" {{ $appointment->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                </select>
                             </td>
                             <td>
                                 @php
@@ -1022,6 +1025,23 @@
                     <button type="submit" class="btn btn-danger">Cancel Service Schedule</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Mark as Done / Add to History Confirmation Modal -->
+    <div id="doneConfirmModal" class="patient-modal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; justify-content: center;">
+        <div class="patient-modal-content" style="max-width: 440px; background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+            <div class="patient-modal-header" style="padding: 1rem 1.5rem; border-bottom: 1px solid #eee;">
+                <h1 class="patient-modal-title" style="font-size: 1.2rem; margin: 0;">Mark as Done</h1>
+                <button class="patient-modal-close" type="button" onclick="closeDoneConfirmModal()" style="background:none;border:none;font-size:24px;cursor:pointer;">×</button>
+            </div>
+            <div class="patient-modal-body" style="padding: 1.5rem 2rem;">
+                <p style="margin: 0; color: #374151; line-height: 1.5;">This will be marked as done. Add to patient history?</p>
+            </div>
+            <div class="patient-modal-footer" style="padding: 1rem 2rem; gap: 1rem; border-top: 1px solid #eee; display: flex;">
+                <button type="button" id="doneConfirmNoBtn" class="patient-modal-btn patient-modal-btn-cancel">No, just mark done</button>
+                <button type="button" id="doneConfirmYesBtn" class="patient-modal-btn" style="background: #197a8c; color: white;">Yes, add to history</button>
+            </div>
         </div>
     </div>
 
@@ -1208,6 +1228,71 @@ document.addEventListener('DOMContentLoaded', function () {
     if (window.feather && typeof window.feather.replace === 'function') {
         window.feather.replace();
     }
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    const baseUrl = '{{ url("/doctor/my-services-schedules") }}';
+    let doneConfirmContext = null;
+    function openDoneConfirmModal(appointmentId, selectEl, previousStatus) {
+        doneConfirmContext = { appointmentId, selectEl, previousStatus };
+        const modal = document.getElementById('doneConfirmModal');
+        if (modal) { modal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+    }
+    function closeDoneConfirmModal() {
+        if (doneConfirmContext && doneConfirmContext.selectEl) {
+            doneConfirmContext.selectEl.value = doneConfirmContext.previousStatus || 'pending';
+        }
+        doneConfirmContext = null;
+        const modal = document.getElementById('doneConfirmModal');
+        if (modal) { modal.style.display = 'none'; document.body.style.overflow = ''; }
+    }
+    document.querySelectorAll('.doctor-schedule-status-select').forEach(function(sel) {
+        sel.addEventListener('change', function() {
+            const id = this.getAttribute('data-appointment-id');
+            const status = this.value;
+            const prev = this.getAttribute('data-prev-status');
+            if (status === 'completed') {
+                openDoneConfirmModal(id, this, prev || 'pending');
+                return;
+            }
+            this.setAttribute('data-prev-status', status);
+            const selEl = this;
+            fetch(`${baseUrl}/${id}`, {
+                method: 'PATCH',
+                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            }).then(r => r.json()).then(function(res) {
+                if (!res.success) alert(res.message || 'Failed to update status');
+                else if (selEl) selEl.setAttribute('data-prev-status', status);
+            }).catch(function() { alert('Failed to update status'); });
+        });
+    });
+    document.getElementById('doneConfirmNoBtn').addEventListener('click', function() {
+        if (!doneConfirmContext) return closeDoneConfirmModal();
+        const { appointmentId, selectEl } = doneConfirmContext;
+        fetch(`${baseUrl}/${appointmentId}`, {
+            method: 'PATCH',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'completed' })
+        }).then(r => r.json()).then(function(res) {
+            closeDoneConfirmModal();
+            if (res.success && selectEl) selectEl.setAttribute('data-prev-status', 'completed');
+            if (!res.success) alert(res.message || 'Failed to update status');
+        }).catch(function() { alert('Failed to update status'); closeDoneConfirmModal(); });
+    });
+    document.getElementById('doneConfirmYesBtn').addEventListener('click', function() {
+        if (!doneConfirmContext) return closeDoneConfirmModal();
+        const { appointmentId, selectEl } = doneConfirmContext;
+        fetch(`${baseUrl}/${appointmentId}`, {
+            method: 'PATCH',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'completed' })
+        }).then(r => r.json()).then(function(res) {
+            closeDoneConfirmModal();
+            if (res.success && selectEl) selectEl.setAttribute('data-prev-status', 'completed');
+            if (!res.success) { alert(res.message || 'Failed to update status'); return; }
+            addServiceResult(appointmentId);
+        }).catch(function() { alert('Failed to update status'); closeDoneConfirmModal(); });
+    });
 
     // Live search functionality
     const searchInput = document.getElementById('searchInput');

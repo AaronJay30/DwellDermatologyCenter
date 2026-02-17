@@ -21,6 +21,7 @@ class PersonalInformation extends Model
         'label',
         'is_default',
         'signature',
+        'id_photo_path',
     ];
 
     protected $casts = [

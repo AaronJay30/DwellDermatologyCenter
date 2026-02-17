@@ -2877,7 +2877,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="patient-certification-section">
                 <p class="patient-certification-text">I certify that all the information I wrote on this form are true and correct.</p>
                 
-                <div class="patient-signature-section">
+                <div class="patient-signature-section" style="grid-template-columns: 1fr 1fr;">
                     <div class="patient-signature-field">
                         <label>Signature over Printed Name</label>
                         <div class="patient-signature-display" id="modal-signature-display">
@@ -2888,9 +2888,18 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                     </div>
                     <div class="patient-signature-field">
-                        <label>Date</label>
-                        <input type="text" id="modal-date" value="${new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}" readonly>
+                        <label>Upload ID (photo)</label>
+                        <div class="patient-signature-display" id="modal-id-photo-display" style="max-height: 150px;">
+                            ${personalInfo.id_photo_path ? 
+                                `<img src="{{ asset('storage') }}/${personalInfo.id_photo_path}" alt="ID" style="max-width: 100%; max-height: 150px; object-fit: contain;" />` : 
+                                '<span style="color: #999;">No ID uploaded</span>'
+                            }
+                        </div>
                     </div>
+                </div>
+                <div class="patient-signature-field" style="margin-top: 0.5rem;">
+                    <label>Date</label>
+                    <input type="text" id="modal-date" value="${new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}" readonly>
                 </div>
             </div>
         `;

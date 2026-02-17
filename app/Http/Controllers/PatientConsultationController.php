@@ -103,10 +103,11 @@ class PatientConsultationController extends Controller
                 'service.category.branch',
                 'service.images',
                 'service.promoServices.promotion',
+                'branch',
             ])
             ->get();
         
-        // If cart items found, use them (cart checkout flow)
+        // If cart items found (may include consultation-only items), use them
         if ($cartItems->isNotEmpty() && $cartItems->count() === count($ids)) {
             $isDirectBooking = false;
         } else {
@@ -120,50 +121,65 @@ class PatientConsultationController extends Controller
                 ->get();
             
             if ($services->isNotEmpty() && $services->count() === count($ids)) {
-                // All IDs are valid service IDs - this is a direct booking
                 $isDirectBooking = true;
-                
-                // Create temporary cart-like structure for the view
                 $cartItems = collect();
                 foreach ($services as $service) {
-                    // Create a temporary object that mimics a cart item
-                    $tempCartItem = (object) [
-                        'id' => 'temp_' . $service->id, // Temporary ID
+                    $cartItems->push((object) [
+                        'id' => 'temp_' . $service->id,
                         'service_id' => $service->id,
                         'quantity' => 1,
                         'service' => $service,
-                    ];
-                    $cartItems->push($tempCartItem);
+                        'item_type' => 'service',
+                    ]);
                 }
             } else {
-                // Neither cart items nor services found
                 return redirect()->route('cart.index')->with('error', 'Selected items not found.');
             }
         }
-        
-        // Get branch from the first service (assuming all services are from the same branch)
-        $branch = $cartItems->first()->service->category->branch;
-        
+
+        $serviceCartItems = $cartItems->filter(fn ($item) => isset($item->service) && $item->service);
+        $consultationCartItems = $cartItems->filter(fn ($item) => (isset($item->item_type) && $item->item_type === 'consultation') || (method_exists($item, 'isConsultation') && $item->isConsultation()));
+        $hasConsultation = $consultationCartItems->isNotEmpty();
+
+        if ($hasConsultation && $serviceCartItems->isEmpty()) {
+            return redirect()->route('consultations.medical')->with('info', 'Proceed to select branch, date, and time slot for your consultation.');
+        }
+
+        // Branch: from first service item, or first consultation's branch, or first branch
+        $branch = null;
+        if ($serviceCartItems->isNotEmpty() && $serviceCartItems->first()->service && $serviceCartItems->first()->service->category) {
+            $branch = $serviceCartItems->first()->service->category->branch;
+        }
+        if (!$branch && $hasConsultation && $consultationCartItems->first()->branch_id) {
+            $branch = Branch::find($consultationCartItems->first()->branch_id);
+        }
         if (!$branch) {
-            return redirect()->route('services.index')->with('error', 'Unable to determine branch for selected services.');
+            $branch = Branch::first();
+        }
+        if (!$branch) {
+            return redirect()->route('services.index')->with('error', 'Unable to determine branch.');
         }
         
-        // Get the default personal information profile
         $defaultProfile = Auth::user()->personalInformation()
             ->where('is_default', true)
             ->first();
-        
-        // If no default, get the first one
         if (!$defaultProfile) {
             $defaultProfile = Auth::user()->personalInformation()->first();
         }
         
-        // Calculate total price
-        $totalPrice = $cartItems->sum(function ($item) {
-            return $item->service->pricing['display_price'] * $item->quantity;
+        $totalPrice = $serviceCartItems->sum(function ($item) {
+            return $item->service ? ($item->service->pricing['display_price'] * $item->quantity) : 0;
         });
+
+        // Estimated total duration: consultation (~20 min) + sum of (service duration * quantity)
+        $consultationDurationMinutes = $hasConsultation ? 20 : 0;
+        $servicesDurationMinutes = $serviceCartItems->sum(function ($item) {
+            $mins = $item->service && isset($item->service->duration_minutes) ? (int) $item->service->duration_minutes : 0;
+            return $mins * (isset($item->quantity) ? (int) $item->quantity : 1);
+        });
+        $totalDurationMinutes = $consultationDurationMinutes + $servicesDurationMinutes;
         
-        return view('consultations.create', compact('cartItems', 'branch', 'defaultProfile', 'totalPrice', 'isDirectBooking'));
+        return view('consultations.create', compact('cartItems', 'serviceCartItems', 'hasConsultation', 'branch', 'defaultProfile', 'totalPrice', 'totalDurationMinutes', 'isDirectBooking'));
     }
 
     public function medicalConsultation()
@@ -196,6 +212,8 @@ class PatientConsultationController extends Controller
                 'description' => 'nullable|string|max:1000',
                 'medical_background' => 'nullable|string|max:1000',
                 'referral_source' => 'nullable|string|max:255',
+                'condition_photos' => 'nullable|array',
+                'condition_photos.*' => 'nullable|image|max:5120',
                 // Personal information fields
                 'personal_information_id' => 'nullable|exists:personal_information,id',
                 'first_name' => 'required|string|max:255',
@@ -246,6 +264,12 @@ class PatientConsultationController extends Controller
                 if ($cartItems->isEmpty()) {
                     return back()->with('error', 'Selected cart items not found.')->withInput();
                 }
+
+                $consultationCartItems = $cartItems->filter(fn ($c) => $c->isConsultation());
+                $serviceOnlyCartItems = $cartItems->filter(fn ($c) => !$c->isConsultation());
+                if ($consultationCartItems->isNotEmpty()) {
+                    $request->validate(['time_slot_id' => 'required|exists:time_slots,id']);
+                }
             }
 
             // Calculate age from date of birth
@@ -259,16 +283,58 @@ class PatientConsultationController extends Controller
             DB::beginTransaction();
             try {
                 $appointments = [];
-                
-                // Create an appointment for each cart item
-                foreach ($cartItems as $cartItem) {
+                $serviceCartItemsForBooking = $isDirectBooking ? $cartItems : $cartItems->filter(fn ($c) => !$c->isConsultation());
+                $hasConsultationInCart = !$isDirectBooking && $cartItems->filter(fn ($c) => $c->isConsultation())->isNotEmpty();
+
+                if ($hasConsultationInCart && $request->time_slot_id) {
+                    $timeSlot = TimeSlot::where('id', $request->time_slot_id)
+                        ->forBranch($request->branch_id)
+                        ->available()
+                        ->first();
+                    if (!$timeSlot) {
+                        DB::rollBack();
+                        return back()->with('error', 'Selected time slot is no longer available.')->withInput();
+                    }
+                    $consultationAppointment = Appointment::create([
+                        'patient_id' => Auth::id(),
+                        'personal_information_id' => $personalInfo->id,
+                        'doctor_id' => null,
+                        'service_id' => null,
+                        'doctor_slot_id' => null,
+                        'status' => 'pending',
+                        'notes' => $request->description,
+                        'consultation_type' => 'Medical Consultation',
+                        'description' => $request->description,
+                        'medical_background' => $request->medical_background,
+                        'referral_source' => $request->referral_source,
+                        'branch_id' => $request->branch_id,
+                        'time_slot_id' => $request->time_slot_id,
+                        'scheduled_date' => $request->date,
+                        'first_name' => $request->first_name,
+                        'middle_initial' => $request->middle_initial,
+                        'last_name' => $request->last_name,
+                        'age' => $age,
+                    ]);
+                    $appointments[] = $consultationAppointment;
+                    if ($request->hasFile('condition_photos')) {
+                        foreach ($request->file('condition_photos') as $file) {
+                            $path = $file->store('appointment-condition-photos', 'public');
+                            \App\Models\AppointmentConditionPhoto::create([
+                                'appointment_id' => $consultationAppointment->id,
+                                'image_path' => $path,
+                            ]);
+                        }
+                    }
+                }
+
+                foreach ($serviceCartItemsForBooking as $cartItem) {
+                    if (!$cartItem->service_id) continue;
                     for ($i = 0; $i < $cartItem->quantity; $i++) {
                         $notes = $request->description;
                         if ($request->date) {
                             $notes = ($notes ? $notes . "\n\n" : '') . "Preferred Date: " . $request->date;
                         }
-                        
-                        $appointment = Appointment::create([
+                        $serviceAppointment = Appointment::create([
                             'patient_id' => Auth::id(),
                             'personal_information_id' => $personalInfo->id,
                             'doctor_id' => null,
@@ -288,11 +354,21 @@ class PatientConsultationController extends Controller
                             'last_name' => $request->last_name,
                             'age' => $age,
                         ]);
-                        $appointments[] = $appointment;
+                        $appointments[] = $serviceAppointment;
+                    }
+                }
+                // Condition photos with services-only (no consultation): attach to first created appointment
+                if (!$hasConsultationInCart && $request->hasFile('condition_photos') && !empty($appointments)) {
+                    $firstAppointment = $appointments[0];
+                    foreach ($request->file('condition_photos') as $file) {
+                        $path = $file->store('appointment-condition-photos', 'public');
+                        \App\Models\AppointmentConditionPhoto::create([
+                            'appointment_id' => $firstAppointment->id,
+                            'image_path' => $path,
+                        ]);
                     }
                 }
 
-                // Delete cart items after successful booking (only if from cart, not direct booking)
                 if (!$isDirectBooking) {
                     foreach ($cartItems as $cartItem) {
                         if (method_exists($cartItem, 'delete')) {
@@ -301,8 +377,10 @@ class PatientConsultationController extends Controller
                     }
                 }
 
-                // Send notification to doctors
-                $serviceNames = $cartItems->pluck('service.name')->unique()->implode(', ');
+                $serviceNames = $serviceCartItemsForBooking->pluck('service.name')->filter()->unique()->implode(', ');
+                if ($hasConsultationInCart) {
+                    $serviceNames = 'Consultation' . ($serviceNames ? ', ' . $serviceNames : '');
+                }
                 $branchName = \App\Models\Branch::find($request->branch_id)->name ?? 'the clinic';
                 
                 // First, try to notify doctors in the branch
@@ -334,7 +412,6 @@ class PatientConsultationController extends Controller
                 }
 
                 // Send confirmation notification to patient
-                $serviceNames = $cartItems->pluck('service.name')->unique()->implode(', ');
                 NotificationService::sendNotification(
                     'Service Booking Submitted',
                     "Your service booking(s) for {$serviceNames} has been submitted for {$request->date}. You will be notified once it's confirmed.",
@@ -359,6 +436,8 @@ class PatientConsultationController extends Controller
                 'medical_background' => 'nullable|string|max:1000',
                 'referral_source' => 'nullable|string|max:255',
                 'notes' => 'nullable|string|max:1000',
+                'condition_photos' => 'nullable|array',
+                'condition_photos.*' => 'image|max:5120',
                 // Personal information fields
                 'personal_information_id' => 'nullable|exists:personal_information,id',
                 'first_name' => 'required|string|max:255',
@@ -410,6 +489,16 @@ class PatientConsultationController extends Controller
                     'last_name' => $request->last_name,
                     'age' => $age,
                 ]);
+
+                if ($request->hasFile('condition_photos')) {
+                    foreach ($request->file('condition_photos') as $file) {
+                        $path = $file->store('appointment-condition-photos', 'public');
+                        \App\Models\AppointmentConditionPhoto::create([
+                            'appointment_id' => $appointment->id,
+                            'image_path' => $path,
+                        ]);
+                    }
+                }
 
                 // Send notification to ALL doctors in the branch
                 $branchDoctors = \App\Models\User::where('branch_id', $request->branch_id)

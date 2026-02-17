@@ -172,10 +172,13 @@
 
     .signature-section {
         display: grid;
-        grid-template-columns: 2fr 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 2rem;
         margin-top: 1rem;
     }
+    .id-upload-field label { margin-bottom: 0.5rem; font-weight: 500; color: #333; display: block; }
+    .id-upload-field input[type="file"] { margin-top: 0.5rem; }
+    .id-preview { margin-top: 0.5rem; max-width: 200px; max-height: 150px; border: 1px solid #ccc; border-radius: 4px; }
 
     .signature-field {
         display: flex;
@@ -297,7 +300,7 @@
         <h1 class="form-title">NEW PATIENT INFORMATION SHEET</h1>
     </div>
 
-    <form action="{{ route('add-patient-information.store') }}" method="POST" id="patient-info-form">
+    <form action="{{ route('add-patient-information.store') }}" method="POST" id="patient-info-form" enctype="multipart/form-data">
         @csrf
 
         <!-- PERSONAL INFORMATION Section -->
@@ -503,24 +506,32 @@
             </div>
         </div>
 
-        <!-- Certification and Signature Section -->
+        <!-- Certification and Signature / ID Section -->
         <div class="certification-section">
-            <p class="certification-text">I certify that all the information I wrote on this form are true and correct.</p>
+            <p class="certification-text">I certify that all the information I wrote on this form are true and correct. Provide either your <strong>Digital Signature</strong> or <strong>Upload ID (photo)</strong> — at least one is required (e.g. for those who cannot sign).</p>
             
             <div class="signature-section">
                 <div class="signature-field">
-                    <label>Signature over Printed Name <span class="required-asterisk">*required</span></label>
+                    <label>Digital Signature</label>
                     <div class="signature-canvas-container">
                         <canvas id="signature-canvas"></canvas>
                         <button type="button" class="clear-signature-btn" onclick="clearSignature()">Clear</button>
                     </div>
-                    <input type="hidden" id="signature" name="signature" required>
+                    <input type="hidden" id="signature" name="signature" value="{{ old('signature') }}">
                     @error('signature')
                         <div class="field-error">{{ $message }}</div>
                     @enderror
                 </div>
                 <div class="signature-field">
-                    <label>Date <span class="required-asterisk">*required</span></label>
+                    <label>Upload ID (photo) <small style="color:#666;">— or use signature on the left</small></label>
+                    <div class="id-upload-field">
+                        <input type="file" name="id_photo" id="id_photo" accept="image/*" style="padding: 0.5rem;">
+                        @error('id_photo')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
+                        <img id="id-photo-preview" class="id-preview" src="" alt="" style="display: none;">
+                    </div>
+                    <label style="margin-top: 1rem; display: block;">Date <span class="required-asterisk">*required</span></label>
                     <input type="date" id="date" name="date" required value="{{ old('date', date('Y-m-d')) }}">
                     @error('date')
                         <div class="field-error">{{ $message }}</div>
@@ -620,27 +631,26 @@
         }
     }
 
-    // Validate signature before submit
+    document.getElementById('id_photo').addEventListener('change', function(e) {
+        const preview = document.getElementById('id-photo-preview');
+        if (e.target.files && e.target.files[0]) {
+            const r = new FileReader();
+            r.onload = function() { preview.src = r.result; preview.style.display = 'block'; };
+            r.readAsDataURL(e.target.files[0]);
+        } else { preview.style.display = 'none'; }
+    });
+
     document.getElementById('patient-info-form').addEventListener('submit', function(e) {
-        // Save signature before validation
         saveSignature();
-        
         const signature = document.getElementById('signature').value;
-        if (!signature || signature.trim() === '') {
+        const idPhoto = document.getElementById('id_photo').files.length;
+        if ((!signature || signature.trim() === '') && !idPhoto) {
             e.preventDefault();
-            alert('Please provide your signature before submitting.');
+            alert('Please provide either your Digital Signature or Upload ID (photo) before submitting.');
             return false;
         }
-        
-        // Disable submit button to prevent double submission
         const submitBtn = this.querySelector('.submit-btn');
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
-        }
-        
-        // Allow form to submit normally - don't prevent default if validation passes
-        // The form will submit via POST to the server
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
     });
 </script>
 @endpush

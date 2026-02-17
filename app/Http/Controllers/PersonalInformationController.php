@@ -398,9 +398,13 @@ class PersonalInformationController extends Controller
             'emergency_relationship' => 'required|string|max:255',
             'emergency_address' => 'required|string|max:500',
             'emergency_contact_number' => 'required|string|max:20',
-            'signature' => 'required|string',
+            'signature' => 'nullable|string',
+            'id_photo' => 'nullable|file|image|max:5120',
             'date' => 'required|date',
         ]);
+        if (empty(trim($request->signature ?? '')) && !$request->hasFile('id_photo')) {
+            return back()->withErrors(['signature' => 'Please provide either your Digital Signature or Upload ID (photo).'])->withInput();
+        }
 
         DB::beginTransaction();
         try {
@@ -443,7 +447,12 @@ class PersonalInformationController extends Controller
                 Auth::user()->personalInformation()->update(['is_default' => false]);
             }
 
-            // Create Personal Information
+            $idPhotoPath = null;
+            if ($request->hasFile('id_photo')) {
+                $path = $request->file('id_photo')->store('id-photos', 'public');
+                $idPhotoPath = $path;
+            }
+
             $personalInfo = PersonalInformation::create([
                 'user_id' => Auth::id(),
                 'first_name' => $first_name,
@@ -456,7 +465,8 @@ class PersonalInformationController extends Controller
                 'contact_number' => $request->contact_number,
                 'label' => 'HOME',
                 'is_default' => $isDefault,
-                'signature' => $request->signature,
+                'signature' => $request->signature ?: null,
+                'id_photo_path' => $idPhotoPath,
             ]);
 
             // Create Medical Information

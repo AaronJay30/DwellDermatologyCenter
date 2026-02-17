@@ -199,8 +199,10 @@ Route::middleware('auth')->group(function () {
         // My Appointments routes
         Route::get('/my-appointments', [App\Http\Controllers\Doctor\DashboardController::class, 'myAppointments'])->name('doctor.my-appointments');
         Route::get('/my-appointments/{appointment}', [App\Http\Controllers\Doctor\DashboardController::class, 'showAppointment'])->name('doctor.my-appointments.show');
+        Route::patch('/my-appointments/{appointment}', [App\Http\Controllers\Doctor\DashboardController::class, 'updateAppointment'])->name('doctor.my-appointments.update');
         Route::patch('/my-appointments/{appointment}/confirm', [App\Http\Controllers\Doctor\DashboardController::class, 'confirmAppointment'])->name('doctor.my-appointments.confirm');
         Route::patch('/my-appointments/{appointment}/cancel', [App\Http\Controllers\Doctor\DashboardController::class, 'cancelAppointment'])->name('doctor.my-appointments.cancel');
+        Route::post('/my-appointments/{appointment}/progress-photos', [App\Http\Controllers\Doctor\DashboardController::class, 'storeProgressPhotos'])->name('doctor.my-appointments.progress-photos');
         Route::post('/my-appointments/{appointment}/add-result', [App\Http\Controllers\Doctor\DashboardController::class, 'storeResult'])->name('doctor.my-appointments.add-result');
         Route::delete('/my-appointments/{appointment}', [App\Http\Controllers\Doctor\DashboardController::class, 'deleteAppointment'])->name('doctor.my-appointments.delete');
         
@@ -208,8 +210,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/my-services-schedules', [App\Http\Controllers\Doctor\DashboardController::class, 'myServicesSchedules'])->name('doctor.my-services-schedules');
         Route::get('/my-services-schedules/confirmed', [App\Http\Controllers\Doctor\DashboardController::class, 'myServicesSchedulesConfirmed'])->name('doctor.my-services-schedules.confirmed');
         Route::get('/my-services-schedules/{appointment}', [App\Http\Controllers\Doctor\DashboardController::class, 'showServiceSchedule'])->name('doctor.my-services-schedules.show');
+        Route::patch('/my-services-schedules/{appointment}', [App\Http\Controllers\Doctor\DashboardController::class, 'updateServiceScheduleAppointment'])->name('doctor.my-services-schedules.update');
         Route::patch('/my-services-schedules/{appointment}/confirm', [App\Http\Controllers\Doctor\DashboardController::class, 'confirmServiceSchedule'])->name('doctor.my-services-schedules.confirm');
         Route::patch('/my-services-schedules/{appointment}/cancel', [App\Http\Controllers\Doctor\DashboardController::class, 'cancelServiceSchedule'])->name('doctor.my-services-schedules.cancel');
+        Route::post('/my-services-schedules/{appointment}/progress-photos', [App\Http\Controllers\Doctor\DashboardController::class, 'storeProgressPhotos'])->name('doctor.my-services-schedules.progress-photos');
         Route::post('/my-services-schedules/{appointment}/result', [App\Http\Controllers\Doctor\DashboardController::class, 'storeServiceResult'])->name('doctor.my-services-schedules.result');
         
         // History routes
@@ -250,15 +254,19 @@ Route::middleware('auth')->group(function () {
         Route::put('/profile/password', [App\Http\Controllers\Admin\DashboardController::class, 'updatePassword'])->name('admin.profile.update-password');
 
         Route::get('/appointments/{appointment}/patient-info', [App\Http\Controllers\Admin\DashboardController::class, 'getPatientInfo'])->name('admin.appointments.patient-info');
+        Route::patch('/appointments/{appointment}', [App\Http\Controllers\Admin\DashboardController::class, 'updateAppointment'])->name('admin.appointments.update');
         Route::delete('/appointments/{appointment}', [App\Http\Controllers\Admin\DashboardController::class, 'deleteAppointment'])->name('admin.appointments.delete');
+        Route::post('/appointments/{appointment}/progress-photos', [App\Http\Controllers\Admin\DashboardController::class, 'storeProgressPhotos'])->name('admin.appointments.progress-photos');
         Route::post('/appointments/{appointment}/result', [App\Http\Controllers\Admin\DashboardController::class, 'storeResult'])->name('admin.appointments.store-result');
         
         // My Services Schedules routes
         Route::get('/my-services-schedules', [App\Http\Controllers\Admin\DashboardController::class, 'myServicesSchedules'])->name('admin.my-services-schedules');
         Route::get('/my-services-schedules/confirmed', [App\Http\Controllers\Admin\DashboardController::class, 'myServicesSchedulesConfirmed'])->name('admin.my-services-schedules.confirmed');
         Route::get('/my-services-schedules/{appointment}', [App\Http\Controllers\Admin\DashboardController::class, 'showServiceSchedule'])->name('admin.my-services-schedules.show');
+        Route::patch('/my-services-schedules/{appointment}', [App\Http\Controllers\Admin\DashboardController::class, 'updateServiceScheduleAppointment'])->name('admin.my-services-schedules.update');
         Route::patch('/my-services-schedules/{appointment}/confirm', [App\Http\Controllers\Admin\DashboardController::class, 'confirmServiceSchedule'])->name('admin.my-services-schedules.confirm');
         Route::patch('/my-services-schedules/{appointment}/cancel', [App\Http\Controllers\Admin\DashboardController::class, 'cancelServiceSchedule'])->name('admin.my-services-schedules.cancel');
+        Route::post('/my-services-schedules/{appointment}/progress-photos', [App\Http\Controllers\Admin\DashboardController::class, 'storeProgressPhotos'])->name('admin.my-services-schedules.progress-photos');
         Route::post('/my-services-schedules/{appointment}/result', [App\Http\Controllers\Admin\DashboardController::class, 'storeServiceResult'])->name('admin.my-services-schedules.result');
         
         // Notifications
