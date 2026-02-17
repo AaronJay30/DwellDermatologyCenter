@@ -1809,13 +1809,16 @@ function selectProfile(profile) {
 
         fetch(`{{ route('consultations.available-slots') }}?branch_id=${branchId}&date=${date}`)
             .then(response => response.json())
-            .then(slots => {
+            .then(data => {
+                // Support both { slots: [...] } and bare array responses
+                const slots = Array.isArray(data) ? data : (data && Array.isArray(data.slots) ? data.slots : []);
+
                 // Store slots data for later use
                 loadedSlots = slots;
                 
                 slotSelect.innerHTML = '<option value="">Select a time slot</option>';
                 
-                if (slots.length === 0) {
+                if (!slots || slots.length === 0) {
                     slotSelect.innerHTML = '<option value="">No available slots for this date</option>';
                 } else {
                     slots.forEach(slot => {
