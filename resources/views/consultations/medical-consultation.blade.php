@@ -771,22 +771,11 @@
         <h1 class="consultation-title">Medical Consultation</h1>
         <p class="consultation-subtitle">Schedule your consultation with our medical professionals</p>
         @if(isset($branches) && count($branches) > 0)
-            @php
-                $initialBranch = $branches[0];
-                $initialImage = $initialBranch->available_doctor_image_path ? asset('storage/' . $initialBranch->available_doctor_image_path) : null;
-            @endphp
-            <div id="available-doctor-banner" style="margin-top: 1.5rem; text-align: center;">
-                @if($initialImage)
-                    <img id="available-doctor-image"
-                         src="{{ $initialImage }}"
-                         alt="Available doctor schedule"
-                         style="max-width: 100%; border-radius: 12px; border: 2px solid #e5e7eb;">
-                @else
-                    <img id="available-doctor-image"
-                         src=""
-                         alt=""
-                         style="display:none; max-width: 100%; border-radius: 12px; border: 2px solid #e5e7eb;">
-                @endif
+            <div id="available-doctor-banner" style="margin-top: 1.5rem; text-align: center; display:none;">
+                <img id="available-doctor-image"
+                     src=""
+                     alt=""
+                     style="display:none; max-width: 100%; border-radius: 12px; border: 2px solid #e5e7eb;">
             </div>
         @endif
     </div>
