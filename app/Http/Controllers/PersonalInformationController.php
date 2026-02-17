@@ -272,39 +272,43 @@ class PersonalInformationController extends Controller
 
         DB::beginTransaction();
         try {
-            // Parse name into first, middle, last
-            // Handle names like "Aliah Kate M. Taban" or "John Doe" or "Mary Jane Smith"
+            // Parse name into first, (optional) middle initial, and last.
+            // IMPORTANT: Middle name/initial must NOT be auto-derived unless the user
+            // explicitly provides a single-letter middle token (e.g. "M." or "M").
+            // Examples this logic supports:
+            // - "John Doe"           -> first: John,  middle_initial: '', last: Doe
+            // - "John M. Doe"        -> first: John,  middle_initial: M,  last: Doe
+            // - "Aliah Kate M. Taban"-> first: Aliah, middle_initial: M,  last: Taban
             $nameParts = array_filter(explode(' ', trim($request->name)), function($part) {
                 return !empty(trim($part));
             });
             $nameParts = array_values($nameParts);
-            
+
             $firstName = $nameParts[0] ?? '';
             $middleInitial = '';
             $lastName = '';
-            
+
             if (count($nameParts) >= 2) {
-                // Check if second part is a middle initial (single letter or letter with period)
-                $secondPart = trim($nameParts[1], '.');
-                if (strlen($secondPart) === 1) {
-                    $middleInitial = $secondPart;
-                    $lastName = count($nameParts) > 2 ? implode(' ', array_slice($nameParts, 2)) : '';
-                } else {
-                    // Second part is part of last name or first name
-                    if (count($nameParts) >= 3) {
-                        // Assume format: First Middle Last
-                        $middleInitial = substr($nameParts[1], 0, 1);
-                        $lastName = implode(' ', array_slice($nameParts, 2));
-                    } else {
-                        // Only two parts: First Last
-                        $lastName = $nameParts[1];
+                // Look for an explicit middle initial anywhere after the first token.
+                // We ONLY set middle_initial when we see a single letter (with or without a dot).
+                for ($i = 1; $i < count($nameParts); $i++) {
+                    $clean = trim($nameParts[$i], '.');
+                    if (strlen($clean) === 1) {
+                        $middleInitial = $clean;
+                        // Everything after this token is treated as last name.
+                        if ($i + 1 < count($nameParts)) {
+                            $lastName = implode(' ', array_slice($nameParts, $i + 1));
+                        }
+                        break;
                     }
                 }
-            }
-            
-            // If still no last name, use empty string
-            if (empty($lastName) && count($nameParts) > 1) {
-                $lastName = $nameParts[count($nameParts) - 1];
+
+                // If we did not find an explicit middle initial, treat everything
+                // after the first token as part of the last name and leave
+                // middle_initial blank (user may not have a middle name).
+                if ($lastName === '') {
+                    $lastName = implode(' ', array_slice($nameParts, 1));
+                }
             }
 
             // Set as default if this is the first profile
@@ -400,11 +404,38 @@ class PersonalInformationController extends Controller
 
         DB::beginTransaction();
         try {
-            // Parse name into first, middle, last
-            $nameParts = explode(' ', trim($request->name));
+            // Parse name into first, (optional) middle initial, and last.
+            // IMPORTANT: Middle name/initial must NOT be auto-derived unless the user
+            // explicitly provides a single-letter middle token (e.g. "M." or "M").
+            $nameParts = array_filter(explode(' ', trim($request->name)), function($part) {
+                return !empty(trim($part));
+            });
+            $nameParts = array_values($nameParts);
+
             $first_name = $nameParts[0] ?? '';
-            $middle_initial = isset($nameParts[1]) && strlen($nameParts[1]) === 1 ? $nameParts[1] : (isset($nameParts[1]) ? substr($nameParts[1], 0, 1) : '');
-            $last_name = isset($nameParts[2]) ? implode(' ', array_slice($nameParts, 2)) : (isset($nameParts[1]) && strlen($nameParts[1]) > 1 ? $nameParts[1] : '');
+            $middle_initial = '';
+            $last_name = '';
+
+            if (count($nameParts) >= 2) {
+                // Look for an explicit middle initial anywhere after the first token.
+                for ($i = 1; $i < count($nameParts); $i++) {
+                    $clean = trim($nameParts[$i], '.');
+                    if (strlen($clean) === 1) {
+                        $middle_initial = $clean;
+                        if ($i + 1 < count($nameParts)) {
+                            $last_name = implode(' ', array_slice($nameParts, $i + 1));
+                        }
+                        break;
+                    }
+                }
+
+                // If we did not find an explicit middle initial, treat everything
+                // after the first token as part of the last name and leave
+                // middle_initial blank.
+                if ($last_name === '') {
+                    $last_name = implode(' ', array_slice($nameParts, 1));
+                }
+            }
 
             // Set as default if no profiles exist
             $isDefault = !Auth::user()->personalInformation()->exists();

@@ -11,7 +11,9 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if (file_exists(public_path('build/manifest.json')))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @endif
     @stack('styles')
 
     <style>

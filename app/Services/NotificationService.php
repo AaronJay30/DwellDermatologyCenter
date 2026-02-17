@@ -3,7 +3,12 @@
 namespace App\Services;
 
 use App\Events\NotificationCreated;
+use App\Mail\SystemNotificationMail;
 use App\Models\Notification;
+use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
+use App\Services\SmsService;
 
 class NotificationService
 {
@@ -16,8 +21,33 @@ class NotificationService
             'user_id' => $userId,
         ]);
 
-        // Broadcast the notification in real-time
+        // Broadcast the notification in real-time (in-app)
         event(new NotificationCreated($notification));
+
+        // Also send email to the user (if they have an email)
+        if ($userId) {
+            $user = User::find($userId);
+            if ($user && $user->email) {
+                try {
+                    Mail::to($user->email)->send(new SystemNotificationMail($title, $message));
+                } catch (\Throwable $e) {
+                    Log::error('Failed to send system notification mail', [
+                        'user_id' => $userId,
+                        'email' => $user->email,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        }
+
+        // Optionally send SMS to the user (if they have a phone number and SMS is enabled)
+        if ($userId) {
+            $user = $user ?? User::find($userId);
+            $phone = $user?->phone ?? $user?->contact_phone;
+            if ($phone) {
+                SmsService::send($phone, $message);
+            }
+        }
 
         return $notification;
     }

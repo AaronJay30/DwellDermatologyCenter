@@ -22,6 +22,9 @@
 <a href="{{ route('admin.services') }}" class="{{ request()->routeIs('admin.services*') ? 'active' : '' }}">
     <i data-feather="briefcase"></i><span>Services</span>
 </a>
+<a href="{{ route('admin.available-doctor.edit') }}" class="{{ request()->routeIs('admin.available-doctor.*') ? 'active' : '' }}">
+    <i data-feather="image"></i><span>AVAILABLE DOCTOR</span>
+</a>
 <a href="{{ route('admin.promos') }}" class="{{ request()->routeIs('admin.promos*') ? 'active' : '' }}">
     <i data-feather="star"></i><span>Promotions</span>
 </a>

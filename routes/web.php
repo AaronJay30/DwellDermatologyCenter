@@ -299,5 +299,11 @@ Route::middleware('auth')->group(function () {
         Route::delete('/slots/{slot}', [App\Http\Controllers\Admin\DashboardController::class, 'destroyTimeSlot'])->name('admin.slots.destroy');
         Route::post('/slots/appointments/{appointment}/accept', [App\Http\Controllers\Admin\DashboardController::class, 'acceptAppointment'])->name('admin.slots.accept');
         Route::post('/slots/appointments/{appointment}/reject', [App\Http\Controllers\Admin\DashboardController::class, 'rejectAppointment'])->name('admin.slots.reject');
+
+        // Available Doctor schedule photo (per admin branch)
+        Route::get('/available-doctor', [App\Http\Controllers\Admin\AvailableDoctorController::class, 'edit'])
+            ->name('admin.available-doctor.edit');
+        Route::post('/available-doctor', [App\Http\Controllers\Admin\AvailableDoctorController::class, 'update'])
+            ->name('admin.available-doctor.update');
     });
 });

@@ -770,6 +770,25 @@
     <div class="consultation-header">
         <h1 class="consultation-title">Medical Consultation</h1>
         <p class="consultation-subtitle">Schedule your consultation with our medical professionals</p>
+        @if(isset($branches) && count($branches) > 0)
+            @php
+                $initialBranch = $branches[0];
+                $initialImage = $initialBranch->image_path ? asset('storage/' . $initialBranch->image_path) : null;
+            @endphp
+            <div id="available-doctor-banner" style="margin-top: 1.5rem; text-align: center;">
+                @if($initialImage)
+                    <img id="available-doctor-image"
+                         src="{{ $initialImage }}"
+                         alt="Available doctor schedule"
+                         style="max-width: 100%; border-radius: 12px; border: 2px solid #e5e7eb;">
+                @else
+                    <img id="available-doctor-image"
+                         src=""
+                         alt=""
+                         style="display:none; max-width: 100%; border-radius: 12px; border: 2px solid #e5e7eb;">
+                @endif
+            </div>
+        @endif
     </div>
 
     @if ($errors->any())
@@ -821,7 +840,12 @@
                         <select name="branch_id" id="branch_id" class="form-select" required>
                             <option value="">Choose a branch</option>
                             @foreach ($branches as $branch)
-                                <option value="{{ $branch->id }}">{{ $branch->name }} - {{ $branch->address }}</option>
+                                <option
+                                    value="{{ $branch->id }}"
+                                    data-available-image="{{ $branch->image_path ? asset('storage/' . $branch->image_path) : '' }}"
+                                >
+                                    {{ $branch->name }} - {{ $branch->address }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -1648,12 +1672,13 @@ function selectProfile(profile) {
 }
 
     // Initialize consultation form
-function initializeConsultationForm() {
+    function initializeConsultationForm() {
     const form = document.getElementById('consultation-form');
     const branchSelect = document.getElementById('branch_id');
     const dateInput = document.getElementById('date');
     const slotSelect = document.getElementById('time_slot_id');
     const bookButton = document.getElementById('book-consultation-btn');
+    const bannerImage = document.getElementById('available-doctor-image');
     
     // Form fields for summary
     const firstNameInput = document.getElementById('first_name');
@@ -1731,6 +1756,25 @@ function initializeConsultationForm() {
         bookButton.disabled = !isFormValid;
     }
 
+    // Update available doctor banner based on selected branch
+    function updateAvailableDoctorBanner() {
+        if (!branchSelect || !bannerImage) return;
+
+        const option = branchSelect.options[branchSelect.selectedIndex];
+        if (!option) return;
+
+        const imageUrl = option.getAttribute('data-available-image');
+        if (imageUrl) {
+            bannerImage.src = imageUrl;
+            bannerImage.style.display = 'inline-block';
+            bannerImage.alt = 'Available doctor schedule';
+        } else {
+            bannerImage.src = '';
+            bannerImage.style.display = 'none';
+            bannerImage.alt = '';
+        }
+    }
+
     // Load available time slots
     function loadAvailableTimeSlots() {
         const branchId = branchSelect.value;
@@ -1738,6 +1782,7 @@ function initializeConsultationForm() {
 
         if (!branchId || !date) {
             slotSelect.innerHTML = '<option value="">Select a branch and date first</option>';
+            updateAvailableDoctorBanner();
             updateSummary();
             return;
         }
@@ -1767,6 +1812,7 @@ function initializeConsultationForm() {
                 }
                 
                 slotSelect.disabled = false;
+                updateAvailableDoctorBanner();
                 updateSummary();
             })
             .catch(error => {
@@ -1778,7 +1824,10 @@ function initializeConsultationForm() {
     }
 
     // Event listeners
-    branchSelect.addEventListener('change', loadAvailableTimeSlots);
+    branchSelect.addEventListener('change', function () {
+        updateAvailableDoctorBanner();
+        loadAvailableTimeSlots();
+    });
     dateInput.addEventListener('change', loadAvailableTimeSlots);
     slotSelect.addEventListener('change', updateSummary);
     consultationTypeSelect.addEventListener('change', updateSummary);
