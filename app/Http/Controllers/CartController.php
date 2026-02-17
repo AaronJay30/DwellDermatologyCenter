@@ -138,19 +138,29 @@ class CartController extends Controller
         $request->validate([
             'quantity' => 'required|integer|min:1|max:10'
         ]);
-
         if ($cart->user_id !== Auth::id()) {
             abort(403);
         }
 
+        // Update quantity (only meaningful for service items; consultations are always quantity = 1)
         $cart->update(['quantity' => $request->quantity]);
 
         // Calculate updated totals for AJAX requests
         $cart->load('service.category.branch');
-        $itemTotal = $cart->service->pricing['display_price'] * $cart->quantity;
+
+        // Guard against items that don't have an associated service (e.g. consultation line items)
+        $itemTotal = $cart->service
+            ? ($cart->service->pricing['display_price'] * $cart->quantity)
+            : 0;
+
+        // Sum totals only for items that actually have a service with pricing
         $cartTotal = Cart::where('user_id', Auth::id())
+            ->with('service')
             ->get()
             ->sum(function ($item) {
+                if (!$item->service) {
+                    return 0;
+                }
                 return $item->service->pricing['display_price'] * $item->quantity;
             });
 
@@ -173,14 +183,20 @@ class CartController extends Controller
             abort(403);
         }
 
-        // Remove the entire line item regardless of its current quantity
+        // Remove the entire line item regardless of its current quantity.
+        // Use the specific cart row (id) so we correctly handle consultation items as well.
         Cart::where('user_id', Auth::id())
-            ->where('service_id', $cart->service_id)
+            ->where('id', $cart->id)
             ->delete();
 
+        // Recalculate totals, skipping items without a service (e.g. consultation)
         $cartTotal = Cart::where('user_id', Auth::id())
+            ->with('service')
             ->get()
             ->sum(function ($item) {
+                if (!$item->service) {
+                    return 0;
+                }
                 return $item->service->pricing['display_price'] * $item->quantity;
             });
         $cartCount = Cart::where('user_id', Auth::id())->sum('quantity');

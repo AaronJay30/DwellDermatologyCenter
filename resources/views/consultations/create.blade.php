@@ -493,6 +493,14 @@
                             <span class="detail-value">~20 min</span>
                         </div>
                     </div>
+                    <div class="service-item">
+                        <div class="service-detail">
+                            <span class="detail-label">Consultation Fee:</span>
+                            <span class="detail-value">
+                                ₱{{ number_format($consultationEstimatedFee ?? 700, 2) }}
+                            </span>
+                        </div>
+                    </div>
                 @endif
                 @foreach($serviceCartItems ?? $cartItems as $cartItem)
                     @if(isset($cartItem->service) && $cartItem->service)
@@ -537,7 +545,9 @@
 
             <div class="service-fee">
                 <div class="fee-label">Total Amount</div>
-                <div class="fee-amount" id="total-amount">₱{{ number_format($totalPrice, 2) }}</div>
+                <div class="fee-amount" id="total-amount">
+                    ₱{{ number_format($totalPriceWithConsultation ?? $totalPrice, 2) }}
+                </div>
             </div>
 
             <div class="service-item" style="margin-bottom: 1.5rem;">

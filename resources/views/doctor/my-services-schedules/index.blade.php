@@ -896,8 +896,15 @@
                         @endphp
                         <tr>
                             <td>
-                                <div class="patient-info">
-                                    <span class="patient-name-link">{{ $patientName }}</span>
+                                <div class="patient-info" style="position: relative; z-index: 10;">
+                                    <span
+                                        class="patient-name-link"
+                                        data-appointment-id="{{ $appointment->id }}"
+                                        onclick="openPatientModal({{ $appointment->id }})"
+                                        style="position: relative; z-index: 10; pointer-events: auto;"
+                                    >
+                                        {{ $patientName }}
+                                    </span>
                                 </div>
                             </td>
                             <td>{{ $appointment->service->name ?? 'N/A' }}</td>
@@ -913,7 +920,7 @@
                                 @endif
                             </td>
                             <td>
-                                <select class="doctor-schedule-status-select" data-appointment-id="{{ $appointment->id }}" data-prev-status="{{ $appointment->status }}" style="padding: 0.35rem 0.5rem; min-width: 110px;">
+                                <select class="doctor-schedule-status-select" data-appointment-id="{{ $appointment->id }}" data-prev-status="{{ $appointment->status }}" style="padding: 0.35rem 0.5rem; min-width: 110px; position: relative; z-index: 10; pointer-events: auto;">
                                     <option value="pending" {{ $appointment->status === 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="ongoing" {{ $appointment->status === 'ongoing' ? 'selected' : '' }}>Ongoing</option>
                                     <option value="confirmed" {{ $appointment->status === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
@@ -921,7 +928,7 @@
                                     <option value="cancelled" {{ $appointment->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                 </select>
                             </td>
-                            <td>
+                            <td style="position: relative; z-index: 10;">
                                 @php
                                     $appointmentDate = $appointment->scheduled_date 
                                         ? \Carbon\Carbon::parse($appointment->scheduled_date)->startOfDay()
@@ -929,7 +936,7 @@
                                     $isPastDate = $appointmentDate < now()->startOfDay();
                                     $isPastPending = $appointment->status === 'pending' && $isPastDate;
                                 @endphp
-                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <div style="display: flex; gap: 0.5rem; align-items: center; position: relative; z-index: 10;">
                                     @if($isPastPending)
                                         <button type="button" 
                                                 class="delete-past-appointment-btn" 
@@ -937,15 +944,15 @@
                                                 data-patient-name="{{ json_encode($patientName) }}"
                                                 data-appointment-date="{{ $appointmentDate->format('M d, Y') }}"
                                                 data-appointment-time="{{ $appointment->scheduled_time ? \Carbon\Carbon::parse($appointment->scheduled_time)->format('g:i A') : '' }}"
-                                                style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">
+                                                style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">
                                             Delete
                                         </button>
                                     @elseif($appointment->status === 'pending')
-                                        <button type="button" onclick="confirmServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Confirm</button>
-                                        <button type="button" onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Cancel</button>
+                                        <button type="button" onclick="confirmServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Confirm</button>
+                                        <button type="button" onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Cancel</button>
                                     @elseif($appointment->status === 'confirmed')
-                                        <button type="button" onclick="addServiceResult({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Add Result</button>
-                                        <button type="button" onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Cancel</button>
+                                        <button type="button" onclick="addServiceResult({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Add Result</button>
+                                        <button type="button" onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Cancel</button>
                                     @endif
                                 </div>
                             </td>
@@ -1219,6 +1226,254 @@
             <button id="confirmDeleteBtn" class="patient-modal-btn" style="background-color: #ef4444; color: white;">
                 Yes, Delete
             </button>
+        </div>
+    </div>
+<!-- Patient Information Modal -->
+<div id="patientModal" class="patient-modal">
+    <div class="patient-modal-content">
+        <div class="patient-modal-header">
+            <div class="patient-modal-logo">
+                <img src="{{ asset('images/dwell-logo.png') }}" alt="Logo">
+                <span class="patient-modal-logo-text">D'well</span>
+            </div>
+            <h1 class="patient-modal-title">NEW PATIENT INFORMATION SHEET</h1>
+            <button class="patient-modal-close" onclick="closePatientModal()">&times;</button>
+        </div>
+        <div class="patient-modal-body">
+            <!-- PERSONAL INFORMATION Section -->
+            <div class="patient-form-section">
+                <div class="patient-section-header">PERSONAL INFORMATION</div>
+                
+                <div class="patient-form-group">
+                    <label for="modal-name">Name</label>
+                    <input type="text" id="modal-name" readonly>
+                </div>
+
+                <div class="patient-form-row">
+                    <div class="patient-form-group">
+                        <label for="modal-birthday">Birthday</label>
+                        <input type="text" id="modal-birthday" readonly>
+                    </div>
+                    <div class="patient-form-group">
+                        <label for="modal-address">Address</label>
+                        <input type="text" id="modal-address" readonly>
+                    </div>
+                </div>
+
+                <div class="patient-form-row">
+                    <div class="patient-form-group">
+                        <label for="modal-contact-number">Contact No</label>
+                        <input type="text" id="modal-contact-number" readonly>
+                    </div>
+                    <div class="patient-form-group">
+                        <label for="modal-email">Email address</label>
+                        <input type="email" id="modal-email" readonly>
+                    </div>
+                </div>
+
+                <div class="patient-form-row">
+                    <div class="patient-form-group">
+                        <label>Civil Status</label>
+                        <div class="patient-radio-group">
+                            <label>
+                                <input type="radio" name="modal-civil-status" value="Single" disabled>
+                                Single
+                            </label>
+                            <label>
+                                <input type="radio" name="modal-civil-status" value="Married" disabled>
+                                Married
+                            </label>
+                        </div>
+                    </div>
+                    <div class="patient-form-group">
+                        <label>Sex</label>
+                        <div class="patient-radio-group">
+                            <label>
+                                <input type="radio" name="modal-sex" value="male" disabled>
+                                Male
+                            </label>
+                            <label>
+                                <input type="radio" name="modal-sex" value="female" disabled>
+                                Female
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="patient-form-group">
+                    <label for="modal-preferred-pronoun">Preferred pronoun</label>
+                    <input type="text" id="modal-preferred-pronoun" readonly>
+                </div>
+            </div>
+
+            <!-- MEDICAL INFORMATION Section -->
+            <div class="patient-form-section">
+                <div class="patient-section-header">MEDICAL INFORMATION</div>
+
+                <div class="patient-form-row">
+                    <div class="patient-form-group">
+                        <label>Comorbidities</label>
+                        <div class="patient-checkbox-group">
+                            <label>
+                                <input type="checkbox" id="modal-hypertension" disabled>
+                                Hypertension
+                            </label>
+                            <label>
+                                <input type="checkbox" id="modal-diabetes" disabled>
+                                Diabetes
+                            </label>
+                        </div>
+                    </div>
+                    <div class="patient-form-group">
+                        <label for="modal-comorbidities-others">Others</label>
+                        <input type="text" id="modal-comorbidities-others" readonly>
+                    </div>
+                </div>
+
+                <div class="patient-form-row">
+                    <div class="patient-form-group">
+                        <label>Allergies</label>
+                        <div class="patient-checkbox-group">
+                            <label>
+                                <input type="checkbox" id="modal-allergies-medications" disabled>
+                                Medications
+                            </label>
+                            <label>
+                                <input type="checkbox" id="modal-allergies-anesthetics" disabled>
+                                Anesthetics
+                            </label>
+                        </div>
+                    </div>
+                    <div class="patient-form-group">
+                        <label for="modal-allergies-others">Others</label>
+                        <input type="text" id="modal-allergies-others" readonly>
+                    </div>
+                </div>
+
+                <div class="patient-form-group">
+                    <label for="modal-previous-hospitalizations">Previous hospitalizations & surgeries</label>
+                    <textarea id="modal-previous-hospitalizations" rows="2" readonly></textarea>
+                </div>
+
+                <div class="patient-form-row">
+                    <div class="patient-form-group">
+                        <label>Smoker</label>
+                        <div class="patient-radio-group">
+                            <label>
+                                <input type="radio" name="modal-smoker" value="Yes" disabled>
+                                Yes
+                            </label>
+                            <label>
+                                <input type="radio" name="modal-smoker" value="No" disabled>
+                                No
+                            </label>
+                        </div>
+                    </div>
+                    <div class="patient-form-group">
+                        <label>Alcoholic Drinker</label>
+                        <div class="patient-radio-group">
+                            <label>
+                                <input type="radio" name="modal-alcoholic-drinker" value="Yes" disabled>
+                                Yes
+                            </label>
+                            <label>
+                                <input type="radio" name="modal-alcoholic-drinker" value="No" disabled>
+                                No
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="patient-form-group">
+                    <label for="modal-known-family-illnesses">Known Family Illnesses</label>
+                    <textarea id="modal-known-family-illnesses" rows="2" readonly></textarea>
+                </div>
+            </div>
+
+            <!-- EMERGENCY CONTACT Section -->
+            <div class="patient-form-section">
+                <div class="patient-section-header">EMERGENCY CONTACT</div>
+
+                <div class="patient-form-group">
+                    <label for="modal-emergency-name">Name</label>
+                    <input type="text" id="modal-emergency-name" readonly>
+                </div>
+
+                <div class="patient-form-row">
+                    <div class="patient-form-group">
+                        <label for="modal-emergency-relationship">Relationship</label>
+                        <input type="text" id="modal-emergency-relationship" readonly>
+                    </div>
+                    <div class="patient-form-group">
+                        <label for="modal-emergency-contact-number">Contact No</label>
+                        <input type="text" id="modal-emergency-contact-number" readonly>
+                    </div>
+                </div>
+
+                <div class="patient-form-group">
+                    <label for="modal-emergency-address">Address</label>
+                    <input type="text" id="modal-emergency-address" readonly>
+                </div>
+            </div>
+
+            <!-- CONSULTATION DETAILS Section (optional) -->
+            <div class="patient-form-section" id="modal-consultation-details-section" style="display:none;">
+                <div class="patient-section-header">CONSULTATION DETAILS</div>
+
+                <div class="patient-form-group">
+                    <label for="modal-consultation-type">Type of Consultation</label>
+                    <input type="text" id="modal-consultation-type" readonly>
+                </div>
+
+                <div class="patient-form-group">
+                    <label for="modal-consultation-description">Description of Symptoms/Condition</label>
+                    <textarea id="modal-consultation-description" rows="3" readonly></textarea>
+                </div>
+
+                <div class="patient-form-group">
+                    <label for="modal-consultation-medical-background">Medical Background</label>
+                    <textarea id="modal-consultation-medical-background" rows="2" readonly></textarea>
+                </div>
+
+                <div class="patient-form-group">
+                    <label for="modal-consultation-referral-source">How did you hear about Dwell?</label>
+                    <input type="text" id="modal-consultation-referral-source" readonly>
+                </div>
+            </div>
+
+            <!-- CONDITION PHOTOS Section -->
+            <div class="patient-form-section" id="modal-condition-photos-wrap" style="display:none;">
+                <div class="patient-section-header">CONDITION PHOTOS</div>
+                <div id="modal-condition-photos" style="display:flex; flex-wrap:wrap; gap:0.75rem;"></div>
+            </div>
+
+            <!-- SIGNATURE & DATE Section -->
+            <div class="patient-form-section">
+                <div class="patient-section-header">CONSENT</div>
+
+                <div class="patient-form-row">
+                    <div class="patient-form-group">
+                        <label>Signature over printed name</label>
+                        <div id="modal-signature-display" style="min-height: 80px; border: 1px solid #ddd; border-radius: 4px; display:flex; align-items:center; justify-content:center; color:#999;">
+                            No signature available
+                        </div>
+                    </div>
+                    <div class="patient-form-group">
+                        <label for="modal-date">Date</label>
+                        <input type="text" id="modal-date" readonly>
+                    </div>
+                </div>
+
+                <div class="patient-form-group">
+                    <label>ID Presented</label>
+                    <div id="modal-id-photo-display" style="min-height: 80px; border: 1px solid #ddd; border-radius: 4px; display:flex; align-items:center; justify-content:center; color:#999;">
+                        No ID uploaded
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="patient-modal-footer" style="padding: 1rem 1.5rem; display:flex; justify-content:flex-end; gap:0.75rem; border-top:1px solid #e5e7eb;">
+            <button type="button" class="patient-modal-btn patient-modal-btn-cancel" onclick="closePatientModal()">Close</button>
         </div>
     </div>
 </div>
@@ -1673,5 +1928,242 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// ---------- Patient Information Modal (reuse from doctor all-appointments) ----------
+function openPatientModal(appointmentId) {
+    const modal = document.getElementById('patientModal');
+    if (!modal) return;
+    modal.classList.add('active');
+    
+    // Clear previous data
+    clearPatientModal();
+    
+    // Show loading indicator
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.id = 'modal-loading';
+    loadingIndicator.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; background: white; padding: 2rem; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);';
+    loadingIndicator.innerHTML = '<p>Loading patient information...</p>';
+    modal.querySelector('.patient-modal-content').style.position = 'relative';
+    modal.querySelector('.patient-modal-content').appendChild(loadingIndicator);
+    
+    // Fetch patient information via existing doctor endpoint
+    fetch(`{{ url('/doctor/all-appointments') }}/${appointmentId}/patient-info`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch patient information');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const loading = document.getElementById('modal-loading');
+            if (loading) loading.remove();
+            populatePatientModal(data);
+        })
+        .catch(error => {
+            console.error('Error fetching patient info:', error);
+            const loading = document.getElementById('modal-loading');
+            if (loading) {
+                loading.innerHTML = '<p style="color: red;">Error loading patient information. Please try again.</p><button onclick="closePatientModal()" class="patient-modal-btn patient-modal-btn-cancel" style="margin-top: 1rem;">Close</button>';
+            }
+        });
+}
+
+function clearPatientModal() {
+    const idsToClear = [
+        'modal-name','modal-birthday','modal-address','modal-contact-number','modal-email',
+        'modal-preferred-pronoun','modal-comorbidities-others','modal-allergies-others',
+        'modal-previous-hospitalizations','modal-known-family-illnesses',
+        'modal-emergency-name','modal-emergency-relationship','modal-emergency-address',
+        'modal-emergency-contact-number','modal-date'
+    ];
+    idsToClear.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+
+    ['modal-consultation-type','modal-consultation-description','modal-consultation-medical-background','modal-consultation-referral-source'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+
+    const photosEl = document.getElementById('modal-condition-photos');
+    if (photosEl) photosEl.innerHTML = '';
+
+    ['modal-hypertension','modal-diabetes','modal-allergies-medications','modal-allergies-anesthetics'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.checked = false;
+    });
+
+    document.querySelectorAll('#patientModal input[type="radio"]').forEach(r => r.checked = false);
+
+    const sigEl = document.getElementById('modal-signature-display');
+    if (sigEl) sigEl.innerHTML = '<span style="color: #999;">No signature available</span>';
+    const idPhotoEl = document.getElementById('modal-id-photo-display');
+    if (idPhotoEl) idPhotoEl.innerHTML = '<span style="color: #999;">No ID uploaded</span>';
+}
+
+function closePatientModal() {
+    const modal = document.getElementById('patientModal');
+    if (modal) modal.classList.remove('active');
+}
+
+function populatePatientModal(data) {
+    const personalInfo = data.personal_information || {};
+    const medicalInfo = data.medical_information || {};
+    const emergencyContact = data.emergency_contact || {};
+    const patient = data.patient || {};
+    const appointment = data.appointment || {};
+
+    const computedName = personalInfo.full_name ||
+        `${personalInfo.first_name || ''} ${personalInfo.middle_initial || ''} ${personalInfo.last_name || ''}`.trim() ||
+        `${appointment.first_name || ''} ${appointment.middle_initial || ''} ${appointment.last_name || ''}`.trim() ||
+        patient.name || 'N/A';
+    const nameEl = document.getElementById('modal-name');
+    if (nameEl) nameEl.value = computedName;
+
+    const birthdayEl = document.getElementById('modal-birthday');
+    const birthdaySrc = personalInfo.birthday || patient.date_of_birth;
+    if (birthdayEl) {
+        if (birthdaySrc) {
+            const d = new Date(birthdaySrc);
+            birthdayEl.value = d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+        } else {
+            birthdayEl.value = '';
+        }
+    }
+
+    const addressEl = document.getElementById('modal-address');
+    if (addressEl) addressEl.value = personalInfo.address || patient.address || '';
+    const contactEl = document.getElementById('modal-contact-number');
+    if (contactEl) contactEl.value = personalInfo.contact_number || patient.phone || patient.contact_phone || '';
+    const emailEl = document.getElementById('modal-email');
+    if (emailEl) emailEl.value = patient.email || '';
+
+    if (personalInfo.civil_status) {
+        document.querySelectorAll('input[name="modal-civil-status"]').forEach(r => {
+            r.checked = (r.value === personalInfo.civil_status);
+        });
+    }
+
+    const sexValue = (personalInfo.sex || patient.gender || '').toString().toLowerCase();
+    if (sexValue) {
+        document.querySelectorAll('input[name="modal-sex"]').forEach(r => {
+            r.checked = (r.value.toLowerCase() === sexValue);
+        });
+    }
+
+    const pronounEl = document.getElementById('modal-preferred-pronoun');
+    if (pronounEl) pronounEl.value = personalInfo.preferred_pronoun || '';
+
+    // Consultation details
+    const consultSection = document.getElementById('modal-consultation-details-section');
+    if (consultSection) {
+        const hasDetails = appointment.consultation_type || appointment.description || appointment.medical_background || appointment.referral_source;
+        consultSection.style.display = hasDetails ? 'block' : 'none';
+        if (hasDetails) {
+            const ct = document.getElementById('modal-consultation-type');
+            if (ct) ct.value = appointment.consultation_type || '';
+            const cd = document.getElementById('modal-consultation-description');
+            if (cd) cd.value = appointment.description || '';
+            const cmb = document.getElementById('modal-consultation-medical-background');
+            if (cmb) cmb.value = appointment.medical_background || '';
+            const cr = document.getElementById('modal-consultation-referral-source');
+            if (cr) cr.value = appointment.referral_source || '';
+        }
+    }
+
+    const photosDiv = document.getElementById('modal-condition-photos');
+    if (photosDiv) {
+        photosDiv.innerHTML = '';
+        (appointment.condition_photos || []).forEach(path => {
+            const img = document.createElement('img');
+            img.src = '{{ asset("storage") }}/' + path;
+            img.alt = 'Condition';
+            img.style.cssText = 'max-width: 120px; max-height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;';
+            photosDiv.appendChild(img);
+        });
+        const wrap = document.getElementById('modal-condition-photos-wrap');
+        if (wrap) wrap.style.display = (appointment.condition_photos && appointment.condition_photos.length) ? 'block' : 'none';
+    }
+
+    // Medical info
+    const hypEl = document.getElementById('modal-hypertension');
+    if (hypEl) hypEl.checked = !!medicalInfo.hypertension;
+    const diabEl = document.getElementById('modal-diabetes');
+    if (diabEl) diabEl.checked = !!medicalInfo.diabetes;
+    const comEl = document.getElementById('modal-comorbidities-others');
+    if (comEl) comEl.value = medicalInfo.comorbidities_others || '';
+
+    const allergies = medicalInfo.allergies || '';
+    const allMed = document.getElementById('modal-allergies-medications');
+    if (allMed) allMed.checked = allergies.includes('Medications');
+    const allAn = document.getElementById('modal-allergies-anesthetics');
+    if (allAn) allAn.checked = medicalInfo.anesthetics || allergies.includes('Anesthetics');
+    const allOther = document.getElementById('modal-allergies-others');
+    if (allOther) {
+        if (allergies && !allergies.includes('Medications') && !allergies.includes('Anesthetics')) {
+            allOther.value = allergies;
+        } else {
+            allOther.value = medicalInfo.anesthetics_others || '';
+        }
+    }
+
+    const prevHosp = document.getElementById('modal-previous-hospitalizations');
+    if (prevHosp) prevHosp.value = medicalInfo.previous_hospitalizations_surgeries || '';
+
+    if (medicalInfo.smoker) {
+        document.querySelectorAll('input[name="modal-smoker"]').forEach(r => {
+            r.checked = (r.value.toLowerCase() === medicalInfo.smoker.toLowerCase());
+        });
+    }
+    if (medicalInfo.alcoholic_drinker) {
+        document.querySelectorAll('input[name="modal-alcoholic-drinker"]').forEach(r => {
+            r.checked = (r.value.toLowerCase() === medicalInfo.alcoholic_drinker.toLowerCase());
+        });
+    }
+
+    const famIll = document.getElementById('modal-known-family-illnesses');
+    if (famIll) famIll.value = medicalInfo.known_family_illnesses || '';
+
+    const emName = document.getElementById('modal-emergency-name');
+    if (emName) emName.value = emergencyContact.name || '';
+    const emRel = document.getElementById('modal-emergency-relationship');
+    if (emRel) emRel.value = emergencyContact.relationship || '';
+    const emAddr = document.getElementById('modal-emergency-address');
+    if (emAddr) emAddr.value = emergencyContact.address || '';
+    const emContact = document.getElementById('modal-emergency-contact-number');
+    if (emContact) emContact.value = emergencyContact.contact_number || '';
+
+    const dateEl = document.getElementById('modal-date');
+    const createdSrc = personalInfo.created_at || appointment.created_at;
+    if (dateEl && createdSrc) {
+        const d = new Date(createdSrc);
+        dateEl.value = d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+    }
+
+    if (personalInfo.signature_path) {
+        const sig = document.getElementById('modal-signature-display');
+        if (sig) {
+            sig.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = '{{ asset("storage") }}/' + personalInfo.signature_path;
+            img.alt = 'Signature';
+            img.style.cssText = 'max-width: 200px; max-height: 80px; object-fit: contain;';
+            sig.appendChild(img);
+        }
+    }
+
+    if (personalInfo.id_photo_path) {
+        const idEl = document.getElementById('modal-id-photo-display');
+        if (idEl) {
+            idEl.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = '{{ asset("storage") }}/' + personalInfo.id_photo_path;
+            img.alt = 'ID Photo';
+            img.style.cssText = 'max-width: 200px; max-height: 120px; object-fit: contain;';
+            idEl.appendChild(img);
+        }
+    }
+}
 </script>
 @endsection

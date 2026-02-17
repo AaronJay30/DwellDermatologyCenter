@@ -166,10 +166,16 @@ class PatientConsultationController extends Controller
         if (!$defaultProfile) {
             $defaultProfile = Auth::user()->personalInformation()->first();
         }
-        
+
+        // Base total is from service items only
         $totalPrice = $serviceCartItems->sum(function ($item) {
             return $item->service ? ($item->service->pricing['display_price'] * $item->quantity) : 0;
         });
+
+        // Add a consultation fee when applicable so that the summary reflects it.
+        // Default to 700 if no specific fee is known at this stage (matches medical consultation page).
+        $consultationEstimatedFee = $hasConsultation ? 700 : 0;
+        $totalPriceWithConsultation = $totalPrice + $consultationEstimatedFee;
 
         // Estimated total duration: consultation (~20 min) + sum of (service duration * quantity)
         $consultationDurationMinutes = $hasConsultation ? 20 : 0;
@@ -178,8 +184,19 @@ class PatientConsultationController extends Controller
             return $mins * (isset($item->quantity) ? (int) $item->quantity : 1);
         });
         $totalDurationMinutes = $consultationDurationMinutes + $servicesDurationMinutes;
-        
-        return view('consultations.create', compact('cartItems', 'serviceCartItems', 'hasConsultation', 'branch', 'defaultProfile', 'totalPrice', 'totalDurationMinutes', 'isDirectBooking'));
+
+        return view('consultations.create', compact(
+            'cartItems',
+            'serviceCartItems',
+            'hasConsultation',
+            'branch',
+            'defaultProfile',
+            'totalPrice',
+            'totalPriceWithConsultation',
+            'consultationEstimatedFee',
+            'totalDurationMinutes',
+            'isDirectBooking'
+        ));
     }
 
     public function medicalConsultation()

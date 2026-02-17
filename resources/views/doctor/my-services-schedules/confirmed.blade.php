@@ -1104,8 +1104,13 @@
                         @endphp
                         <tr>
                             <td>
-                                <div class="patient-info">
-                                    <span class="patient-name-link" data-appointment-id="{{ $appointment->id }}" onclick="openPatientModal({{ $appointment->id }})" >
+                                <div class="patient-info" style="position: relative; z-index: 10;">
+                                    <span
+                                        class="patient-name-link"
+                                        data-appointment-id="{{ $appointment->id }}"
+                                        onclick="openPatientModal({{ $appointment->id }})"
+                                        style="position: relative; z-index: 10; pointer-events: auto;"
+                                    >
                                         {{ $patientName }}
                                     </span>
                                 </div>
@@ -1119,7 +1124,7 @@
                                 @endif
                             </td>
                             <td>
-                                <select class="doctor-schedule-status-select" data-appointment-id="{{ $appointment->id }}" data-prev-status="{{ $appointment->status }}" style="padding: 0.35rem 0.5rem; min-width: 110px;">
+                                <select class="doctor-schedule-status-select" data-appointment-id="{{ $appointment->id }}" data-prev-status="{{ $appointment->status }}" style="padding: 0.35rem 0.5rem; min-width: 110px; position: relative; z-index: 10; pointer-events: auto;">
                                     <option value="pending" {{ $appointment->status === 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="ongoing" {{ $appointment->status === 'ongoing' ? 'selected' : '' }}>Ongoing</option>
                                     <option value="confirmed" {{ $appointment->status === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
@@ -1127,7 +1132,7 @@
                                     <option value="cancelled" {{ $appointment->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                 </select>
                             </td>
-                            <td>
+                            <td style="display: table-cell;">
                                 @php
                                     $appointmentDate = $appointment->scheduled_date 
                                         ? \Carbon\Carbon::parse($appointment->scheduled_date)->startOfDay()
@@ -1136,7 +1141,7 @@
                                     $isPastPending = $appointment->status === 'pending' && $isPastDate;
                                     $isPastConfirmed = $appointment->status === 'confirmed' && $isPastDate;
                                 @endphp
-                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <div style="display: flex; gap: 0.5rem; align-items: center; position: relative; z-index: 10;">
                                     @if($isPastPending)
                                         <button type="button" 
                                                 class="delete-past-appointment-btn" 
@@ -1144,26 +1149,26 @@
                                                 data-patient-name="{{ json_encode($patientName) }}"
                                                 data-appointment-date="{{ $appointmentDate->format('M d, Y') }}"
                                                 data-appointment-time="{{ $displayTime ?? '' }}"
-                                                style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">
+                                                style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">
                                             Delete
                                         </button>
                                     @elseif($isPastConfirmed)
-                                        <button onclick="addServiceResult({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Add Result</button>
+                                        <button onclick="addServiceResult({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Add Result</button>
                                         <button type="button" 
                                                 class="drop-past-confirmed-btn" 
                                                 data-appointment-id="{{ $appointment->id }}"
                                                 data-patient-name="{{ json_encode($patientName) }}"
                                                 data-appointment-date="{{ $appointmentDate->format('M d, Y') }}"
                                                 data-appointment-time="{{ $displayTime ?? '' }}"
-                                                style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">
+                                                style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">
                                             Drop
                                         </button>
                                     @elseif($appointment->status === 'pending')
-                                        <button onclick="confirmServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Confirm</button>
-                                        <button onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Cancel</button>
+                                        <button onclick="confirmServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Confirm</button>
+                                        <button onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Cancel</button>
                                     @elseif($appointment->status === 'confirmed')
-                                        <button onclick="addServiceResult({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Add Result</button>
-                                        <button onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Cancel</button>
+                                        <button onclick="addServiceResult({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Add Result</button>
+                                        <button onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Cancel</button>
                                     @endif
                                 </div>
                             </td>
