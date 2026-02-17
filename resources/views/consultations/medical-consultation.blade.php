@@ -1694,7 +1694,7 @@ function selectProfile(profile) {
     const dateInput = document.getElementById('date');
     const slotSelect = document.getElementById('time_slot_id');
     const bookButton = document.getElementById('book-consultation-btn');
-        const bannerImage = document.getElementById('available-doctor-image');
+    const bannerImage = document.getElementById('available-doctor-image');
     
     // Form fields for summary
     const firstNameInput = document.getElementById('first_name');
