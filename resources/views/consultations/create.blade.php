@@ -717,7 +717,7 @@ function initializeBookingForm() {
         loadTimeSlotsForConsultation();
         @endif
     });
-
+    
     @if($hasConsultation ?? false)
     function loadTimeSlotsForConsultation() {
         const branchId = form.querySelector('input[name="branch_id"]').value;
@@ -741,6 +741,12 @@ function initializeBookingForm() {
                 });
             })
             .catch(() => { slotSelect.innerHTML = '<option value="">Error loading slots</option>'; });
+    }
+    
+    // Re-evaluate form validity when consultation time slot changes
+    const timeSlotSelectEl = document.getElementById('time_slot_id');
+    if (timeSlotSelectEl) {
+        timeSlotSelectEl.addEventListener('change', updateSummary);
     }
     @endif
 

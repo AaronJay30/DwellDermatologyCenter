@@ -516,6 +516,66 @@
         background-color: #006666;
     }
 
+    /* Mobile responsiveness for patient modal */
+    @media (max-width: 576px) {
+        .patient-modal {
+            position: fixed;
+            padding: 10px;
+        }
+
+        .patient-modal-content {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            max-height: 95vh;
+            margin: 0;
+            border-width: 2px;
+        }
+
+        .patient-modal-header {
+            padding: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .patient-modal-title {
+            font-size: 1.1rem;
+        }
+
+        .patient-modal-logo img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .patient-modal-body {
+            padding: 1rem;
+        }
+
+        .patient-form-section {
+            padding: 1rem;
+        }
+
+        .patient-section-header {
+            font-size: 0.9rem;
+            padding: 0.5rem 0.75rem;
+            margin: -1rem -1rem 1rem -1rem;
+        }
+
+        .patient-form-row {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        .patient-modal-footer {
+            padding: 0.75rem 1rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .patient-modal-btn {
+            width: 100%;
+        }
+    }
     /* Add Result Modal Styles */
     .result-modal {
         display: none;

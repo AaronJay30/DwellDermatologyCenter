@@ -909,11 +909,11 @@
                                             Drop
                                         </button>
                                     @elseif($appointment->status === 'pending')
-                                        <button onclick="confirmServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Confirm</button>
-                                        <button onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Cancel</button>
+                                        <button type="button" onclick="confirmServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Confirm</button>
+                                        <button type="button" onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Cancel</button>
                                     @elseif($appointment->status === 'confirmed')
-                                        <button onclick="addServiceResult({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Add Result</button>
-                                        <button onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Cancel</button>
+                                        <button type="button" onclick="addServiceResult({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Add Result</button>
+                                        <button type="button" onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Cancel</button>
                                     @endif
                                 </div>
                             </td>

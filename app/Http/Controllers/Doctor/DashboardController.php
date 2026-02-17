@@ -279,14 +279,29 @@ class DashboardController extends Controller
 
     public function getPatientDetails($appointmentId)
     {
-        $appointment = Appointment::with(['patient', 'service', 'timeSlot', 'branch', 'patientHistory', 'conditionPhotos', 'progressPhotos'])
+        $appointment = Appointment::with(['patient', 'service', 'timeSlot', 'branch', 'patientHistory', 'conditionPhotos', 'progressPhotos', 'personalInformation'])
             ->findOrFail($appointmentId);
         
         $patient = $appointment->patient;
         
-        // Get the most relevant personal information record
+        // Get the most relevant personal information record (mirror admin behaviour)
         $personalInfo = null;
-        if ($patient) {
+
+        // PRIORITY 1: Use the appointment's specific personal_information_id if it exists
+        if ($appointment->personal_information_id) {
+            $personalInfo = $appointment->personalInformation;
+        }
+
+        // PRIORITY 2: If no personal_information_id, try to find matching personal info by appointment name
+        if (!$personalInfo && $patient && $appointment->first_name && $appointment->last_name) {
+            $personalInfo = $patient->personalInformation()
+                ->where('first_name', $appointment->first_name)
+                ->where('last_name', $appointment->last_name)
+                ->first();
+        }
+
+        // PRIORITY 3: Fall back to default personal information from patient account
+        if (!$personalInfo && $patient) {
             // Prefer records that actually have civil status (newer patient sheets),
             // falling back to default, then latest record.
             $personalInfo = $patient->personalInformation()
@@ -2776,15 +2791,28 @@ class DashboardController extends Controller
 
     public function getPatientInfo(Appointment $appointment)
     {
-        $appointment->load(['patient', 'timeSlot', 'branch', 'conditionPhotos', 'progressPhotos']);
+        $appointment->load(['patient', 'timeSlot', 'branch', 'conditionPhotos', 'progressPhotos', 'personalInformation']);
         
         $patient = $appointment->patient;
         
-        // Get the most relevant personal information record
+        // Get the most relevant personal information record (mirror admin behaviour)
         $personalInfo = null;
-        if ($patient) {
-            // Prefer records that actually have civil status (newer patient sheets),
-            // falling back to default, then latest record.
+
+        // PRIORITY 1: Use the appointment's specific personal_information_id if it exists
+        if ($appointment->personal_information_id) {
+            $personalInfo = $appointment->personalInformation;
+        }
+
+        // PRIORITY 2: If no personal_information_id, try to find matching personal info by appointment name
+        if (!$personalInfo && $patient && $appointment->first_name && $appointment->last_name) {
+            $personalInfo = $patient->personalInformation()
+                ->where('first_name', $appointment->first_name)
+                ->where('last_name', $appointment->last_name)
+                ->first();
+        }
+
+        // PRIORITY 3: Fall back to default personal information from patient account
+        if (!$personalInfo && $patient) {
             $personalInfo = $patient->personalInformation()
                 ->whereNotNull('civil_status')
                 ->orderByDesc('is_default')
@@ -2802,19 +2830,37 @@ class DashboardController extends Controller
             }
         }
         
-        // Get default medical information
+        // Get medical information - try to align with chosen personal profile
         $medicalInfo = null;
         if ($patient) {
-            $medicalInfo = $patient->medicalInformation()->where('is_default', true)->first();
+            if ($personalInfo && $personalInfo->is_default !== null) {
+                $medicalInfo = $patient->medicalInformation()
+                    ->where('is_default', $personalInfo->is_default)
+                    ->first();
+            }
+
+            if (!$medicalInfo) {
+                $medicalInfo = $patient->medicalInformation()->where('is_default', true)->first();
+            }
+
             if (!$medicalInfo) {
                 $medicalInfo = $patient->medicalInformation()->latest()->first();
             }
         }
         
-        // Get default emergency contact
+        // Get emergency contact - try to align with chosen personal profile
         $emergencyContact = null;
         if ($patient) {
-            $emergencyContact = $patient->emergencyContacts()->where('is_default', true)->first();
+            if ($personalInfo && $personalInfo->is_default !== null) {
+                $emergencyContact = $patient->emergencyContacts()
+                    ->where('is_default', $personalInfo->is_default)
+                    ->first();
+            }
+
+            if (!$emergencyContact) {
+                $emergencyContact = $patient->emergencyContacts()->where('is_default', true)->first();
+            }
+
             if (!$emergencyContact) {
                 $emergencyContact = $patient->emergencyContacts()->latest()->first();
             }

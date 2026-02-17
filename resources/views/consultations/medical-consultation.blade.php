@@ -801,12 +801,6 @@
         </div>
     @endif
 
-    @if(session('success'))
-        <div class="success-message">
-            {{ session('success') }}
-        </div>
-    @endif
-
     <div class="consultation-layout">
         <!-- Left Section -->
         <div class="left-section">
