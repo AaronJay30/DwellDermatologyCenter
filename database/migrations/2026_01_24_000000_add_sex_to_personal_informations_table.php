@@ -9,7 +9,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('personal_informations', function (Blueprint $table) {
+        Schema::table('personal_information', function (Blueprint $table) {
             $table->string('sex', 10)->nullable()->after('birthday');
         });
     }
@@ -19,7 +19,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('personal_informations', function (Blueprint $table) {
+        Schema::table('personal_information', function (Blueprint $table) {
             $table->dropColumn('sex');
         });
     }
