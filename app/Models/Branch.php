@@ -16,6 +16,7 @@ class Branch extends Model
         'phone',
         'email',
         'image_path',
+        'available_doctor_image_path',
     ];
 
     public function timeSlots(): HasMany

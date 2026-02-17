@@ -50,14 +50,14 @@ class AvailableDoctorController extends Controller
             'photo' => 'required|image|mimes:jpg,jpeg,png,webp|max:5120',
         ]);
 
-        // Remove previous photo (single photo only)
-        if ($branch->image_path && Storage::disk('public')->exists($branch->image_path)) {
-            Storage::disk('public')->delete($branch->image_path);
+        // Remove previous available doctor photo (single photo only)
+        if ($branch->available_doctor_image_path && Storage::disk('public')->exists($branch->available_doctor_image_path)) {
+            Storage::disk('public')->delete($branch->available_doctor_image_path);
         }
 
         $path = $request->file('photo')->store('available-doctor', 'public');
 
-        $branch->image_path = $path;
+        $branch->available_doctor_image_path = $path;
         $branch->save();
 
         return redirect()

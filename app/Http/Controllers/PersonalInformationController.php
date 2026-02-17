@@ -571,11 +571,40 @@ class PersonalInformationController extends Controller
 
         DB::beginTransaction();
         try {
-            // Parse name into first, middle, last
-            $nameParts = explode(' ', trim($request->name));
+            // Parse name into first, (optional) middle initial, and last.
+            // IMPORTANT: Middle name/initial must NOT be auto-derived unless the user
+            // explicitly provides a single-letter middle token (e.g. "M." or "M").
+            $nameParts = array_filter(explode(' ', trim($request->name)), function($part) {
+                return !empty(trim($part));
+            });
+            $nameParts = array_values($nameParts);
+
             $first_name = $nameParts[0] ?? '';
-            $middle_initial = isset($nameParts[1]) && strlen($nameParts[1]) === 1 ? $nameParts[1] : (isset($nameParts[1]) ? substr($nameParts[1], 0, 1) : '');
-            $last_name = isset($nameParts[2]) ? implode(' ', array_slice($nameParts, 2)) : (isset($nameParts[1]) && strlen($nameParts[1]) > 1 ? $nameParts[1] : '');
+            $middle_initial = '';
+            $last_name = '';
+
+            if (count($nameParts) >= 2) {
+                // Look for an explicit middle initial anywhere after the first token.
+                // We ONLY set middle_initial when we see a single letter (with or without a dot).
+                for ($i = 1; $i < count($nameParts); $i++) {
+                    $clean = trim($nameParts[$i], '.');
+                    if (strlen($clean) === 1) {
+                        $middle_initial = $clean;
+                        // Everything after this token is treated as last name.
+                        if ($i + 1 < count($nameParts)) {
+                            $last_name = implode(' ', array_slice($nameParts, $i + 1));
+                        }
+                        break;
+                    }
+                }
+
+                // If we did not find an explicit middle initial, treat everything
+                // after the first token as part of the last name and leave
+                // middle_initial blank (user may not have a middle name).
+                if ($last_name === '') {
+                    $last_name = implode(' ', array_slice($nameParts, 1));
+                }
+            }
 
             // Update Personal Information
             $personalInformation->update([

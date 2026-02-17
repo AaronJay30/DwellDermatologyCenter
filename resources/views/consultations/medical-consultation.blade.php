@@ -773,7 +773,7 @@
         @if(isset($branches) && count($branches) > 0)
             @php
                 $initialBranch = $branches[0];
-                $initialImage = $initialBranch->image_path ? asset('storage/' . $initialBranch->image_path) : null;
+                $initialImage = $initialBranch->available_doctor_image_path ? asset('storage/' . $initialBranch->available_doctor_image_path) : null;
             @endphp
             <div id="available-doctor-banner" style="margin-top: 1.5rem; text-align: center;">
                 @if($initialImage)
@@ -842,7 +842,7 @@
                             @foreach ($branches as $branch)
                                 <option
                                     value="{{ $branch->id }}"
-                                    data-available-image="{{ $branch->image_path ? asset('storage/' . $branch->image_path) : '' }}"
+                                    data-available-image="{{ $branch->available_doctor_image_path ? asset('storage/' . $branch->available_doctor_image_path) : '' }}"
                                 >
                                     {{ $branch->name }} - {{ $branch->address }}
                                 </option>

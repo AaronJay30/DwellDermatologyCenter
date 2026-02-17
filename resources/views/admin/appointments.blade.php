@@ -135,6 +135,99 @@
         color: #145866;
     }
 
+    /* Editable Date/Time Inputs Styles */
+    .admin-edit-date,
+    .admin-edit-time {
+        width: 100%;
+        max-width: 140px;
+        padding: 0.5rem 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 5px;
+        font-family: 'Figtree', sans-serif;
+        font-size: 0.9rem;
+        color: #2c3e50;
+        background-color: #ffffff;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .admin-edit-date:hover,
+    .admin-edit-time:hover {
+        border-color: #197a8c;
+        box-shadow: 0 2px 4px rgba(25, 122, 140, 0.1);
+    }
+
+    .admin-edit-date:focus,
+    .admin-edit-time:focus {
+        outline: none;
+        border-color: #197a8c;
+        box-shadow: 0 2px 8px rgba(25, 122, 140, 0.2);
+        background-color: #f8f9fa;
+    }
+
+    .admin-edit-time {
+        max-width: 100px;
+    }
+
+    /* Status Dropdown Styles */
+    .admin-status-select {
+        padding: 0.5rem 0.75rem;
+        min-width: 110px;
+        border: 2px solid #e0e0e0;
+        border-radius: 5px;
+        font-family: 'Figtree', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #2c3e50;
+        background-color: #ffffff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232c3e50' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 12px;
+        padding-right: 2.5rem;
+    }
+
+    .admin-status-select:hover {
+        border-color: #197a8c;
+        box-shadow: 0 2px 4px rgba(25, 122, 140, 0.1);
+    }
+
+    .admin-status-select:focus {
+        outline: none;
+        border-color: #197a8c;
+        box-shadow: 0 2px 8px rgba(25, 122, 140, 0.2);
+        background-color: #f8f9fa;
+    }
+
+    /* Status option colors */
+    .admin-status-select option[value="pending"] {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .admin-status-select option[value="ongoing"] {
+        background-color: #cfe2ff;
+        color: #084298;
+    }
+
+    .admin-status-select option[value="confirmed"] {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .admin-status-select option[value="completed"] {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .admin-status-select option[value="cancelled"] {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
     /* Modal Styles */
     .patient-modal {
         display: none;
@@ -388,6 +481,21 @@
 
     .patient-modal-btn-cancel:hover {
         background-color: #5a6268;
+    }
+
+    .patient-modal-btn-save {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .patient-modal-btn-save:hover {
+        background-color: #218838;
+    }
+
+    .patient-modal-btn-save:disabled {
+        background-color: #6c757d;
+        cursor: not-allowed;
+        opacity: 0.6;
     }
 
     .patient-modal-btn-print {
@@ -844,13 +952,13 @@
                             </td>
                             <td>{{ $appointment->service->name ?? ($appointment->consultation_type ?? 'N/A') }}</td>
                             <td>
-                                <input type="date" class="admin-edit-date" data-appointment-id="{{ $appointment->id }}" value="{{ $displayDate }}" style="max-width: 140px; padding: 0.35rem;">
+                                <input type="date" class="admin-edit-date" data-appointment-id="{{ $appointment->id }}" value="{{ $displayDate }}">
                             </td>
                             <td>
-                                <input type="time" class="admin-edit-time" data-appointment-id="{{ $appointment->id }}" value="{{ $displayTime }}" style="max-width: 100px; padding: 0.35rem;">
+                                <input type="time" class="admin-edit-time" data-appointment-id="{{ $appointment->id }}" value="{{ $displayTime }}">
                             </td>
                             <td>
-                                <select class="admin-status-select" data-appointment-id="{{ $appointment->id }}" data-prev-status="{{ $appointment->status }}" style="padding: 0.35rem 0.5rem; min-width: 110px;">
+                                <select class="admin-status-select" data-appointment-id="{{ $appointment->id }}" data-prev-status="{{ $appointment->status }}">
                                     <option value="pending" {{ $appointment->status === 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="ongoing" {{ $appointment->status === 'ongoing' ? 'selected' : '' }}>Ongoing</option>
                                     <option value="confirmed" {{ $appointment->status === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
@@ -1006,11 +1114,13 @@
                         <div class="patient-form-row">
                             <div class="patient-form-group">
                                 <label>Add Before photo(s)</label>
-                                <input type="file" name="before_files[]" accept="image/*" multiple>
+                                <input type="file" name="before_files[]" id="before_files_input" accept="image/*" multiple>
+                                <div id="before_files_preview" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;"></div>
                             </div>
                             <div class="patient-form-group">
                                 <label>Add After photo(s)</label>
-                                <input type="file" name="after_files[]" accept="image/*" multiple>
+                                <input type="file" name="after_files[]" id="after_files_input" accept="image/*" multiple>
+                                <div id="after_files_preview" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;"></div>
                             </div>
                         </div>
                         <button type="submit" class="patient-modal-btn" style="margin-top: 0.5rem;">Add Before/After Photos</button>
@@ -1149,6 +1259,7 @@
         </div>
         <div class="patient-modal-footer">
             <button class="patient-modal-btn patient-modal-btn-cancel" onclick="closePatientModal()">Cancel</button>
+            <button class="patient-modal-btn patient-modal-btn-save" onclick="saveProgressPhotos()" id="saveProgressPhotosBtn">Save</button>
             <button class="patient-modal-btn patient-modal-btn-download" onclick="downloadPatientInfo()">Download</button>
         </div>
     </div>
@@ -1434,6 +1545,16 @@ function clearModal() {
     if (document.getElementById('modal-consultation-type')) document.getElementById('modal-consultation-type').value = '';
     if (document.getElementById('modal-consultation-description')) document.getElementById('modal-consultation-description').value = '';
     if (document.getElementById('modal-consultation-medical-background')) document.getElementById('modal-consultation-medical-background').value = '';
+    
+    // Clear photo previews
+    const beforePreview = document.getElementById('before_files_preview');
+    const afterPreview = document.getElementById('after_files_preview');
+    if (beforePreview) beforePreview.innerHTML = '';
+    if (afterPreview) afterPreview.innerHTML = '';
+    
+    // Reset photo form
+    const progressPhotosForm = document.getElementById('progressPhotosForm');
+    if (progressPhotosForm) progressPhotosForm.reset();
     if (document.getElementById('modal-consultation-referral-source')) document.getElementById('modal-consultation-referral-source').value = '';
     if (document.getElementById('modal-condition-photos')) document.getElementById('modal-condition-photos').innerHTML = '';
     const beforeList = document.getElementById('modal-progress-before-list');
@@ -2383,30 +2504,92 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Photo preview functionality
+    function setupPhotoPreview(inputId, previewId) {
+        const input = document.getElementById(inputId);
+        const preview = document.getElementById(previewId);
+        if (!input || !preview) return;
+        
+        input.addEventListener('change', function(e) {
+            preview.innerHTML = '';
+            const files = Array.from(e.target.files);
+            files.forEach(function(file) {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.cssText = 'width: 100px; height: 100px; object-fit: cover; border-radius: 8px; border: 2px solid #ddd; margin: 0.25rem;';
+                        img.alt = file.name;
+                        preview.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    }
+
+    // Setup photo previews
+    setupPhotoPreview('before_files_input', 'before_files_preview');
+    setupPhotoPreview('after_files_input', 'after_files_preview');
+
+    // Save progress photos function
+    function saveProgressPhotos() {
+        const progressPhotosForm = document.getElementById('progressPhotosForm');
+        if (!progressPhotosForm || !currentAppointmentId) {
+            alert('No appointment selected or form not found.');
+            return;
+        }
+        
+        const formData = new FormData(progressPhotosForm);
+        const beforeInput = progressPhotosForm.querySelector('input[name="before_files[]"]');
+        const afterInput = progressPhotosForm.querySelector('input[name="after_files[]"]');
+        
+        if (!beforeInput.files.length && !afterInput.files.length) {
+            alert('Please select at least one photo to save.');
+            return;
+        }
+
+        const saveBtn = document.getElementById('saveProgressPhotosBtn');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+        }
+
+        fetch(`{{ url('/admin/appointments') }}/${currentAppointmentId}/progress-photos`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+            body: formData
+        }).then(r => r.json()).then(function(res) {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save';
+            }
+            if (res.success) {
+                alert('Photos saved successfully!');
+                // Reload modal to show updated photos
+                openPatientModal(currentAppointmentId);
+                // Clear previews but keep form
+                document.getElementById('before_files_preview').innerHTML = '';
+                document.getElementById('after_files_preview').innerHTML = '';
+                progressPhotosForm.reset();
+            } else {
+                alert(res.message || 'Failed to save photos');
+            }
+        }).catch(function() {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save';
+            }
+            alert('Failed to save photos');
+        });
+    }
+
     const progressPhotosForm = document.getElementById('progressPhotosForm');
     if (progressPhotosForm) {
         progressPhotosForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            if (!currentAppointmentId) return;
-            const formData = new FormData(this);
-            if (!formData.has('before_files[]') && !formData.has('after_files[]')) {
-                const beforeInput = this.querySelector('input[name="before_files[]"]');
-                const afterInput = this.querySelector('input[name="after_files[]"]');
-                if (!beforeInput.files.length && !afterInput.files.length) {
-                    alert('Please select at least one photo.');
-                    return;
-                }
-            }
-            fetch(`{{ url('/admin/appointments') }}/${currentAppointmentId}/progress-photos`, {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
-                body: formData
-            }).then(r => r.json()).then(function(res) {
-                if (res.success) {
-                    openPatientModal(currentAppointmentId);
-                    progressPhotosForm.reset();
-                } else alert(res.message || 'Failed to add photos');
-            }).catch(function() { alert('Failed to add photos'); });
+            saveProgressPhotos();
         });
     }
 

@@ -2807,6 +2807,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const emergencyContact = data.emergency_contact || {};
         const patient = data.patient || {};
         const appointment = data.appointment || {};
+        const storageUrl = '{{ asset("storage") }}';
         
         // Get name - prioritize appointment name (matches table display), then personal info, then patient name
         let fullName = '';
@@ -2889,11 +2890,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         <label>Sex</label>
                         <div class="patient-radio-group">
                             <label>
-                                <input type="radio" name="modal-sex" value="male" ${patient.gender && patient.gender.toLowerCase() === 'male' ? 'checked' : ''} disabled>
+                                <input type="radio" name="modal-sex" value="male" ${(personalInfo.sex || patient.gender || '').toString().toLowerCase() === 'male' ? 'checked' : ''} disabled>
                                 Male
                             </label>
                             <label>
-                                <input type="radio" name="modal-sex" value="female" ${patient.gender && patient.gender.toLowerCase() === 'female' ? 'checked' : ''} disabled>
+                                <input type="radio" name="modal-sex" value="female" ${(personalInfo.sex || patient.gender || '').toString().toLowerCase() === 'female' ? 'checked' : ''} disabled>
                                 Female
                             </label>
                         </div>
@@ -2903,6 +2904,49 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="patient-form-group">
                     <label for="modal-preferred-pronoun">Preferred pronoun</label>
                     <input type="text" id="modal-preferred-pronoun" value="${personalInfo.preferred_pronoun || ''}" readonly>
+                </div>
+            </div>
+
+            <!-- CONSULTATION DETAILS (from booking) -->
+            <div class="patient-form-section" id="modal-consultation-details-section">
+                <div class="patient-section-header">CONSULTATION DETAILS</div>
+                <div class="patient-form-group">
+                    <label for="modal-consultation-type">Type of Consultation</label>
+                    <input type="text" id="modal-consultation-type" value="${appointment.consultation_type || ''}" readonly>
+                </div>
+                <div class="patient-form-group">
+                    <label for="modal-consultation-description">Description of Symptoms/Condition</label>
+                    <textarea id="modal-consultation-description" readonly rows="3">${appointment.description || ''}</textarea>
+                </div>
+                <div class="patient-form-group">
+                    <label for="modal-consultation-medical-background">Medical Background</label>
+                    <textarea id="modal-consultation-medical-background" readonly rows="2">${appointment.medical_background || ''}</textarea>
+                </div>
+                <div class="patient-form-group">
+                    <label for="modal-consultation-referral-source">How did you hear about Dwell?</label>
+                    <input type="text" id="modal-consultation-referral-source" value="${appointment.referral_source || ''}" readonly>
+                </div>
+                <div class="patient-form-group" id="modal-condition-photos-wrap" style="${(appointment.condition_photos && appointment.condition_photos.length) ? 'display: block;' : 'display: none;'}">
+                    <label>Photos of condition (optional)</label>
+                    <div id="modal-condition-photos" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+                        ${(appointment.condition_photos || []).map(path => 
+                            `<img src="${storageUrl}/${path}" alt="Condition" style="max-width: 120px; max-height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;" />`
+                        ).join('')}
+                    </div>
+                </div>
+                <div class="patient-form-section" style="margin-top: 1rem;">
+                    <div class="patient-section-header">BEFORE / AFTER PHOTOS (for doctor to see current condition and progress)</div>
+                    <div style="margin-bottom: 0.75rem;"><strong>Before:</strong> <span id="modal-progress-before-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        ${(appointment.progress_photos && appointment.progress_photos.before ? appointment.progress_photos.before : []).map(path => 
+                            `<img src="${storageUrl}/${path}" alt="Before" style="max-width: 120px; max-height: 120px; object-fit: cover; border-radius: 4px;" />`
+                        ).join('')}
+                    </span></div>
+                    <div style="margin-bottom: 0.75rem;"><strong>After:</strong> <span id="modal-progress-after-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        ${(appointment.progress_photos && appointment.progress_photos.after ? appointment.progress_photos.after : []).map(path => 
+                            `<img src="${storageUrl}/${path}" alt="After" style="max-width: 120px; max-height: 120px; object-fit: cover; border-radius: 4px;" />`
+                        ).join('')}
+                    </span></div>
+                    <p style="font-size: 0.85rem; color: #6b7280; margin-top: 0.5rem;">These photos are for viewing only. To add before/after photos, go to the Consultations page.</p>
                 </div>
             </div>
 
@@ -3014,7 +3058,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="patient-certification-section">
                 <p class="patient-certification-text">I certify that all the information I wrote on this form are true and correct.</p>
                 
-                <div class="patient-signature-section">
+                <div class="patient-signature-section" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="patient-signature-field">
                         <label>Signature over Printed Name</label>
                         <div class="patient-signature-display" id="modal-signature-display">
@@ -3025,9 +3069,18 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                     </div>
                     <div class="patient-signature-field">
-                        <label>Date</label>
-                        <input type="text" id="modal-date" value="${new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}" readonly>
+                        <label>Upload ID (photo)</label>
+                        <div class="patient-signature-display" id="modal-id-photo-display" style="max-width: 100%; max-height: 150px;">
+                            ${personalInfo.id_photo_path ? 
+                                `<img src="${storageUrl}/${personalInfo.id_photo_path}" alt="ID" style="max-width: 100%; max-height: 150px; object-fit: contain;" />` : 
+                                '<span style="color: #999;">No ID uploaded</span>'
+                            }
+                        </div>
                     </div>
+                </div>
+                <div class="patient-signature-field" style="margin-top: 0.5rem;">
+                    <label>Date</label>
+                    <input type="text" id="modal-date" value="${new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}" readonly>
                 </div>
             </div>
         `;

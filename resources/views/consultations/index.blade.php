@@ -115,6 +115,7 @@
                 <table class="table appointment-table">
                     <thead>
                         <tr>
+                            <th>ID</th>
                             <th>Date & Time</th>
                             <th>Branch</th>
                             <th>Doctor</th>
@@ -164,6 +165,9 @@
                                 }
                             @endphp
                             <tr>
+                                <td data-label="ID">
+                                    <span style="font-weight: 600; color: #197a8c;">#{{ $consultation->id }}</span>
+                                </td>
                                 <td data-label="Date & Time">
                                     <div class="profile-icon">{{ $initials }}</div>
                                     <span class="primary-column-text">
@@ -352,6 +356,7 @@ function showConsultationDetails(consultationId) {
                             <i class="fas fa-calendar-check" style="font-size: 1rem;"></i> ${consultation.is_service_booking ? 'Service Booking Details' : 'Consultation Details'}
                         </h3>
                         <div style="display: grid; gap: 0.5rem; color: ${darkText};">
+                            <p><strong>Appointment ID:</strong> #${consultation.id || consultationId}</p>
                             ${consultation.is_service_booking ? `<p><strong>Service:</strong> ${consultation.service_name || consultation.consultation_type}</p>` : `<p><strong>Type:</strong> ${consultation.consultation_type}</p>`}
                             <p><strong>Description:</strong> ${consultation.description}</p>
                             ${consultation.medical_background && consultation.medical_background !== 'N/A' ? `<p><strong>Medical Background:</strong> ${consultation.medical_background}</p>` : ''}

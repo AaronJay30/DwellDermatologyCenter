@@ -116,8 +116,8 @@
         </div>
 
         <div class="current-photo">
-            @if($branch->image_path)
-                <img src="{{ asset('storage/' . $branch->image_path) }}?t={{ time() }}" alt="Available doctor schedule photo">
+            @if($branch->available_doctor_image_path)
+                <img src="{{ asset('storage/' . $branch->available_doctor_image_path) }}?t={{ time() }}" alt="Available doctor schedule photo">
             @else
                 <div class="current-photo-placeholder">
                     No available doctor schedule photo has been uploaded yet for this branch.

@@ -559,7 +559,7 @@ class PatientConsultationController extends Controller
             ->orderBy('start_time')
             ->get();
 
-        return response()->json($timeSlots);
+        return response()->json(['slots' => $timeSlots]);
     }
 
     public function show(Appointment $consultation)

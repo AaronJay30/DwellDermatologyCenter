@@ -16,7 +16,7 @@
     @if(isset($branches) && $branches->count() > 0)
         @php
             $branchForImage = $service->category && $service->category->branch ? $service->category->branch : $branches->first();
-            $scheduleImage = $branchForImage && $branchForImage->image_path ? asset('storage/' . $branchForImage->image_path) : ($branches->first()->image_path ? asset('storage/' . $branches->first()->image_path) : null);
+            $scheduleImage = $branchForImage && $branchForImage->available_doctor_image_path ? asset('storage/' . $branchForImage->available_doctor_image_path) : ($branches->first()->available_doctor_image_path ? asset('storage/' . $branches->first()->available_doctor_image_path) : null);
         @endphp
         @if($scheduleImage)
             <div id="available-doctor-banner" style="margin-bottom: 1.5rem; text-align: center;">

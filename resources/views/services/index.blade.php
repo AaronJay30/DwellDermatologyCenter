@@ -6,7 +6,7 @@
     @if(isset($branches) && $branches->count() > 0)
         @php
             $firstBranch = $branches->first();
-            $scheduleImage = $firstBranch->image_path ? asset('storage/' . $firstBranch->image_path) : null;
+            $scheduleImage = $firstBranch->available_doctor_image_path ? asset('storage/' . $firstBranch->available_doctor_image_path) : null;
         @endphp
         @if($scheduleImage)
             <div id="available-doctor-banner" style="margin-bottom: 2rem; text-align: center;">

@@ -80,6 +80,39 @@
         padding: 1rem;
         border: 1px solid #eef1f4;
         margin-bottom: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .table-wrapper {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .table-wrapper table {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .table-wrapper table tbody {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .table-wrapper table tbody tr {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .table-wrapper table tbody tr td {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .table-wrapper table tbody tr td * {
+        position: relative;
+        z-index: 10;
+        pointer-events: auto;
     }
 
     .slots-table-header {
@@ -138,16 +171,122 @@
         font-weight: 600;
         cursor: pointer;
         text-decoration: underline;
+        position: relative;
+        z-index: 10;
+        pointer-events: auto;
     }
 
     .patient-name-link:hover {
         color: #145866;
     }
 
+    /* Editable Date/Time Inputs Styles */
+    .admin-schedule-edit-date,
+    .admin-schedule-edit-time,
+    .admin-schedule-status-select {
+        position: relative;
+        z-index: 10;
+        pointer-events: auto;
+    }
+    
+    .admin-schedule-edit-date,
+    .admin-schedule-edit-time {
+        width: 100%;
+        max-width: 140px;
+        padding: 0.5rem 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 5px;
+        font-family: 'Figtree', sans-serif;
+        font-size: 0.9rem;
+        color: #2c3e50;
+        background-color: #ffffff;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: block;
+    }
+
+    .admin-schedule-edit-date:hover,
+    .admin-schedule-edit-time:hover {
+        border-color: #197a8c;
+        box-shadow: 0 2px 4px rgba(25, 122, 140, 0.1);
+    }
+
+    .admin-schedule-edit-date:focus,
+    .admin-schedule-edit-time:focus {
+        outline: none;
+        border-color: #197a8c;
+        box-shadow: 0 2px 8px rgba(25, 122, 140, 0.2);
+        background-color: #f8f9fa;
+    }
+
+    .admin-schedule-edit-time {
+        max-width: 100px;
+        margin-top: 4px;
+    }
+
+    /* Status Dropdown Styles */
+    .admin-schedule-status-select {
+        padding: 0.5rem 0.75rem;
+        min-width: 110px;
+        border: 2px solid #e0e0e0;
+        border-radius: 5px;
+        font-family: 'Figtree', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #2c3e50;
+        background-color: #ffffff;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%232c3e50' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 12px;
+        padding-right: 2.5rem;
+    }
+
+    .admin-schedule-status-select:hover {
+        border-color: #197a8c;
+        box-shadow: 0 2px 4px rgba(25, 122, 140, 0.1);
+    }
+
+    .admin-schedule-status-select:focus {
+        outline: none;
+        border-color: #197a8c;
+        box-shadow: 0 2px 8px rgba(25, 122, 140, 0.2);
+        background-color: #f8f9fa;
+    }
+
+    /* Status option colors */
+    .admin-schedule-status-select option[value="pending"] {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .admin-schedule-status-select option[value="ongoing"] {
+        background-color: #cfe2ff;
+        color: #084298;
+    }
+
+    .admin-schedule-status-select option[value="confirmed"] {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .admin-schedule-status-select option[value="completed"] {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .admin-schedule-status-select option[value="cancelled"] {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
     /* Patient Information Modal Styles */
     .patient-modal {
-        display: none;
-        position: absolute;
+        display: none !important;
+        position: fixed;
         z-index: 1000;
         left: 0;
         top: 0;
@@ -155,13 +294,21 @@
         height: 100%;
         overflow: auto;
         background-color: rgba(0, 0, 0, 0.5);
+        pointer-events: none !important;
+        visibility: hidden;
     }
 
     .patient-modal.active {
-        display: flex;
+        display: flex !important;
         align-items: center;
         justify-content: center;
         padding: 20px;
+        pointer-events: auto !important;
+        visibility: visible;
+    }
+    
+    .patient-modal.active .patient-modal-content {
+        pointer-events: auto !important;
     }
 
     .patient-modal-content {
@@ -427,11 +574,19 @@
         z-index: 1000;
         overflow-y: auto;
         padding: 20px;
-        display: none;
+        display: none !important;
+        pointer-events: none !important;
+        visibility: hidden;
     }
 
     .modal-container.active {
-        display: flex;
+        display: flex !important;
+        pointer-events: auto !important;
+        visibility: visible;
+    }
+    
+    .modal-container.active .modal-content {
+        pointer-events: auto !important;
     }
 
     .modal-content {
@@ -699,9 +854,9 @@
                         @endphp
                         <tr>
                             <td>
-                                <div class="patient-info">
+                                <div class="patient-info" style="position: relative; z-index: 10;">
                                     <span
-                                        class="patient-name-link" data-appointment-id="{{ $appointment->id }}" onclick="openPatientModal({{ $appointment->id }})"
+                                        class="patient-name-link" data-appointment-id="{{ $appointment->id }}" onclick="openPatientModal({{ $appointment->id }})" style="position: relative; z-index: 10; pointer-events: auto;"
                                     >
                                         {{ $patientName }}
                                     </span>
@@ -709,12 +864,12 @@
                             </td>
                             <td>{{ $appointment->service->name ?? 'N/A' }}</td>
                             <td>{{ $appointment->branch->name ?? 'N/A' }}</td>
-                            <td>
-                                <input type="date" class="admin-schedule-edit-date" data-appointment-id="{{ $appointment->id }}" value="{{ $dateInputValue }}" style="max-width: 140px; padding: 0.35rem;">
-                                <input type="time" class="admin-schedule-edit-time" data-appointment-id="{{ $appointment->id }}" value="{{ $timeInputValue }}" style="max-width: 100px; padding: 0.35rem; margin-top: 4px;">
+                            <td style="position: relative; z-index: 10;">
+                                <input type="date" class="admin-schedule-edit-date" data-appointment-id="{{ $appointment->id }}" value="{{ $dateInputValue }}" style="position: relative; z-index: 10; pointer-events: auto;">
+                                <input type="time" class="admin-schedule-edit-time" data-appointment-id="{{ $appointment->id }}" value="{{ $timeInputValue }}" style="position: relative; z-index: 10; pointer-events: auto;">
                             </td>
-                            <td>
-                                <select class="admin-schedule-status-select" data-appointment-id="{{ $appointment->id }}" data-prev-status="{{ $appointment->status }}" style="padding: 0.35rem 0.5rem; min-width: 110px;">
+                            <td style="position: relative; z-index: 10;">
+                                <select class="admin-schedule-status-select" data-appointment-id="{{ $appointment->id }}" data-prev-status="{{ $appointment->status }}" style="position: relative; z-index: 10; pointer-events: auto;">
                                     <option value="pending" {{ $appointment->status === 'pending' ? 'selected' : '' }}>Pending</option>
                                     <option value="ongoing" {{ $appointment->status === 'ongoing' ? 'selected' : '' }}>Ongoing</option>
                                     <option value="confirmed" {{ $appointment->status === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
@@ -731,7 +886,7 @@
                                     $isPastPending = $appointment->status === 'pending' && $isPastDate;
                                     $isPastConfirmed = $appointment->status === 'confirmed' && $isPastDate;
                                 @endphp
-                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <div style="display: flex; gap: 0.5rem; align-items: center; position: relative; z-index: 10;">
                                     @if($isPastPending)
                                         <button type="button"
                                             class="delete-past-appointment-btn"
@@ -739,26 +894,26 @@
                                                 data-patient-name="{{ json_encode($patientName) }}"
                                                 data-appointment-date="{{ $appointmentDate->format('M d, Y') }}"
                                                 data-appointment-time="{{ $displayTime ?? '' }}"
-                                                style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">
+                                                style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">
                                             Delete
                                         </button>
                                     @elseif($isPastConfirmed)
-                                        <button onclick="addServiceResult({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Add Result</button>
+                                        <button onclick="addServiceResult({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Add Result</button>
                                         <button type="button"
                                             class="drop-past-confirmed-btn"
                                                 data-appointment-id="{{ $appointment->id }}"
                                                 data-patient-name="{{ json_encode($patientName) }}"
                                                 data-appointment-date="{{ $appointmentDate->format('M d, Y') }}"
                                                 data-appointment-time="{{ $displayTime ?? '' }}"
-                                                style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">
+                                                style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">
                                             Drop
                                         </button>
                                     @elseif($appointment->status === 'pending')
-                                        <button onclick="confirmServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Confirm</button>
-                                        <button onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Cancel</button>
+                                        <button onclick="confirmServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Confirm</button>
+                                        <button onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Cancel</button>
                                     @elseif($appointment->status === 'confirmed')
-                                        <button onclick="addServiceResult({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Add Result</button>
-                                        <button onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Cancel</button>
+                                        <button onclick="addServiceResult({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #197a8c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Add Result</button>
+                                        <button onclick="cancelServiceSchedule({{ $appointment->id }})" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500; position: relative; z-index: 10; pointer-events: auto;">Cancel</button>
                                     @endif
                                 </div>
                             </td>
@@ -1357,6 +1512,44 @@ document.addEventListener('DOMContentLoaded', function () {
         window.feather.replace();
     }
 
+    // Ensure modal containers are not blocking clicks when hidden
+    const modalContainer = document.getElementById('modalContainer');
+    if (modalContainer) {
+        if (!modalContainer.classList.contains('active')) {
+            modalContainer.style.pointerEvents = 'none';
+            modalContainer.style.display = 'none';
+            modalContainer.style.visibility = 'hidden';
+        }
+        // Force ensure all child modals are hidden
+        modalContainer.querySelectorAll('.modal-content').forEach(m => {
+            if (m.style.display !== 'block') {
+                m.style.display = 'none';
+            }
+        });
+    }
+    
+    const patientModal = document.getElementById('patientModal');
+    if (patientModal) {
+        if (!patientModal.classList.contains('active')) {
+            patientModal.style.pointerEvents = 'none';
+            patientModal.style.display = 'none';
+            patientModal.style.visibility = 'hidden';
+        }
+    }
+    
+    // Ensure all table elements are clickable
+    const tableCells = document.querySelectorAll('.table-wrapper td');
+    tableCells.forEach(cell => {
+        cell.style.position = 'relative';
+        cell.style.zIndex = '1';
+        const interactiveElements = cell.querySelectorAll('input, select, button, a, .patient-name-link');
+        interactiveElements.forEach(el => {
+            el.style.position = 'relative';
+            el.style.zIndex = '10';
+            el.style.pointerEvents = 'auto';
+        });
+    });
+
     // Live search functionality
     const searchInput = document.getElementById('searchInput');
     const searchForm = document.getElementById('searchForm');
@@ -1380,7 +1573,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Close patient modal when clicking outside
-    const patientModal = document.getElementById('patientModal');
     if (patientModal) {
         patientModal.addEventListener('click', function(e) {
             if (e.target === patientModal) {
@@ -1397,6 +1589,8 @@ function showModal(modalId) {
     const container = document.getElementById('modalContainer');
     const modal = document.getElementById(modalId);
     
+    if (!container || !modal) return;
+    
     // Hide all modals first
     container.querySelectorAll('.modal-content').forEach(m => {
         m.style.display = 'none';
@@ -1405,14 +1599,20 @@ function showModal(modalId) {
     // Show the requested modal
     modal.style.display = 'block';
     container.classList.add('active');
+    container.style.display = 'flex';
+    container.style.pointerEvents = 'auto';
 }
 
 function hideModal() {
     const container = document.getElementById('modalContainer');
-    container.classList.remove('active');
-    container.querySelectorAll('.modal-content').forEach(m => {
-        m.style.display = 'none';
-    });
+    if (container) {
+        container.classList.remove('active');
+        container.style.pointerEvents = 'none';
+        container.style.display = 'none';
+        container.querySelectorAll('.modal-content').forEach(m => {
+            m.style.display = 'none';
+        });
+    }
 }
 
 let currentModalAppointmentId = null;
@@ -1420,7 +1620,13 @@ let currentModalAppointmentId = null;
 function openPatientModal(appointmentId) {
     currentModalAppointmentId = appointmentId;
     const modal = document.getElementById('patientModal');
+    if (!modal) {
+        console.error('Patient modal not found');
+        return;
+    }
     modal.classList.add('active');
+    modal.style.display = 'flex';
+    modal.style.pointerEvents = 'auto';
     // Clear previous data
     clearPatientModal();
     
@@ -1497,7 +1703,11 @@ function clearPatientModal() {
 
 function closePatientModal() {
     const modal = document.getElementById('patientModal');
-    modal.classList.remove('active');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+        modal.style.pointerEvents = 'none';
+    }
 }
 
 function populatePatientModal(data) {
