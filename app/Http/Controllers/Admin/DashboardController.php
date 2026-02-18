@@ -1014,7 +1014,11 @@ class DashboardController extends Controller
         // Verify the appointment belongs to the authenticated admin's branch
         $adminBranchId = Auth::user()->branch_id;
         if (!$adminBranchId || $appointment->branch_id !== $adminBranchId) {
-            return redirect()->route('admin.my-services-schedules')->with('error', 'You do not have permission to confirm this appointment.');
+            $message = 'You do not have permission to confirm this appointment.';
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $message], 403);
+            }
+            return redirect()->route('admin.my-services-schedules')->with('error', $message);
         }
 
         $request->validate([
@@ -1068,12 +1072,19 @@ class DashboardController extends Controller
             );
         }
 
+        $successMessage = 'Service appointment confirmed successfully!';
+        
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => $successMessage]);
+        }
+
         // Redirect back to the page we came from (check referrer or default to main page)
         $referrer = request()->headers->get('referer');
         if ($referrer && str_contains($referrer, '/confirmed')) {
-            return redirect()->route('admin.my-services-schedules.confirmed')->with('success', 'Service appointment confirmed successfully!');
+            return redirect()->route('admin.my-services-schedules.confirmed')->with('success', $successMessage);
         }
-        return redirect()->route('admin.my-services-schedules')->with('success', 'Service appointment confirmed successfully!');
+        return redirect()->route('admin.my-services-schedules')->with('success', $successMessage);
     }
 
     public function cancelServiceSchedule(Request $request, Appointment $appointment)
@@ -1081,7 +1092,11 @@ class DashboardController extends Controller
         // Verify the appointment belongs to the authenticated admin's branch
         $adminBranchId = Auth::user()->branch_id;
         if (!$adminBranchId || $appointment->branch_id !== $adminBranchId) {
-            return redirect()->route('admin.my-services-schedules')->with('error', 'You do not have permission to cancel this appointment.');
+            $message = 'You do not have permission to cancel this appointment.';
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $message], 403);
+            }
+            return redirect()->route('admin.my-services-schedules')->with('error', $message);
         }
 
         $request->validate([
@@ -1111,12 +1126,19 @@ class DashboardController extends Controller
             );
         }
 
+        $successMessage = 'Service appointment cancelled successfully!';
+        
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => $successMessage]);
+        }
+
         // Redirect back to the page we came from (check referrer or default to main page)
         $referrer = request()->headers->get('referer');
         if ($referrer && str_contains($referrer, '/confirmed')) {
-            return redirect()->route('admin.my-services-schedules.confirmed')->with('success', 'Service appointment cancelled successfully!');
+            return redirect()->route('admin.my-services-schedules.confirmed')->with('success', $successMessage);
         }
-        return redirect()->route('admin.my-services-schedules')->with('success', 'Service appointment cancelled successfully!');
+        return redirect()->route('admin.my-services-schedules')->with('success', $successMessage);
     }
 
     public function updateServiceScheduleAppointment(Request $request, Appointment $appointment)
