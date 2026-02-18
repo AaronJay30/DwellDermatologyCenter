@@ -1591,14 +1591,19 @@ function showModal(modalId) {
 
 function hideModal() {
     const container = document.getElementById('modalContainer');
-    container.classList.remove('active');
-    container.querySelectorAll('.modal-content').forEach(m => {
-        m.style.display = 'none';
-    });
+    if (container) {
+        container.classList.remove('active');
+        container.style.pointerEvents = 'none';
+        container.style.display = 'none';
+        container.querySelectorAll('.modal-content').forEach(m => {
+            m.style.display = 'none';
+        });
+    }
 }
 
 function confirmServiceSchedule(appointmentId) {
     const form = document.getElementById('confirmForm');
+    if (!form) return;
     form.action = `{{ url('/doctor/my-services-schedules') }}/${appointmentId}/confirm`;
     // Reset form
     document.getElementById('scheduled_time').value = '';
@@ -1608,6 +1613,7 @@ function confirmServiceSchedule(appointmentId) {
 
 function cancelServiceSchedule(appointmentId) {
     const form = document.getElementById('cancelForm');
+    if (!form) return;
     form.action = `{{ url('/doctor/my-services-schedules') }}/${appointmentId}/cancel`;
     showModal('cancelModal');
 }
@@ -1729,6 +1735,102 @@ function toggleFollowUpDate() {
         dateWrapper.style.display = 'none';
         document.getElementById('follow_up_date').value = '';
     }
+}
+
+// Handle Confirm Service Schedule form submission
+const confirmFormEl = document.getElementById('confirmForm');
+if (confirmFormEl) {
+    confirmFormEl.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Confirming...';
+        
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-HTTP-Method-Override': 'PATCH'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            
+            if (data.success) {
+                alert(data.message || 'Service schedule confirmed successfully!');
+                closeConfirmModal();
+                window.location.reload();
+            } else {
+                alert(data.message || 'An error occurred while confirming the schedule.');
+            }
+        })
+        .catch(error => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            alert('An error occurred. Please try again.');
+        });
+    });
+}
+
+// Handle Cancel Service Schedule form submission
+const cancelFormEl = document.getElementById('cancelForm');
+if (cancelFormEl) {
+    cancelFormEl.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Cancelling...';
+        
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-HTTP-Method-Override': 'PATCH'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            
+            if (data.success) {
+                alert(data.message || 'Service schedule cancelled successfully!');
+                closeCancelModal();
+                window.location.reload();
+            } else {
+                alert(data.message || 'An error occurred while cancelling the schedule.');
+            }
+        })
+        .catch(error => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            alert('An error occurred. Please try again.');
+        });
+    });
 }
 
 // Handle Add Result form submission

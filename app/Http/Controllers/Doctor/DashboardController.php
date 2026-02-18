@@ -2027,12 +2027,19 @@ class DashboardController extends Controller
             );
         }
 
+        $successMessage = 'Service appointment confirmed successfully!';
+        
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => $successMessage]);
+        }
+
         // Redirect back to the page we came from (check referrer or default to confirmed page)
         $referrer = request()->headers->get('referer');
         if ($referrer && str_contains($referrer, '/confirmed')) {
-            return redirect()->route('doctor.my-services-schedules.confirmed')->with('success', 'Service appointment confirmed successfully!');
+            return redirect()->route('doctor.my-services-schedules.confirmed')->with('success', $successMessage);
         }
-        return redirect()->route('doctor.my-services-schedules')->with('success', 'Service appointment confirmed successfully!');
+        return redirect()->route('doctor.my-services-schedules')->with('success', $successMessage);
     }
 
     public function cancelServiceSchedule(Request $request, Appointment $appointment)
@@ -2055,12 +2062,19 @@ class DashboardController extends Controller
             $appointment->patient_id
         );
 
+        $successMessage = 'Service appointment cancelled successfully!';
+        
+        // Return JSON for AJAX requests
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => $successMessage]);
+        }
+
         // Redirect back to the page we came from (check referrer or default to confirmed page)
         $referrer = request()->headers->get('referer');
         if ($referrer && str_contains($referrer, '/confirmed')) {
-            return redirect()->route('doctor.my-services-schedules.confirmed')->with('success', 'Service appointment cancelled successfully!');
+            return redirect()->route('doctor.my-services-schedules.confirmed')->with('success', $successMessage);
         }
-        return redirect()->route('doctor.my-services-schedules')->with('success', 'Service appointment cancelled successfully!');
+        return redirect()->route('doctor.my-services-schedules')->with('success', $successMessage);
     }
 
     public function updateServiceScheduleAppointment(Request $request, Appointment $appointment)

@@ -1105,14 +1105,13 @@
                         <tr>
                             <td>
                                 <div class="patient-info" style="position: relative; z-index: 10;">
-                                    <span
+                                    <a
+                                        href="{{ route('doctor.history.patient', ['patient' => $appointment->patient_id]) }}"
                                         class="patient-name-link"
-                                        data-appointment-id="{{ $appointment->id }}"
-                                        onclick="openPatientModal({{ $appointment->id }})"
                                         style="position: relative; z-index: 10; pointer-events: auto;"
                                     >
                                         {{ $patientName }}
-                                    </span>
+                                    </a>
                                 </div>
                             </td>
                             <td>{{ $appointment->service->name ?? 'N/A' }}</td>
@@ -1738,6 +1737,63 @@
 </div>
 
 <script>
+// Declare functions globally before DOMContentLoaded
+let currentServiceAppointmentId = null;
+
+function confirmServiceSchedule(appointmentId) {
+    const form = document.getElementById('confirmForm');
+    if (!form) return;
+    form.action = `{{ url('/doctor/my-services-schedules') }}/${appointmentId}/confirm`;
+    document.getElementById('scheduled_time').value = '';
+    document.getElementById('scheduled_date').value = '';
+    showModal('confirmModal');
+}
+
+function cancelServiceSchedule(appointmentId) {
+    const form = document.getElementById('cancelForm');
+    if (!form) return;
+    form.action = `{{ url('/doctor/my-services-schedules') }}/${appointmentId}/cancel`;
+    showModal('cancelModal');
+}
+
+function addServiceResult(appointmentId) {
+    currentServiceAppointmentId = appointmentId;
+    const form = document.getElementById('addResultForm');
+    form.action = `{{ url('/doctor/my-services-schedules') }}/${appointmentId}/result`;
+    form.reset();
+    resetBulletLists();
+    showModal('addResultModal');
+}
+
+function showModal(modalId) {
+    const container = document.getElementById('modalContainer');
+    const modal = document.getElementById(modalId);
+    
+    if (!container || !modal) return;
+    
+    container.querySelectorAll('.modal-content').forEach(m => {
+        m.style.display = 'none';
+    });
+    
+    modal.style.display = 'block';
+    container.classList.add('active');
+    container.style.display = 'flex';
+    container.style.pointerEvents = 'auto';
+    container.style.visibility = 'visible';
+}
+
+function hideModal() {
+    const container = document.getElementById('modalContainer');
+    if (container) {
+        container.classList.remove('active');
+        container.style.pointerEvents = 'none';
+        container.style.display = 'none';
+        container.querySelectorAll('.modal-content').forEach(m => {
+            m.style.display = 'none';
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     if (window.feather && typeof window.feather.replace === 'function') {
         window.feather.replace();
@@ -1771,8 +1827,13 @@ document.addEventListener('DOMContentLoaded', function () {
             this.setAttribute('data-prev-status', status);
             const selEl = this;
             fetch(`${baseUrl}/${id}`, {
-                method: 'PATCH',
-                headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+                method: 'POST',
+                headers: { 
+                    'X-CSRF-TOKEN': csrfToken, 
+                    'Accept': 'application/json', 
+                    'Content-Type': 'application/json',
+                    'X-HTTP-Method-Override': 'PATCH'
+                },
                 body: JSON.stringify({ status })
             }).then(r => r.json()).then(function(res) {
                 if (!res.success) alert(res.message || 'Failed to update status');
@@ -1784,8 +1845,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!doneConfirmContext) return closeDoneConfirmModal();
         const { appointmentId, selectEl } = doneConfirmContext;
         fetch(`${baseUrl}/${appointmentId}`, {
-            method: 'PATCH',
-            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            method: 'POST',
+            headers: { 
+                'X-CSRF-TOKEN': csrfToken, 
+                'Accept': 'application/json', 
+                'Content-Type': 'application/json',
+                'X-HTTP-Method-Override': 'PATCH'
+            },
             body: JSON.stringify({ status: 'completed' })
         }).then(r => r.json()).then(function(res) {
             closeDoneConfirmModal();
@@ -1797,8 +1863,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!doneConfirmContext) return closeDoneConfirmModal();
         const { appointmentId, selectEl } = doneConfirmContext;
         fetch(`${baseUrl}/${appointmentId}`, {
-            method: 'PATCH',
-            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            method: 'POST',
+            headers: { 
+                'X-CSRF-TOKEN': csrfToken, 
+                'Accept': 'application/json', 
+                'Content-Type': 'application/json',
+                'X-HTTP-Method-Override': 'PATCH'
+            },
             body: JSON.stringify({ status: 'completed' })
         }).then(r => r.json()).then(function(res) {
             closeDoneConfirmModal();
@@ -1866,31 +1937,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
-
-let currentServiceAppointmentId = null;
-
-// Modal management functions
-function showModal(modalId) {
-    const container = document.getElementById('modalContainer');
-    const modal = document.getElementById(modalId);
-    
-    // Hide all modals first
-    container.querySelectorAll('.modal-content').forEach(m => {
-        m.style.display = 'none';
-    });
-    
-    // Show the requested modal
-    modal.style.display = 'block';
-    container.classList.add('active');
-}
-
-function hideModal() {
-    const container = document.getElementById('modalContainer');
-    container.classList.remove('active');
-    container.querySelectorAll('.modal-content').forEach(m => {
-        m.style.display = 'none';
-    });
-}
 
 let currentModalAppointmentId = null;
 // Patient info modal functions
@@ -2040,7 +2086,6 @@ function populatePatientModal(data) {
     
     document.getElementById('modal-preferred-pronoun').value = personalInfo.preferred_pronoun || '';
     
-    const appointmentData = data.appointment || {};
     if (document.getElementById('modal-consultation-type')) document.getElementById('modal-consultation-type').value = appointmentData.consultation_type || '';
     if (document.getElementById('modal-consultation-description')) document.getElementById('modal-consultation-description').value = appointmentData.description || '';
     if (document.getElementById('modal-consultation-medical-background')) document.getElementById('modal-consultation-medical-background').value = appointmentData.medical_background || '';
@@ -2169,32 +2214,6 @@ function populatePatientModal(data) {
     }
 }
 
-function confirmServiceSchedule(appointmentId) {
-    const form = document.getElementById('confirmForm');
-    form.action = `{{ url('/doctor/my-services-schedules') }}/${appointmentId}/confirm`;
-    // Reset form
-    document.getElementById('scheduled_time').value = '';
-    document.getElementById('scheduled_date').value = '';
-    showModal('confirmModal');
-}
-
-function cancelServiceSchedule(appointmentId) {
-    const form = document.getElementById('cancelForm');
-    form.action = `{{ url('/doctor/my-services-schedules') }}/${appointmentId}/cancel`;
-    showModal('cancelModal');
-}
-
-function addServiceResult(appointmentId) {
-    currentServiceAppointmentId = appointmentId;
-    const form = document.getElementById('addResultForm');
-    form.action = `{{ url('/doctor/my-services-schedules') }}/${appointmentId}/result`;
-    // Reset form
-    form.reset();
-    // Reset bullet lists to initial state
-    resetBulletLists();
-    showModal('addResultModal');
-}
-
 function closeConfirmModal() {
     hideModal();
 }
@@ -2301,6 +2320,102 @@ function toggleFollowUpDate() {
         dateWrapper.style.display = 'none';
         document.getElementById('follow_up_date').value = '';
     }
+}
+
+// Handle Confirm Service Schedule form submission
+const confirmFormEl = document.getElementById('confirmForm');
+if (confirmFormEl) {
+    confirmFormEl.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Confirming...';
+        
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-HTTP-Method-Override': 'PATCH'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            
+            if (data.success) {
+                alert(data.message || 'Service schedule confirmed successfully!');
+                closeConfirmModal();
+                window.location.reload();
+            } else {
+                alert(data.message || 'An error occurred while confirming the schedule.');
+            }
+        })
+        .catch(error => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            alert('An error occurred. Please try again.');
+        });
+    });
+}
+
+// Handle Cancel Service Schedule form submission
+const cancelFormEl = document.getElementById('cancelForm');
+if (cancelFormEl) {
+    cancelFormEl.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Cancelling...';
+        
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-HTTP-Method-Override': 'PATCH'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            
+            if (data.success) {
+                alert(data.message || 'Service schedule cancelled successfully!');
+                closeCancelModal();
+                window.location.reload();
+            } else {
+                alert(data.message || 'An error occurred while cancelling the schedule.');
+            }
+        })
+        .catch(error => {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            alert('An error occurred. Please try again.');
+        });
+    });
 }
 
 // Handle Add Result form submission
