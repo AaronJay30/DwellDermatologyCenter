@@ -1007,7 +1007,14 @@
                         <tr>
                             <td>
                                 <div class="patient-info">
-                                    <span class="patient-name-link" data-appointment-id="{{ $appointment->id }}" onclick="openPatientModal({{ $appointment->id }})">{{ $patientName }}</span>
+                                    <a
+                                        href="{{ route('admin.patients.history', ['patient' => $appointment->patient_id ?? $appointment->patient->id ?? $appointment->id]) }}"
+                                        class="patient-name-link"
+                                        style="text-decoration: underline; color: #197a8c;"
+                                        title="View Patient History"
+                                    >
+                                        {{ $patientName }}
+                                    </a>
                                 </div>
                             </td>
                             <td>{{ $appointment->service->name ?? ($appointment->consultation_type ?? 'N/A') }}</td>
@@ -1018,12 +1025,14 @@
                                 <input type="time" class="admin-edit-time" data-appointment-id="{{ $appointment->id }}" value="{{ $displayTime }}">
                             </td>
                             <td>
-                                <select class="admin-status-select" data-appointment-id="{{ $appointment->id }}" data-prev-status="{{ $appointment->status }}">
-                                    <option value="pending" {{ $appointment->status === 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="ongoing" {{ $appointment->status === 'ongoing' ? 'selected' : '' }}>Ongoing</option>
-                                    <option value="confirmed" {{ $appointment->status === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-                                    <option value="completed" {{ $appointment->status === 'completed' ? 'selected' : '' }}>Done</option>
-                                    <option value="cancelled" {{ $appointment->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                                <select class="admin-status-select"
+                                    data-appointment-id="{{ $appointment->id }}"
+                                    data-prev-status="{{ $appointment->status }}">
+                                        
+                                    <option value="pending" {{ $appointment->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="confirmed" {{ $appointment->status == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                                    <option value="completed" {{ $appointment->status == 'completed' ? 'selected' : '' }}>Completed</option>
+                                    <option value="cancelled" {{ $appointment->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                 </select>
                             </td>
                             <td>
@@ -2746,6 +2755,86 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+});
+</script>
+
+<script>
+let selectedSelect = null;
+let previousStatus = null;
+let newStatus = null;
+let appointmentId = null;
+
+const modal = document.getElementById('statusConfirmModal');
+
+// Detect dropdown change
+document.querySelectorAll('.admin-status-select').forEach(select => {
+    select.addEventListener('change', function () {
+        const previousStatus = this.dataset.prevStatus;
+        const newStatus = this.value;
+        const appointmentId = this.dataset.appointmentId;
+
+        if (newStatus === 'completed') {
+            // Show modal confirmation for completed only
+            selectedSelect = this;
+            window.previousStatus = previousStatus;
+            window.newStatus = newStatus;
+            window.appointmentId = appointmentId;
+            modal.style.display = 'block';
+            return;
+        }
+
+        // Run AJAX immediately for other statuses
+        fetch(`/admin/appointments/${appointmentId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                status: newStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            this.dataset.prevStatus = newStatus;
+        })
+        .catch(error => {
+            alert('Update failed');
+            this.value = previousStatus;
+        });
+    });
+});
+
+// Cancel → revert dropdown
+document.getElementById('cancelStatusChange').addEventListener('click', function () {
+    if (window.selectedSelect && window.previousStatus) {
+        window.selectedSelect.value = window.previousStatus;
+    }
+    modal.style.display = 'none';
+});
+
+// Confirm → AJAX update for completed
+document.getElementById('confirmStatusChange').addEventListener('click', function () {
+    fetch(`/admin/appointments/${window.appointmentId}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            status: window.newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (window.selectedSelect) window.selectedSelect.dataset.prevStatus = window.newStatus;
+        modal.style.display = 'none';
+    })
+    .catch(error => {
+        alert('Update failed');
+        if (window.selectedSelect && window.previousStatus) window.selectedSelect.value = window.previousStatus;
+        modal.style.display = 'none';
+    });
 });
 </script>
 @endpush

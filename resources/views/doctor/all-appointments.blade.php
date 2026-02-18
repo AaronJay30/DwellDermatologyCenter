@@ -1256,7 +1256,14 @@
                         <tr>
                             <td>
                                 <div class="patient-info">
-                                    <span class="patient-name-link" data-appointment-id="{{ $appointment->id }}" onclick="openPatientModal({{ $appointment->id }})">{{ $patientName }}</span>
+                                    <a
+                                        href="{{ route('doctor.history.patient', ['patient' => $appointment->patient_id ?? $appointment->patient->id ?? $appointment->id]) }}"
+                                        class="patient-name-link"
+                                        style="text-decoration: underline; color: #197a8c;"
+                                        title="View Patient History"
+                                    >
+                                        {{ $patientName }}
+                                    </a>
                                 </div>
                             </td>
                             <td>{{ $appointment->service->name ?? ($appointment->consultation_type ?? 'N/A') }}</td>

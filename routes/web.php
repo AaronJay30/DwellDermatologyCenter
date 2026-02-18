@@ -39,6 +39,9 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 
+Route::post('/admin/appointments/{id}/status', [App\Http\Controllers\Admin\DashboardController::class, 'updateStatus'])->name('admin.appointments.updateStatus');
+
+
 // Protected routes
 Route::middleware('auth')->group(function () {
     // Logout route - must be authenticated to logout
@@ -314,4 +317,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/available-doctor', [App\Http\Controllers\Admin\AvailableDoctorController::class, 'update'])
             ->name('admin.available-doctor.update');
     });
+    
+
 });

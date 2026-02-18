@@ -2163,5 +2163,18 @@ class DashboardController extends Controller
             ], 500);
         }
     }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|string'
+        ]);
+
+        $appointment = Appointment::findOrFail($id);
+        $appointment->status = $request->status;
+        $appointment->save();
+
+        return response()->json(['success' => true]);
+    }
 }
 

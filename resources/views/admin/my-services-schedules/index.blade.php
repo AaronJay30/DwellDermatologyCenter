@@ -855,11 +855,14 @@
                         <tr>
                             <td>
                                 <div class="patient-info" style="position: relative; z-index: 10;">
-                                    <span
-                                        class="patient-name-link" data-appointment-id="{{ $appointment->id }}" onclick="openPatientModal({{ $appointment->id }})" style="position: relative; z-index: 10; pointer-events: auto;"
+                                    <a
+                                        href="{{ route('admin.patients.history', ['patient' => $appointment->patient_id ?? $appointment->patient->id ?? $appointment->id]) }}"
+                                        class="patient-name-link"
+                                        style="position: relative; z-index: 10; pointer-events: auto; text-decoration: underline; color: #197a8c;"
+                                        title="View Patient History"
                                     >
                                         {{ $patientName }}
-                                    </span>
+                                    </a>
                                 </div>
                             </td>
                             <td>{{ $appointment->service->name ?? 'N/A' }}</td>
@@ -1771,8 +1774,6 @@ function populatePatientModal(data) {
     
     // Preferred pronoun
     document.getElementById('modal-preferred-pronoun').value = personalInfo.preferred_pronoun || '';
-    
-    const appointmentData = data.appointment || {};
     document.getElementById('modal-consultation-type').value = appointmentData.consultation_type || '';
     document.getElementById('modal-consultation-description').value = appointmentData.description || '';
     document.getElementById('modal-consultation-medical-background').value = appointmentData.medical_background || '';
@@ -2112,8 +2113,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
     const scheduleBaseUrl = '{{ url("/admin/my-services-schedules") }}';
     function patchServiceSchedule(appointmentId, data) {
-        return fetch(`${scheduleBaseUrl}/${appointmentId}`, {
-            method: 'PATCH',
+        // Use the new POST route for status updates
+        return fetch(`/admin/appointments/${appointmentId}/status`, {
+            method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': csrfToken,
                 'Accept': 'application/json',
@@ -2128,14 +2130,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('doneConfirmModal');
         if (modal) { modal.classList.add('active'); document.body.style.overflow = 'hidden'; }
     }
-    function closeDoneConfirmModal() {
-        if (doneConfirmContext && doneConfirmContext.selectEl) {
-            doneConfirmContext.selectEl.value = doneConfirmContext.previousStatus || 'pending';
-        }
-        doneConfirmContext = null;
-        const modal = document.getElementById('doneConfirmModal');
-        if (modal) { modal.classList.remove('active'); document.body.style.overflow = ''; }
+
+// Move to global scope so it is accessible from HTML onclick
+function closeDoneConfirmModal() {
+    if (doneConfirmContext && doneConfirmContext.selectEl) {
+        doneConfirmContext.selectEl.value = doneConfirmContext.previousStatus || 'pending';
     }
+    doneConfirmContext = null;
+    const modal = document.getElementById('doneConfirmModal');
+    if (modal) { modal.classList.remove('active'); document.body.style.overflow = ''; }
+}
     document.querySelectorAll('.admin-schedule-status-select').forEach(function(sel) {
         sel.addEventListener('change', function() {
             const id = this.getAttribute('data-appointment-id');
