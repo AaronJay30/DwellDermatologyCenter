@@ -131,4 +131,38 @@
         </form>
     </div>
 </div>
+
+<!-- Past Time Modal -->
+<div id="pastTimeModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; padding: 1.5rem; max-width: 360px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); text-align: center;">
+        <p style="margin: 0 0 1rem; font-size: 1.1rem; color: #374151;">Cannot select past time</p>
+        <button type="button" onclick="closePastTimeModal()" style="padding: 0.5rem 1.5rem; background: #197a8c; color: white; border: none; border-radius: 6px; cursor: pointer;">OK</button>
+    </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+document.getElementById('slotForm').addEventListener('submit', function(e) {
+    const dateInput = document.getElementById('date');
+    const startTimeInput = document.getElementById('start_time');
+    const selectedDate = dateInput.value;
+    const selectedTime = startTimeInput.value;
+    if (!selectedDate || !selectedTime) return;
+    const today = new Date().toISOString().slice(0, 10);
+    if (selectedDate === today) {
+        const now = new Date();
+        const [h, m] = selectedTime.split(':').map(Number);
+        const slotStart = new Date(now);
+        slotStart.setHours(h, m, 0, 0);
+        if (slotStart <= now) {
+            e.preventDefault();
+            document.getElementById('pastTimeModal').style.display = 'flex';
+        }
+    }
+});
+function closePastTimeModal() {
+    document.getElementById('pastTimeModal').style.display = 'none';
+}
+</script>
+@endpush

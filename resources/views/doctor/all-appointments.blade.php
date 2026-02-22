@@ -1204,6 +1204,26 @@
         </div>
     </div>
 
+    {{-- Cancel Appointment Modal --}}
+    <div id="cancelConfirmModal" class="patient-modal" style="display: none;">
+        <div class="patient-modal-content" style="max-width: 520px;">
+            <div class="patient-modal-header">
+                <h2 class="result-modal-title" style="margin: 0;">Cancel Appointment</h2>
+                <button class="patient-modal-close" onclick="closeCancelApptModal()">&times;</button>
+            </div>
+            <div class="patient-modal-body" style="padding-top: 1rem;">
+                <p style="margin: 0 0 1rem 0; color: #374151;">Are you sure you want to cancel this appointment?</p>
+                <label for="cancelReasonInput" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Reason for cancellation <span style="color: #dc3545;">*</span></label>
+                <textarea id="cancelReasonInput" rows="3" required placeholder="Please provide a reason..." style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9rem;"></textarea>
+                <div id="cancelErrorMsg" style="display:none; color:#ef4444; font-weight:600; margin-top:0.5rem;"></div>
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem;">
+                    <button class="patient-modal-btn patient-modal-btn-cancel" onclick="closeCancelApptModal()">Close</button>
+                    <button id="confirmCancelApptBtn" class="patient-modal-btn patient-modal-btn-download" style="background-color: #f59e0b;" onclick="confirmCancelAppointment()">Yes, Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Cancel & Delete confirmation modal --}}
     <div id="deleteConfirmModal" class="patient-modal" style="display: none;">
         <div class="patient-modal-content" style="max-width: 520px;">
@@ -1292,8 +1312,11 @@
                                 @if($isPast)
                                     <div style="font-size: 0.8rem; color: #6b7280; margin-bottom: 0.25rem;">This booking has no result yet.</div>
                                 @endif
-                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                                     <button onclick="openAddResultModal({{ $appointment->id }})" class="btn-action btn-add-result" style="padding: 0.4rem 0.8rem; background-color: #008080; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Add Result</button>
+                                    @if(in_array($appointment->status, ['pending', 'confirmed', 'booked']))
+                                    <button onclick="openCancelModal({{ $appointment->id }})" class="btn-action btn-cancel" style="padding: 0.4rem 0.8rem; background-color: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Cancel</button>
+                                    @endif
                                     <button onclick="openDeleteModal({{ $appointment->id }})" class="btn-action btn-delete" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">{{ $isPast ? 'Cancel & Delete' : 'Delete' }}</button>
                                 </div>
                             </td>
@@ -1829,6 +1852,70 @@ function closePatientModal() {
 }
 
 let appointmentToDelete = null;
+let appointmentToCancel = null;
+
+function openCancelModal(appointmentId) {
+    appointmentToCancel = appointmentId;
+    const modal = document.getElementById('cancelConfirmModal');
+    document.getElementById('cancelReasonInput').value = '';
+    document.getElementById('cancelErrorMsg').style.display = 'none';
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeCancelApptModal() {
+    appointmentToCancel = null;
+    const modal = document.getElementById('cancelConfirmModal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+function confirmCancelAppointment() {
+    if (!appointmentToCancel) return;
+    const reason = document.getElementById('cancelReasonInput').value.trim();
+    if (!reason) {
+        document.getElementById('cancelErrorMsg').textContent = 'Please provide a reason for cancellation.';
+        document.getElementById('cancelErrorMsg').style.display = 'block';
+        return;
+    }
+    const btn = document.getElementById('confirmCancelApptBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Cancelling...'; }
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+    fetch(`{{ url('/doctor/all-appointments') }}/${appointmentToCancel}/cancel`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json',
+        },
+        body: new URLSearchParams({
+            _method: 'PATCH',
+            cancellation_reason: reason,
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Yes, Cancel'; }
+        if (data && data.success) {
+            closeCancelApptModal();
+            window.location.reload();
+        } else {
+            document.getElementById('cancelErrorMsg').textContent = (data && data.message) || 'Failed to cancel.';
+            document.getElementById('cancelErrorMsg').style.display = 'block';
+        }
+    })
+    .catch(() => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Yes, Cancel'; }
+        document.getElementById('cancelErrorMsg').textContent = 'An error occurred. Please try again.';
+        document.getElementById('cancelErrorMsg').style.display = 'block';
+    });
+}
 
 function openDeleteModal(appointmentId) {
     appointmentToDelete = appointmentId;

@@ -71,6 +71,7 @@ Route::middleware('auth')->group(function () {
         
         // Consultation routes
         Route::get('/consultations', [App\Http\Controllers\PatientConsultationController::class, 'index'])->name('consultations.index');
+        Route::get('/consultations/count', [App\Http\Controllers\PatientConsultationController::class, 'appointmentCount'])->name('consultations.count');
         Route::get('/consultations/create', [App\Http\Controllers\PatientConsultationController::class, 'create'])->name('consultations.create');
         Route::get('/consultations/medical', [App\Http\Controllers\PatientConsultationController::class, 'medicalConsultation'])->name('consultations.medical');
         Route::post('/consultations', [App\Http\Controllers\PatientConsultationController::class, 'store'])->name('consultations.store');
@@ -174,6 +175,7 @@ Route::middleware('auth')->group(function () {
         // All Appointments (All Branches) routes
         Route::get('/all-appointments', [App\Http\Controllers\Doctor\DashboardController::class, 'allAppointments'])->name('doctor.all-appointments');
         Route::get('/all-appointments/{appointment}/patient-info', [App\Http\Controllers\Doctor\DashboardController::class, 'getPatientInfo'])->name('doctor.all-appointments.patient-info');
+        Route::patch('/all-appointments/{appointment}/cancel', [App\Http\Controllers\Doctor\DashboardController::class, 'cancelAllAppointment'])->name('doctor.all-appointments.cancel');
         Route::delete('/all-appointments/{appointment}', [App\Http\Controllers\Doctor\DashboardController::class, 'deleteAllAppointment'])->name('doctor.all-appointments.delete');
         Route::post('/all-appointments/{appointment}/result', [App\Http\Controllers\Doctor\DashboardController::class, 'storeAllAppointmentResult'])->name('doctor.all-appointments.result');
         
@@ -258,6 +260,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/appointments/{appointment}/patient-info', [App\Http\Controllers\Admin\DashboardController::class, 'getPatientInfo'])->name('admin.appointments.patient-info');
         Route::patch('/appointments/{appointment}', [App\Http\Controllers\Admin\DashboardController::class, 'updateAppointment'])->name('admin.appointments.update');
+        Route::patch('/appointments/{appointment}/cancel', [App\Http\Controllers\Admin\DashboardController::class, 'cancelAppointment'])->name('admin.appointments.cancel');
         Route::delete('/appointments/{appointment}', [App\Http\Controllers\Admin\DashboardController::class, 'deleteAppointment'])->name('admin.appointments.delete');
         Route::post('/appointments/{appointment}/progress-photos', [App\Http\Controllers\Admin\DashboardController::class, 'storeProgressPhotos'])->name('admin.appointments.progress-photos');
         Route::post('/appointments/{appointment}/result', [App\Http\Controllers\Admin\DashboardController::class, 'storeResult'])->name('admin.appointments.store-result');

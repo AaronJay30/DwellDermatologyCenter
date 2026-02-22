@@ -31,6 +31,14 @@ class PatientController extends Controller
             });
         }
         
+        // Filter by month and/or year
+        if ($request->filled('month')) {
+            $query->whereMonth('created_at', $request->month);
+        }
+        if ($request->filled('year')) {
+            $query->whereYear('created_at', $request->year);
+        }
+        
         // Filter by type (consult or services)
         if ($request->filled('type')) {
             if ($request->type === 'consult') {
@@ -72,6 +80,14 @@ class PatientController extends Controller
             $query->whereHas('appointment', function ($q) use ($request) {
                 $q->where('branch_id', $request->branch_id);
             });
+        }
+
+        // Filter by month and/or year
+        if ($request->filled('month')) {
+            $query->whereMonth('created_at', $request->month);
+        }
+        if ($request->filled('year')) {
+            $query->whereYear('created_at', $request->year);
         }
 
         // Filter by type (consult or services)

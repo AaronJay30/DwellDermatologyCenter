@@ -1037,7 +1037,16 @@
                             </td>
                             <td>
                                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    
+                                    @if(in_array($appointment->status, ['pending', 'confirmed', 'booked']))
+                                    <button 
+                                        type="button"
+                                        class="cancel-appointment-btn"
+                                        data-appointment-id="{{ $appointment->id }}"
+                                        style="padding: 0.4rem 0.8rem; background-color: #f59e0b; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;"
+                                    >
+                                        Cancel
+                                    </button>
+                                    @endif
                                     <button 
                                         type="button"
                                         class="delete-appointment-btn" 
@@ -1500,6 +1509,26 @@
             <button id="confirmDeleteBtn" class="patient-modal-btn" style="background-color: #ef4444; color: white;">
                 Yes, Delete
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Appointment Modal -->
+<div id="cancelConfirmModal" class="patient-modal">
+    <div class="patient-modal-content" style="max-width: 480px;">
+        <div class="patient-modal-header">
+            <h1 class="patient-modal-title" style="font-size: 1.3rem; color: #f59e0b;">Cancel Appointment</h1>
+            <button class="patient-modal-close" onclick="closeCancelModal()">×</button>
+        </div>
+        <div class="patient-modal-body" style="padding: 1.5rem 2rem;">
+            <p style="margin-bottom: 1rem; color: #374151; line-height: 1.5;">Are you sure you want to cancel this appointment?</p>
+            <label for="cancelReasonInput" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Reason for cancellation <span style="color: #dc3545;">*</span></label>
+            <textarea id="cancelReasonInput" rows="3" required placeholder="Please provide a reason..." style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 5px; font-size: 0.9rem;"></textarea>
+            <div id="cancelErrorMsg" style="display:none; color:#ef4444; font-weight:600; margin-top:1rem;"></div>
+        </div>
+        <div class="patient-modal-footer" style="padding: 1rem 2rem; gap: 1rem;">
+            <button class="patient-modal-btn patient-modal-btn-cancel" onclick="closeCancelModal()">Close</button>
+            <button id="confirmCancelBtn" class="patient-modal-btn" style="background-color: #f59e0b; color: white;">Yes, Cancel Appointment</button>
         </div>
     </div>
 </div>
@@ -2661,6 +2690,71 @@ document.addEventListener('DOMContentLoaded', function() {
             saveProgressPhotos();
         });
     }
+
+    // Cancel appointment modal and handler
+    let cancelAppointmentId = null;
+    function openCancelModal(appointmentId) {
+        cancelAppointmentId = appointmentId;
+        document.getElementById('cancelReasonInput').value = '';
+        document.getElementById('cancelErrorMsg').style.display = 'none';
+        document.getElementById('cancelConfirmModal').style.display = 'flex';
+        document.getElementById('cancelConfirmModal').classList.add('active');
+    }
+    function closeCancelModal() {
+        cancelAppointmentId = null;
+        document.getElementById('cancelConfirmModal').style.display = 'none';
+        document.getElementById('cancelConfirmModal').classList.remove('active');
+    }
+    document.querySelectorAll('.cancel-appointment-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            openCancelModal(this.getAttribute('data-appointment-id'));
+        });
+    });
+    document.getElementById('confirmCancelBtn').addEventListener('click', function() {
+        const reason = document.getElementById('cancelReasonInput').value.trim();
+        if (!reason) {
+            document.getElementById('cancelErrorMsg').textContent = 'Please provide a reason for cancellation.';
+            document.getElementById('cancelErrorMsg').style.display = 'block';
+            return;
+        }
+        if (!cancelAppointmentId) return;
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Cancelling...';
+        document.getElementById('cancelErrorMsg').style.display = 'none';
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        fetch(`/admin/appointments/${cancelAppointmentId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: new URLSearchParams({
+                _method: 'PATCH',
+                cancellation_reason: reason,
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.textContent = 'Yes, Cancel Appointment';
+            if (data && data.success) {
+                closeCancelModal();
+                window.location.reload();
+            } else {
+                document.getElementById('cancelErrorMsg').textContent = (data && data.message) || 'Failed to cancel.';
+                document.getElementById('cancelErrorMsg').style.display = 'block';
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.textContent = 'Yes, Cancel Appointment';
+            document.getElementById('cancelErrorMsg').textContent = 'An error occurred. Please try again.';
+            document.getElementById('cancelErrorMsg').style.display = 'block';
+        });
+    });
 
     // Attach to all delete-appointment-btn buttons
     document.querySelectorAll('.delete-appointment-btn').forEach(function(btn) {

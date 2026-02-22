@@ -491,7 +491,7 @@
 
     <div class="filters-card">
         <div class="row g-3 align-items-end">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="personal_information_id" class="form-label">Profile</label>
                 <select name="personal_information_id" id="personal_information_id" class="form-control filter-control">
                     <option value="">All Profiles</option>
@@ -502,7 +502,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="branch_id" class="form-label">Branch</label>
                 <select name="branch_id" id="branch_id" class="form-control filter-control">
                     <option value="">All Branches</option>
@@ -511,12 +511,30 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="type" class="form-label">Type</label>
                 <select name="type" id="type" class="form-control filter-control">
                     <option value="">All</option>
                     <option value="consult" {{ request('type') == 'consult' ? 'selected' : '' }}>Consult</option>
                     <option value="services" {{ request('type') == 'services' ? 'selected' : '' }}>Services</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="month" class="form-label">Month</label>
+                <select name="month" id="month" class="form-control filter-control">
+                    <option value="">All</option>
+                    @for($m = 1; $m <= 12; $m++)
+                        <option value="{{ $m }}" {{ request('month') == $m ? 'selected' : '' }}>{{ date('F', mktime(0,0,0,$m)) }}</option>
+                    @endfor
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="year" class="form-label">Year</label>
+                <select name="year" id="year" class="form-control filter-control">
+                    <option value="">All</option>
+                    @for($y = date('Y'); $y >= date('Y') - 5; $y--)
+                        <option value="{{ $y }}" {{ request('year') == $y ? 'selected' : '' }}>{{ $y }}</option>
+                    @endfor
                 </select>
             </div>
         </div>
@@ -948,14 +966,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const personalId = document.getElementById('personal_information_id').value;
         const branchId = document.getElementById('branch_id').value;
         const type = document.getElementById('type').value;
-        
-        console.log('Fetching history with filters:', { personalId, branchId, type });
+        const month = document.getElementById('month')?.value;
+        const year = document.getElementById('year')?.value;
         
         // Build query string
         const params = new URLSearchParams();
         if (personalId) params.append('personal_information_id', personalId);
         if (branchId) params.append('branch_id', branchId);
         if (type) params.append('type', type);
+        if (month) params.append('month', month);
+        if (year) params.append('year', year);
         
         const url = `{{ route('patient.history.filter') }}?${params.toString()}`;
         console.log('Request URL:', url);

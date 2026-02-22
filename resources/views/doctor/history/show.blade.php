@@ -1079,19 +1079,28 @@
         <div class="history-panel">
             <div class="history-header">
                 <h2 class="history-title">History</h2>
-                @if($profiles->count() > 1)
-                    <form method="GET" action="{{ route('doctor.history.patient', $patient->id) }}" class="profile-filter-form">
-                        <label for="personal_information_id" style="margin-right: 0.5rem; font-weight: 500; color: #666;">Filter by Profile:</label>
-                        <select name="personal_information_id" id="personal_information_id" class="form-control" style="display: inline-block; width: auto; min-width: 200px;" onchange="this.form.submit()">
-                            <option value="">All Profiles</option>
-                            @foreach($profiles as $profile)
-                                <option value="{{ $profile->id }}" {{ $selectedProfileId == $profile->id ? 'selected' : '' }}>
-                                    {{ $profile->full_name ?? ($profile->first_name . ' ' . $profile->last_name) }} {{ $profile->is_default ? '(Default)' : '' }}
-                                </option>
-                            @endforeach
-                        </select>
+                <form method="GET" action="{{ route('doctor.history.patient', $patient->id) }}" class="profile-filter-form" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
+                        <div>
+                            <label for="personal_information_id" style="margin-right: 0.5rem; font-weight: 500; color: #666;">Filter by Profile:</label>
+                            <select name="personal_information_id" id="personal_information_id" class="form-control" style="display: inline-block; width: auto; min-width: 200px;" onchange="this.form.submit()">
+                                <option value="">All Profiles</option>
+                                @foreach($profiles as $profile)
+                                    <option value="{{ $profile->id }}" {{ $selectedProfileId == $profile->id ? 'selected' : '' }}>
+                                        {{ $profile->full_name ?? ($profile->first_name . ' ' . $profile->last_name) }} {{ $profile->is_default ? '(Default)' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label for="branch_id" style="margin-right: 0.5rem; font-weight: 500; color: #666;">Branch:</label>
+                            <select name="branch_id" id="branch_id" class="form-control" style="display: inline-block; width: auto; min-width: 180px;" onchange="this.form.submit()">
+                                <option value="">All Branches</option>
+                                @foreach($branches ?? [] as $branch)
+                                    <option value="{{ $branch->id }}" {{ request('branch_id') == $branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </form>
-                @endif
             </div>
 
             <!-- Timeline Visualization -->

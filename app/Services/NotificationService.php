@@ -167,11 +167,22 @@ class NotificationService
             }
         }
 
-        return self::sendNotification(
+        // Send to patient
+        self::sendNotification(
             'Appointment Reminder',
             $message,
             'reminder',
             $appointment->patient_id
         );
+
+        // Also send to doctor (if assigned)
+        if ($appointment->doctor_id) {
+            $doctorMessage = $isConsultation
+                ? "Reminder: You have a consultation with " . trim(($appointment->first_name ?? '') . ' ' . ($appointment->last_name ?? '')) . " on {$appointment->timeSlot->date->format('M d, Y')} at {$appointment->timeSlot->start_time}" . ($appointment->branch ? " at {$appointment->branch->name}" : '')
+                : "Reminder: You have an appointment with " . trim(($appointment->first_name ?? '') . ' ' . ($appointment->last_name ?? '')) . " for " . ($appointment->service ? $appointment->service->name : 'appointment') . " on {$appointment->timeSlot->date->format('M d, Y')} at {$appointment->timeSlot->start_time}" . ($appointment->branch ? " at {$appointment->branch->name}" : '');
+            self::sendNotification('Appointment Reminder', $doctorMessage, 'reminder', $appointment->doctor_id);
+        }
+
+        return true;
     }
 }

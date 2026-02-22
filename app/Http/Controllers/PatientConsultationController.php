@@ -72,10 +72,18 @@ class PatientConsultationController extends Controller
     public function index()
     {
         // Get both consultations (with time_slot_id) and service bookings (with service_id but no time_slot_id)
+        // Exclude appointments where doctor is N/A (doctor_id is null) for display/print
         $consultations = Appointment::where('patient_id', Auth::id())
             ->where(function($query) {
                 $query->whereNotNull('time_slot_id')
                       ->orWhereNotNull('service_id');
+            })
+            ->where(function($query) {
+                // Hide consultation appointments where doctor is N/A - don't print/show those
+                $query->where(function($q) {
+                    $q->whereNull('time_slot_id') // Service-only bookings (no doctor required yet)
+                      ->orWhereNotNull('doctor_id'); // Or has doctor assigned
+                });
             })
             ->with(['branch', 'timeSlot', 'doctor', 'service'])
             ->latest()
@@ -85,12 +93,29 @@ class PatientConsultationController extends Controller
         return view('consultations.index', compact('consultations'));
     }
 
+    public function appointmentCount()
+    {
+        $count = Appointment::where('patient_id', Auth::id())
+            ->whereIn('status', ['pending', 'confirmed', 'booked'])
+            ->where(function($query) {
+                $query->whereNotNull('time_slot_id')->orWhereNotNull('service_id');
+            })
+            ->where(function($query) {
+                $query->whereNull('time_slot_id')->orWhereNotNull('doctor_id');
+            })
+            ->count();
+
+        return response()->json(['count' => $count]);
+    }
+
     public function create(Request $request)
     {
-        $ids = $request->get('cart_items', []);
+        // Accept service_ids[] (checkbox/Book Now flow) or cart_items[] (legacy)
+        $ids = $request->get('service_ids', $request->get('cart_items', []));
+        $ids = is_array($ids) ? array_filter($ids) : [];
         
         if (empty($ids)) {
-            return redirect()->route('cart.index')->with('error', 'Please select items from your cart first.');
+            return redirect()->route('dashboard')->with('error', 'Please select at least one service to book.');
         }
         
         $cartItems = null;
@@ -133,7 +158,7 @@ class PatientConsultationController extends Controller
                     ]);
                 }
             } else {
-                return redirect()->route('cart.index')->with('error', 'Selected items not found.');
+                return redirect()->route('dashboard')->with('error', 'Selected services not found.');
             }
         }
 
@@ -145,9 +170,12 @@ class PatientConsultationController extends Controller
             return redirect()->route('consultations.medical')->with('info', 'Proceed to select branch, date, and time slot for your consultation.');
         }
 
-        // Branch: from first service item, or first consultation's branch, or first branch
+        // Branch: from request, first service item, first consultation's branch, or first branch
         $branch = null;
-        if ($serviceCartItems->isNotEmpty() && $serviceCartItems->first()->service && $serviceCartItems->first()->service->category) {
+        if ($request->branch_id) {
+            $branch = Branch::find($request->branch_id);
+        }
+        if (!$branch && $serviceCartItems->isNotEmpty() && $serviceCartItems->first()->service && $serviceCartItems->first()->service->category) {
             $branch = $serviceCartItems->first()->service->category->branch;
         }
         if (!$branch && $hasConsultation && $consultationCartItems->first()->branch_id) {
@@ -644,8 +672,8 @@ class PatientConsultationController extends Controller
             ], 403);
         }
 
-        // Only allow cancellation of pending or confirmed consultations
-        if (!in_array($consultation->status, ['pending', 'confirmed'])) {
+        // Only allow cancellation of pending, confirmed, or booked consultations
+        if (!in_array($consultation->status, ['pending', 'confirmed', 'booked'])) {
             return response()->json([
                 'success' => false,
                 'error' => 'This consultation cannot be cancelled.'

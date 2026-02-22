@@ -178,6 +178,56 @@ class DashboardController extends Controller
         return response()->json(['success' => true, 'message' => 'Appointment updated.', 'status' => $appointment->fresh()->status]);
     }
 
+    public function cancelAppointment(Request $request, Appointment $appointment)
+    {
+        // Verify the appointment belongs to the authenticated admin's branch
+        $adminBranchId = Auth::user()->branch_id;
+        if (!$adminBranchId || $appointment->branch_id !== $adminBranchId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You do not have permission to cancel this appointment.'
+            ], 403);
+        }
+
+        if (!in_array($appointment->status, ['pending', 'confirmed', 'booked'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This appointment cannot be cancelled.'
+            ], 400);
+        }
+
+        $request->validate([
+            'cancellation_reason' => 'required|string|max:1000',
+        ]);
+
+        $appointment->update([
+            'status' => 'cancelled',
+            'cancellation_reason' => $request->cancellation_reason,
+        ]);
+
+        // Free up the time slot if it exists
+        if ($appointment->timeSlot) {
+            $appointment->timeSlot->update(['is_booked' => false]);
+        }
+
+        NotificationService::sendConsultationCancellation($appointment, $request->cancellation_reason);
+
+        if ($appointment->doctor_id) {
+            NotificationService::sendNotification(
+                'Appointment Cancelled',
+                "Appointment for {$appointment->first_name} {$appointment->last_name} has been cancelled. Reason: {$request->cancellation_reason}",
+                'appointment_cancelled',
+                $appointment->doctor_id
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Appointment cancelled successfully!',
+            'status' => 'cancelled',
+        ]);
+    }
+
     public function deleteAppointment(Appointment $appointment)
     {
         // Verify the appointment belongs to the authenticated admin's branch
@@ -568,6 +618,13 @@ class DashboardController extends Controller
             $query->where('personal_information_id', $request->personal_information_id);
         }
 
+        // Filter by branch if selected
+        if ($request->filled('branch_id')) {
+            $query->whereHas('appointment', function ($q) use ($request) {
+                $q->where('branch_id', $request->branch_id);
+            });
+        }
+
         $history = $query
             ->orderBy('treatment_date', 'desc')
             ->orderBy('created_at', 'desc')
@@ -612,7 +669,9 @@ class DashboardController extends Controller
 
         // dd($history);
 
-        return view('admin.patient_history_view', compact('patient', 'history', 'personalInfo', 'medicalInfo', 'emergencyContact', 'canEdit', 'profiles', 'historyByProfile', 'selectedProfileId'));
+        $branches = Branch::orderBy('name')->get();
+
+        return view('admin.patient_history_view', compact('patient', 'history', 'personalInfo', 'medicalInfo', 'emergencyContact', 'canEdit', 'profiles', 'historyByProfile', 'selectedProfileId', 'branches'));
     }
 
     public function updateHistory(User $patient, Request $request)

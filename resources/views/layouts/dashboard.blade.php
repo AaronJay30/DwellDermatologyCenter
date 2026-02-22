@@ -144,23 +144,21 @@
             flex-direction: column;
             gap: .6rem;
             padding: 0;
-            overflow: hidden !important;
-            overflow-y: hidden !important;
-            overflow-x: hidden !important;
+            overflow-y: auto;
+            overflow-x: hidden;
             flex: 1 1 0;
             min-height: 0;
             max-height: calc(100vh - 200px);
+            -webkit-overflow-scrolling: touch;
         }
 
         .sidebar .nav-links {
             display: flex;
             flex-direction: column;
             gap: .6rem;
-            overflow: hidden !important;
-            overflow-y: hidden !important;
-            overflow-x: hidden !important;
-            flex-shrink: 1;
-            min-height: 0;
+            overflow-y: visible;
+            overflow-x: hidden;
+            flex-shrink: 0;
         }
 
         .sidebar .nav-links a {

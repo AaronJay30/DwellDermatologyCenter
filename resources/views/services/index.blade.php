@@ -83,18 +83,7 @@
                             <div style="display: flex; gap: 0.5rem;">
                                 <a href="{{ route('services.show', $service) }}" class="btn btn-accent" style="padding: 0.5rem 1rem; font-size: 0.9rem;">View Details</a>
                                 @if($service->is_active)
-                                    <form method="POST" action="{{ route('cart.add') }}" style="display: inline;">
-                                        @csrf
-                                        <input type="hidden" name="service_id" value="{{ $service->id }}">
-                                        <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Add to Cart</button>
-                                    </form>
-                                    <a href="{{ route('consultations.create') }}?service={{ $service->id }}" class="btn btn-accent" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Book Now</a>
-                                    <form method="POST" action="{{ route('cart.add') }}" style="display: inline;">
-                                        @csrf
-                                        <input type="hidden" name="item_type" value="consultation">
-                                        <input type="hidden" name="branch_id" value="{{ $service->category && $service->category->branch ? $service->category->branch->id : '' }}">
-                                        <button type="submit" class="btn btn-accent" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Add Consultation to Cart</button>
-                                    </form>
+                                    <a href="{{ route('consultations.create') }}?service_ids[]={{ $service->id }}" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Book Now</a>
                                 @else
                                     <button disabled style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #ccc; color: #666; border: none; border-radius: 4px; cursor: not-allowed;">Unavailable</button>
                                 @endif

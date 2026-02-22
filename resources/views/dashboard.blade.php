@@ -62,7 +62,7 @@
         <h2 class="section-title">Choose Branch</h2>
         <div class="categories-grid">
             @forelse($branches as $branch)
-                <div class="category-item" onclick="filterByBranch('{{ $branch->id }}', this)">
+                <div class="category-item" onclick="filterByBranch('{{ $branch->id }}', this)" data-available-doctor-image="{{ $branch->available_doctor_image_path ? asset('storage/' . $branch->available_doctor_image_path) : '' }}">
                     <div class="category-circle" id="branch-{{ $branch->id }}">
                         @if($branch->image_path)
                             <img src="{{ asset('storage/' . $branch->image_path) }}" alt="{{ $branch->name }}" class="category-image">
@@ -84,15 +84,31 @@
     </div>
 </section>
 
-<!-- Services Section -->
-<section class="services-section">
+<!-- Consultation Container (first container, hidden until branch selected) -->
+<section class="consultation-container" id="consultation-container" style="display: none; padding: 2rem 0; background: var(--white);">
+    <div class="container">
+        <div style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); max-width: 600px; margin: 0 auto;">
+            <h3 style="color: var(--primary-color); padding: 1rem 1.5rem; margin: 0; font-size: 1.1rem; border-bottom: 1px solid var(--border-color);">Available Doctor Schedule</h3>
+            <div style="padding: 1rem 1.5rem;">
+                <img id="available-doctor-schedule-img" src="" alt="Available doctor schedule" style="width: 100%; max-height: 400px; object-fit: contain; border-radius: 8px; display: block;">
+                <p id="available-doctor-no-image" style="display: none; color: #6c757d; text-align: center; padding: 2rem;">No schedule available for this branch.</p>
+                <label style="display: flex; align-items: center; gap: 10px; margin-top: 1rem; cursor: pointer;">
+                    <input type="checkbox" id="consultation-checkbox" style="width: 22px; height: 22px; accent-color: var(--primary-color); cursor: pointer;">
+                    <span style="font-weight: 500; color: var(--dark-text);">Consultation</span>
+                </label>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section (hidden until branch selected) -->
+<section class="services-section" id="services-section" style="display: none;">
     <div class="container">
         <h2 class="services-title">Choose Your Categories</h2>
         
         <!-- Category Tabs -->
         <div class="category-tabs" id="category-tabs">
             <button class="tab-btn active" onclick="loadAllServices(this)">All Categories</button>
-            <!-- Categories will be loaded dynamically here -->
         </div>
 
         <!-- Loading Indicator -->
@@ -103,51 +119,48 @@
 
         <!-- Services Grid -->
         <div class="services-grid" id="services-grid">
-            @forelse($services as $service)
-                <div class="service-card" data-category="{{ $service->category_id }}" data-branch="{{ $service->category->branch_id }}">
-                    @if($service->images->count() > 0)
-                        <img src="{{ asset('storage/' . $service->images->first()->image_path) }}" alt="{{ $service->name }}" class="service-image">
-                    @else
-                        <div class="service-image" style="background: linear-gradient(135deg, var(--teal-light), var(--teal-medium)); display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-spa" style="font-size: 60px; color: var(--primary-color);"></i>
-                        </div>
-                    @endif
-                    
-                    <div class="service-content">
-                        <h3 class="service-name">{{ $service->name }}</h3>
-                        <p class="service-description">{{ Str::limit($service->description, 80) }}</p>
-                        
-                        <div class="service-price">
-                            @include('components.service-price', ['pricing' => $service->pricing, 'layout' => 'compact'])
-                        </div>
-                        
-                        <div class="service-actions">
-                            <a href="{{ route('services.show', $service->id) }}" class="btn btn-primary">View Details</a>
-                            @if($service->is_active)
-                                <form method="POST" action="{{ route('cart.add') }}" style="display: inline;">
-                                    @csrf
-                                    <input type="hidden" name="service_id" value="{{ $service->id }}">
-                                    <button type="submit" class="btn btn-secondary">Add to Cart</button>
-                                </form>
-                            @else
-                                <button disabled class="btn btn-secondary" style="background: #ccc; color: #666; cursor: not-allowed;">Unavailable</button>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <div class="no-services">
-                    <p>No services available at the moment.</p>
-                </div>
-            @endforelse
+            <div class="no-services"><p>No services available for this selection.</p></div>
         </div>
         
-        <!-- Pagination -->
-        @if($services->hasPages())
-        <div class="pagination-wrapper" id="pagination-wrapper">
-            {{ $services->links() }}
+        <!-- Book Now Bar (sticky, appears when at least one service is checked) -->
+        <div id="book-now-bar" style="display: none; position: sticky; bottom: 0; background: var(--primary-color); color: white; padding: 1rem 1.5rem; margin-top: 2rem; border-radius: 12px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); z-index: 100;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <strong id="selected-count">0</strong> service(s) selected
+                    <span id="selected-total" style="margin-left: 1rem; font-weight: 600;">Total: ₱0.00</span>
+                </div>
+                <a href="#" id="book-now-btn" class="btn btn-primary" style="background: white; color: var(--primary-color); padding: 0.75rem 2rem; font-weight: 600;">
+                    Book Now
+                </a>
+            </div>
         </div>
-        @endif
+    </div>
+</section>
+
+<!-- Book to Checkout Info Modal (shown after selecting branch) -->
+<div id="book-to-checkout-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9998; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; border-radius: 12px; max-width: 420px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); position: relative;">
+        <button type="button" onclick="closeBookToCheckoutModal()" style="position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border: none; background: #f1f3f4; color: #666; border-radius: 50%; cursor: pointer; font-size: 1.25rem; line-height: 1;">&times;</button>
+        <div style="padding: 2rem; padding-top: 2.5rem; text-align: center;">
+            <div style="width: 50px; height: 50px; margin: 0 auto 1rem; background: var(--teal-light); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-info-circle" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+            </div>
+            <h3 style="color: var(--primary-color); margin-bottom: 1rem; font-size: 1.15rem;">How to Book Services</h3>
+            <p style="color: #555; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem;">
+                If you want to book services, you need to <strong>check the checkboxes</strong> on the services you want. Once selected, a <strong>Book Now</strong> button will appear at the bottom for checkout.
+            </p>
+            <button type="button" onclick="closeBookToCheckoutModal()" style="background: var(--primary-color); color: white; border: none; padding: 0.6rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem;">Got it</button>
+        </div>
+    </div>
+</div>
+
+<!-- Placeholder when no branch selected -->
+<section class="services-section" id="select-branch-placeholder">
+    <div class="container">
+        <div class="no-services" style="padding: 60px 20px;">
+            <i class="fas fa-hand-pointer" style="font-size: 3rem; color: var(--primary-color); margin-bottom: 1rem; opacity: 0.6;"></i>
+            <p style="font-size: 1.1rem; color: var(--light-text);">Please select a branch above to view categories and services</p>
+        </div>
     </div>
 </section>
 
@@ -210,14 +223,62 @@ function filterByBranch(branchId, element) {
     // Store selected branch ID
     selectedBranchId = branchId;
     
+    // Show consultation container (first) with available doctor schedule photo
+    const consultationContainer = document.getElementById('consultation-container');
+    const scheduleImg = document.getElementById('available-doctor-schedule-img');
+    const noScheduleMsg = document.getElementById('available-doctor-no-image');
+    const scheduleUrl = element && element.dataset.availableDoctorImage ? element.dataset.availableDoctorImage : '';
+    
+    if (consultationContainer) {
+        consultationContainer.style.display = 'block';
+        if (scheduleImg && noScheduleMsg) {
+            if (scheduleUrl) {
+                scheduleImg.src = scheduleUrl;
+                scheduleImg.style.display = 'block';
+                noScheduleMsg.style.display = 'none';
+            } else {
+                scheduleImg.style.display = 'none';
+                noScheduleMsg.style.display = 'block';
+            }
+        }
+    }
+    
+    // Reset consultation checkbox
+    const consultCb = document.getElementById('consultation-checkbox');
+    if (consultCb) consultCb.checked = false;
+    
+    // Show services section, hide placeholder
+    document.getElementById('services-section').style.display = 'block';
+    document.getElementById('select-branch-placeholder').style.display = 'none';
+    
     // Show loading indicator
     showLoading();
     
-    // Load categories for this branch
+    // Load categories and services for this branch
     loadCategoriesForBranch(branchId);
-    
-    // Load all services for this branch
     loadServicesForBranch(branchId);
+    
+    // Reset Book Now bar
+    updateBookNowBar();
+    
+    // Show "Book to checkout" info modal
+    openBookToCheckoutModal();
+}
+
+function openBookToCheckoutModal() {
+    const modal = document.getElementById('book-to-checkout-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeBookToCheckoutModal() {
+    const modal = document.getElementById('book-to-checkout-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
 }
 
 // Load categories for a specific branch
@@ -310,20 +371,11 @@ async function loadServicesForBranch(branchId) {
 // Load all services (reset view)
 async function loadAllServices(clickedEl) {
     selectedCategoryId = null;
-    showLoading();
+    if (!selectedBranchId) return;
     
+    showLoading();
     try {
-        // If no branch is selected, reload the page to show server-side pagination
-        if (!selectedBranchId) {
-            window.location.href = '{{ route('dashboard') }}';
-            return;
-        }
-        
-        let url = '/api/branches/0/services'; // Load all services
-        if (selectedBranchId) {
-            url = '/api/branches/' + selectedBranchId + '/services';
-        }
-        
+        const url = '/api/branches/' + selectedBranchId + '/services';
         const response = await fetch(url);
         const data = await response.json();
         
@@ -341,18 +393,13 @@ async function loadAllServices(clickedEl) {
     hideLoading();
 }
 
-// Update services grid with new data
+// Update services grid with new data (checkboxes instead of Add to Cart)
 function updateServicesGrid(services) {
     const servicesGrid = document.getElementById('services-grid');
-    const paginationWrapper = document.getElementById('pagination-wrapper');
-    
-    // Hide pagination when filtering
-    if (paginationWrapper) {
-        paginationWrapper.style.display = 'none';
-    }
     
     if (services.length === 0) {
         servicesGrid.innerHTML = '<div class="no-services"><p>No services available for this selection.</p></div>';
+        updateBookNowBar();
         return;
     }
     
@@ -361,9 +408,16 @@ function updateServicesGrid(services) {
         const imageUrl = service.images && service.images.length > 0 
             ? `/storage/${service.images[0].image_path}` 
             : null;
+        const price = service.pricing && typeof service.pricing.display_price !== 'undefined' 
+            ? parseFloat(service.pricing.display_price) : 0;
+        const disabled = !service.is_active ? 'disabled' : '';
         
         html += `
-            <div class="service-card" data-category="${service.category_id}" data-branch="${service.category.branch_id}">
+            <div class="service-card service-card-checkbox" data-service-id="${service.id}" data-price="${price}">
+                ${service.is_active ? `<label class="service-checkbox-wrap" style="cursor: pointer; position: absolute; top: 15px; right: 15px; z-index: 5; margin: 0;">
+                    <input type="checkbox" class="service-checkbox" data-service-id="${service.id}" data-price="${price}" ${disabled}>
+                    <span class="checkbox-visual" style="width: 24px; height: 24px; border: 2px solid var(--primary-color); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; background: white; transition: background 0.2s;"><i class="fas fa-check" style="display: none; color: white; font-size: 12px;"></i></span>
+                </label>` : ''}
                 ${imageUrl ? 
                     `<img src="${imageUrl}" alt="${service.name}" class="service-image">` :
                     `<div class="service-image" style="background: linear-gradient(135deg, var(--teal-light), var(--teal-medium)); display: flex; align-items: center; justify-content: center;">
@@ -381,14 +435,6 @@ function updateServicesGrid(services) {
                     
                     <div class="service-actions">
                         <a href="/services/${service.id}" class="btn btn-primary">View Details</a>
-                        ${service.is_active ? 
-                            `<form method="POST" action="/cart/add" style="display: inline;">
-                                <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]').getAttribute('content')}">
-                                <input type="hidden" name="service_id" value="${service.id}">
-                                <button type="submit" class="btn btn-secondary">Add to Cart</button>
-                            </form>` :
-                            `<button disabled class="btn btn-secondary" style="background: #ccc; color: #666; cursor: not-allowed;">Unavailable</button>`
-                        }
                     </div>
                 </div>
             </div>
@@ -397,8 +443,61 @@ function updateServicesGrid(services) {
     
     servicesGrid.innerHTML = html;
 
-    // Re-bind AJAX cart handlers for newly rendered services
-    attachCartAjaxHandler(servicesGrid);
+    // Bind checkbox change handlers
+    servicesGrid.querySelectorAll('.service-checkbox').forEach(cb => {
+        cb.addEventListener('change', updateBookNowBar);
+    });
+    
+    // Checkbox visual feedback
+    servicesGrid.querySelectorAll('.service-checkbox-wrap').forEach(wrap => {
+        const cb = wrap.querySelector('.service-checkbox');
+        const icon = wrap.querySelector('.fa-check');
+        const box = wrap.querySelector('span');
+        const updateCheck = () => {
+            if (cb.checked) {
+                if (box) { box.style.background = 'var(--primary-color)'; }
+                if (icon) icon.style.display = 'inline';
+            } else {
+                if (box) { box.style.background = 'white'; }
+                if (icon) icon.style.display = 'none';
+            }
+        };
+        cb.addEventListener('change', updateCheck);
+        updateCheck();
+    });
+    
+    updateBookNowBar();
+}
+
+// Update Book Now bar visibility and totals
+function updateBookNowBar() {
+    const checkboxes = document.querySelectorAll('.service-checkbox:checked');
+    const bar = document.getElementById('book-now-bar');
+    const countEl = document.getElementById('selected-count');
+    const totalEl = document.getElementById('selected-total');
+    const bookBtn = document.getElementById('book-now-btn');
+    
+    if (!bar || !countEl || !totalEl || !bookBtn) return;
+    
+    let total = 0;
+    const ids = [];
+    checkboxes.forEach(cb => {
+        const price = parseFloat(cb.dataset.price || 0);
+        total += price;
+        ids.push(cb.dataset.serviceId);
+    });
+    
+    if (checkboxes.length > 0) {
+        bar.style.display = 'block';
+        countEl.textContent = checkboxes.length;
+        totalEl.textContent = 'Total: ₱' + formatCurrency(total);
+        const baseUrl = '{{ route("consultations.create") }}';
+        const params = ids.map(id => 'service_ids[]=' + id).join('&');
+        const branchParam = selectedBranchId ? '&branch_id=' + selectedBranchId : '';
+        bookBtn.href = baseUrl + '?' + params + branchParam;
+    } else {
+        bar.style.display = 'none';
+    }
 }
 
 // Update active tab
@@ -425,59 +524,18 @@ function showError(message) {
     servicesGrid.innerHTML = `<div class="no-services"><p style="color: #e74c3c;">${message}</p></div>`;
 }
 
-function attachCartAjaxHandler(scope = document) {
-    const forms = scope.querySelectorAll('form[action*="/cart/add"]');
-    const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-    forms.forEach(form => {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const serviceId = form.querySelector('input[name="service_id"]')?.value;
-            const quantity = form.querySelector('input[name="quantity"]')?.value || 1;
-
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Adding...';
-            }
-
-            try {
-                const res = await fetch(form.action, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrf,
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({ service_id: serviceId, quantity })
-                });
-
-                if (!res.ok) throw new Error('Failed to add to cart');
-                const data = await res.json();
-
-                if (typeof updateCartBadge === 'function' && data.count !== undefined) {
-                    updateCartBadge(data.count);
-                }
-
-                if (submitBtn) {
-                    submitBtn.textContent = 'Add to Cart';
-                    submitBtn.disabled = false;
-                }
-            } catch (err) {
-                console.error(err);
-                if (submitBtn) {
-                    submitBtn.textContent = 'Try Again';
-                    submitBtn.disabled = false;
-                }
-                alert('Unable to add to cart right now. Please try again.');
-            }
-        });
-    });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
-    attachCartAjaxHandler(document);
+    // Close book-to-checkout modal when clicking overlay
+    const bookModal = document.getElementById('book-to-checkout-modal');
+    if (bookModal) {
+        bookModal.addEventListener('click', function(e) {
+            if (e.target === bookModal) closeBookToCheckoutModal();
+        });
+    }
+    // Close modals on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeBookToCheckoutModal();
+    });
 });
 
 // Legacy function for backward compatibility
@@ -689,7 +747,6 @@ function updatePromoInfo(promoIndex) {
 @endif
 </script>
 
-<link rel="stylesheet" href="{{ asset('css/pagination.css') }}">
 <style>
 @media (max-width: 600px) {
     .promo-carousel img {
@@ -720,6 +777,14 @@ function updatePromoInfo(promoIndex) {
     display: flex;
     flex-direction: column;
     height: 100%;
+    position: relative;
+}
+
+.service-card-checkbox .service-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 24px;
+    height: 24px;
 }
 
 .service-card:hover {
@@ -803,6 +868,7 @@ function updatePromoInfo(promoIndex) {
     background: var(--primary-color);
     color: white;
 }
+
 
 /* Loading Indicator Styles */
 .loading-indicator {

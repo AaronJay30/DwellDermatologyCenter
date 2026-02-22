@@ -750,15 +750,41 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make function globally accessible
     window.generateTimeSlots = generateTimeSlots;
 
+    // Past time modal
+    const pastTimeModal = document.createElement('div');
+    pastTimeModal.id = 'pastTimeModal';
+    pastTimeModal.innerHTML = '<div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;" onclick="if(event.target===this){var m=document.getElementById(\'pastTimeModal\');if(m)m.style.display=\'none\';}"><div style="background: white; border-radius: 12px; padding: 1.5rem; max-width: 360px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); text-align: center;"><p style="margin: 0 0 1rem; font-size: 1.1rem; color: #374151;">Cannot select past time</p><button type="button" onclick="var m=document.getElementById(\'pastTimeModal\');if(m)m.style.display=\'none\'" style="padding: 0.5rem 1.5rem; background: #197a8c; color: white; border: none; border-radius: 6px; cursor: pointer;">OK</button></div></div>';
+    document.body.appendChild(pastTimeModal);
+    pastTimeModal.style.display = 'none';
+
+    function hasPastSlotInGenerated() {
+        const today = new Date().toISOString().slice(0, 10);
+        const now = new Date();
+        return generatedSlots.some(function(slot) {
+            if (slot.date !== today) return false;
+            const [h, m] = (slot.start_time || '00:00').split(':').map(Number);
+            const slotStart = new Date(now);
+            slotStart.setHours(h, m, 0, 0);
+            return slotStart <= now;
+        });
+    }
+
     // Handle form submission
     form.addEventListener('submit', function(e) {
         let startDate = document.getElementById('start_date').value;
         let endDate = document.getElementById('end_date').value;
         const dateRangeInput = document.getElementById('date_range');
         
-        // If slots were generated, use them
+        // If slots were generated, validate for past time and use them
         if (generatedSlots.length > 0) {
             slotsDataInput.value = JSON.stringify(generatedSlots);
+            if (typeof hasPastSlotInGenerated === 'function' && hasPastSlotInGenerated()) {
+                e.preventDefault();
+                if (document.getElementById('pastTimeModal')) {
+                    document.getElementById('pastTimeModal').style.display = 'block';
+                }
+                return false;
+            }
             console.log('Form submitting with slots_data:', slotsDataInput.value);
             console.log('Number of slots:', generatedSlots.length);
             return true;

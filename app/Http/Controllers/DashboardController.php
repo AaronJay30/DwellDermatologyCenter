@@ -28,10 +28,8 @@ class DashboardController extends Controller
             // For patients, show the main dashboard
             $branches = Branch::all();
             $categories = Category::with('branch')->get();
-            $services = Service::with(['images', 'category', 'promoServices.promotion'])
-                ->where('is_active', true)
-                ->paginate(5)
-                ->withQueryString();
+            // Services loaded via AJAX after branch selection (no pagination)
+            $services = collect();
             
             // Get active promotions with images and services
             // Try less strict query first to catch all active promotions

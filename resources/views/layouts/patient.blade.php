@@ -76,7 +76,13 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 24px;
+        }
+        
+        main {
+            padding: 0.5rem 0;
+            max-width: 100%;
+            margin: 0 auto;
         }
 
         /* Top Bar */
@@ -1064,7 +1070,7 @@
             <div class="nav-menu">
                 <a href="{{ route('dashboard') }}">Home</a>
                 <a href="{{ route('consultations.medical') }}">Consultation</a>
-                <a href="{{ route('consultations.index') }}">Appointments</a>
+                <a href="{{ route('consultations.index') }}" style="position: relative;">Appointments<span class="notification-badge" id="appointment-badge" style="display: none;">0</span></a>
                 <a href="{{ route('patient.history') }}">History</a>
                 <a href="{{ route('notifications.index') }}" style="position: relative;">
                     Notifications
@@ -1086,12 +1092,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="top-right-icons">
-                    <a href="{{ route('cart.index') }}" class="top-right-icon" style="position: relative; text-decoration: none;">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="notification-badge" id="cart-badge">0</span>
-                    </a>
-                </div>
                 <i class="fas fa-cog nav-icon" id="settings-toggle" style="cursor: pointer;"></i>
             </div>
         </div>
@@ -1108,9 +1108,10 @@
                 <i class="fas fa-stethoscope"></i>
                 <span>Consultation</span>
             </a>
-            <a href="{{ route('consultations.index') }}" class="bottom-nav-item" data-route="consultations.index">
+            <a href="{{ route('consultations.index') }}" class="bottom-nav-item" data-route="consultations.index" style="position: relative;">
                 <i class="fas fa-calendar-check"></i>
                 <span>Appointments</span>
+                <span class="notification-badge" id="appointment-badge-bottom" style="display: none;">0</span>
             </a>
             <a href="{{ route('patient.history') }}" class="bottom-nav-item" data-route="patient.history">
                 <i class="fas fa-history"></i>
@@ -1273,35 +1274,8 @@
             }
         });
 
-        // Update cart badge
-        function updateCartBadge(countOverride) {
-            const applyCount = (count) => {
-                const badge = document.getElementById('cart-badge');
-                if (!badge) return;
-                if (count > 0) {
-                    badge.textContent = count;
-                    badge.classList.add('show');
-                } else {
-                    badge.classList.remove('show');
-                }
-            };
-
-            // When count is already known, just update the badge
-            if (typeof countOverride === 'number') {
-                applyCount(countOverride);
-                return;
-            }
-
-            // Otherwise fetch the latest count
-            fetch('{{ route("cart.count") }}')
-                .then(response => response.json())
-                .then(data => applyCount(data.count || 0))
-                .catch(error => console.error('Error fetching cart count:', error));
-        }
-
-        // Initialize cart badge and notification badge
+        // Initialize notification badge
         document.addEventListener('DOMContentLoaded', function() {
-            updateCartBadge();
             updateNotificationBadge();
             initializeSearch();
             setActiveNavLink();
@@ -1309,7 +1283,35 @@
             
             // Poll for new notifications every 5 seconds
             setInterval(updateNotificationBadge, 5000);
+            updateAppointmentBadge();
+            setInterval(updateAppointmentBadge, 5000);
         });
+        
+        // Update appointment badge (alert tab when has appointment)
+        function updateAppointmentBadge() {
+            fetch('{{ route("consultations.count") }}')
+                .then(response => response.json())
+                .then(data => {
+                    const badges = [
+                        document.getElementById('appointment-badge'),
+                        document.getElementById('appointment-badge-bottom')
+                    ];
+                    const count = data.count || 0;
+                    badges.forEach(badge => {
+                        if (badge) {
+                            if (count > 0) {
+                                badge.textContent = count > 99 ? '99+' : count;
+                                badge.style.display = 'flex';
+                                badge.classList.add('show');
+                            } else {
+                                badge.style.display = 'none';
+                                badge.classList.remove('show');
+                            }
+                        }
+                    });
+                })
+                .catch(() => {});
+        }
         
         // Update notification badge
         function updateNotificationBadge() {

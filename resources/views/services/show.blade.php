@@ -101,22 +101,9 @@
                 </div>
                 @if($service->is_active)
                     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <form method="POST" action="{{ route('cart.add') }}">
-                            @csrf
-                            <input type="hidden" name="service_id" value="{{ $service->id }}">
-                            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 1rem;">
-                                Add to Cart
-                            </button>
-                        </form>
-                        <a href="{{ route('consultations.create') }}?cart_items[]={{ $service->id }}" class="btn btn-accent" style="width: 100%; padding: 0.75rem; font-size: 1rem; text-align: center;">
-                            Book Services Now
+                        <a href="{{ route('consultations.create') }}?service_ids[]={{ $service->id }}" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 1rem; text-align: center;">
+                            Book Now
                         </a>
-                        <form method="POST" action="{{ route('cart.add') }}" style="margin-top: 0.5rem;">
-                            @csrf
-                            <input type="hidden" name="item_type" value="consultation">
-                            <input type="hidden" name="branch_id" value="{{ $service->category && $service->category->branch ? $service->category->branch->id : ($branches->first()->id ?? '') }}">
-                            <button type="submit" class="btn btn-accent" style="width: 100%; padding: 0.5rem; font-size: 0.9rem;">Add Consultation to Cart</button>
-                        </form>
                     </div>
                 @else
                     <button disabled style="width: 100%; padding: 0.75rem; font-size: 1rem; background: #ccc; color: #666; border: none; border-radius: 4px; cursor: not-allowed;">

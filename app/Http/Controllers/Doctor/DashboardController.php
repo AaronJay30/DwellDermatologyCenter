@@ -2501,6 +2501,13 @@ class DashboardController extends Controller
             $query->where('personal_information_id', $request->personal_information_id);
         }
 
+        // Filter by branch if selected
+        if ($request->filled('branch_id')) {
+            $query->whereHas('appointment', function ($q) use ($request) {
+                $q->where('branch_id', $request->branch_id);
+            });
+        }
+
         $history = $query
             ->orderBy('treatment_date', 'desc')
             ->orderBy('created_at', 'desc')
@@ -2546,7 +2553,9 @@ class DashboardController extends Controller
         // combinedHistory is an alias for history (used in the view)
         $combinedHistory = $history;
 
-        return view('doctor.history.show', compact('patient', 'history', 'combinedHistory', 'personalInfo', 'medicalInfo', 'emergencyContact', 'canEdit', 'profiles', 'historyByProfile', 'selectedProfileId'));
+        $branches = \App\Models\Branch::orderBy('name')->get();
+
+        return view('doctor.history.show', compact('patient', 'history', 'combinedHistory', 'personalInfo', 'medicalInfo', 'emergencyContact', 'canEdit', 'profiles', 'historyByProfile', 'selectedProfileId', 'branches'));
     }
 
     public function updateHistory(User $patient, Request $request)
@@ -2942,6 +2951,40 @@ class DashboardController extends Controller
                 'address' => $emergencyContact->address,
                 'contact_number' => $emergencyContact->contact_number,
             ] : null,
+        ]);
+    }
+
+    public function cancelAllAppointment(Request $request, Appointment $appointment)
+    {
+        if (!in_array($appointment->status, ['pending', 'confirmed', 'booked'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This appointment cannot be cancelled.'
+            ], 400);
+        }
+
+        $request->validate([
+            'cancellation_reason' => 'required|string|max:1000',
+        ]);
+
+        $appointment->update([
+            'status' => 'cancelled',
+            'cancellation_reason' => $request->cancellation_reason,
+        ]);
+
+        if ($appointment->timeSlot) {
+            $appointment->timeSlot->update(['is_booked' => false]);
+        }
+        if ($appointment->doctorSlot) {
+            $appointment->doctorSlot->update(['is_booked' => false]);
+        }
+
+        NotificationService::sendConsultationCancellation($appointment, $request->cancellation_reason);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Appointment cancelled successfully!',
+            'status' => 'cancelled',
         ]);
     }
 

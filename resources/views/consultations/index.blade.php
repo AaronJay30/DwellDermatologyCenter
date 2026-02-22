@@ -192,7 +192,7 @@
                                                 title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </button>
-                                        @if(in_array($consultation->status, ['pending', 'confirmed']))
+                                        @if(in_array($consultation->status, ['pending', 'confirmed', 'booked']))
                                         <button onclick="openCancelModal({{ $consultation->id }})" 
                                                 class="action-btn" 
                                                 style="color: #dc3545;"
