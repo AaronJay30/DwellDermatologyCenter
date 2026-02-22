@@ -52,6 +52,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
         // Notifications API
         Route::get('/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+    // Consultations count (used by patient layout badge; must be defined for all auth users so layout resolves)
+    Route::get('/consultations/count', [App\Http\Controllers\PatientConsultationController::class, 'appointmentCount'])->name('consultations.count');
     
     // API routes for dynamic content loading
     Route::get('/api/branches/{branchId}/categories', [DashboardController::class, 'getCategoriesByBranch'])->name('api.branches.categories');
@@ -71,7 +73,6 @@ Route::middleware('auth')->group(function () {
         
         // Consultation routes
         Route::get('/consultations', [App\Http\Controllers\PatientConsultationController::class, 'index'])->name('consultations.index');
-        Route::get('/consultations/count', [App\Http\Controllers\PatientConsultationController::class, 'appointmentCount'])->name('consultations.count');
         Route::get('/consultations/create', [App\Http\Controllers\PatientConsultationController::class, 'create'])->name('consultations.create');
         Route::get('/consultations/medical', [App\Http\Controllers\PatientConsultationController::class, 'medicalConsultation'])->name('consultations.medical');
         Route::post('/consultations', [App\Http\Controllers\PatientConsultationController::class, 'store'])->name('consultations.store');
