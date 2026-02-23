@@ -471,7 +471,9 @@ function updateServicesGrid(services) {
 
 // Update Book Now bar visibility and totals
 function updateBookNowBar() {
-    const checkboxes = document.querySelectorAll('.service-checkbox:checked');
+    const serviceCheckboxes = document.querySelectorAll('.service-checkbox:checked');
+    const consultationCheckbox = document.getElementById('consultation-checkbox');
+    const hasConsultationOnly = consultationCheckbox && consultationCheckbox.checked && serviceCheckboxes.length === 0;
     const bar = document.getElementById('book-now-bar');
     const countEl = document.getElementById('selected-count');
     const totalEl = document.getElementById('selected-total');
@@ -479,25 +481,41 @@ function updateBookNowBar() {
     
     if (!bar || !countEl || !totalEl || !bookBtn) return;
     
-    let total = 0;
-    const ids = [];
-    checkboxes.forEach(cb => {
-        const price = parseFloat(cb.dataset.price || 0);
-        total += price;
-        ids.push(cb.dataset.serviceId);
-    });
-    
-    if (checkboxes.length > 0) {
+    // Services selected: use direct booking flow (existing behavior)
+    if (serviceCheckboxes.length > 0) {
+        let total = 0;
+        const ids = [];
+        serviceCheckboxes.forEach(cb => {
+            const price = parseFloat(cb.dataset.price || 0);
+            total += price;
+            ids.push(cb.dataset.serviceId);
+        });
+        
         bar.style.display = 'block';
-        countEl.textContent = checkboxes.length;
+        countEl.textContent = serviceCheckboxes.length;
         totalEl.textContent = 'Total: ₱' + formatCurrency(total);
+        
         const baseUrl = '{{ route("consultations.create") }}';
         const params = ids.map(id => 'service_ids[]=' + id).join('&');
         const branchParam = selectedBranchId ? '&branch_id=' + selectedBranchId : '';
         bookBtn.href = baseUrl + '?' + params + branchParam;
-    } else {
-        bar.style.display = 'none';
+        return;
     }
+    
+    // No services, but consultation checkbox checked: send to medical consultation flow
+    if (hasConsultationOnly) {
+        bar.style.display = 'block';
+        countEl.textContent = 1;
+        totalEl.textContent = 'Total: ₱0.00';
+        
+        const consultUrl = '{{ route("consultations.medical") }}';
+        const urlWithBranch = selectedBranchId ? consultUrl + '?branch_id=' + selectedBranchId : consultUrl;
+        bookBtn.href = urlWithBranch;
+        return;
+    }
+    
+    // Nothing selected
+    bar.style.display = 'none';
 }
 
 // Update active tab
@@ -530,6 +548,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (bookModal) {
         bookModal.addEventListener('click', function(e) {
             if (e.target === bookModal) closeBookToCheckoutModal();
+        });
+    }
+
+    // When consultation checkbox is toggled, update Book Now bar
+    const consultationCheckbox = document.getElementById('consultation-checkbox');
+    if (consultationCheckbox) {
+        consultationCheckbox.addEventListener('change', function () {
+            updateBookNowBar();
         });
     }
     // Close modals on Escape key
