@@ -1289,7 +1289,11 @@
         
         // Update appointment badge (alert tab when has appointment)
         function updateAppointmentBadge() {
-            fetch('{{ route("consultations.count") }}')
+            const consultationsCountUrl = @json(\Illuminate\Support\Facades\Route::has('consultations.count')
+                ? route('consultations.count')
+                : url('/consultations/count'));
+
+            fetch(consultationsCountUrl)
                 .then(response => response.json())
                 .then(data => {
                     const badges = [
