@@ -178,6 +178,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/all-appointments', [App\Http\Controllers\Doctor\DashboardController::class, 'allAppointments'])->name('doctor.all-appointments');
         Route::get('/all-appointments/{appointment}/patient-info', [App\Http\Controllers\Doctor\DashboardController::class, 'getPatientInfo'])->name('doctor.all-appointments.patient-info');
         Route::delete('/all-appointments/{appointment}', [App\Http\Controllers\Doctor\DashboardController::class, 'deleteAllAppointment'])->name('doctor.all-appointments.delete');
+        Route::patch('/all-appointments/{appointment}/cancel', [App\Http\Controllers\Doctor\DashboardController::class, 'cancelAllAppointment'])->name('doctor.all-appointments.cancel');
         Route::post('/all-appointments/{appointment}/result', [App\Http\Controllers\Doctor\DashboardController::class, 'storeAllAppointmentResult'])->name('doctor.all-appointments.result');
         
         // Promotion routes (new comprehensive system)

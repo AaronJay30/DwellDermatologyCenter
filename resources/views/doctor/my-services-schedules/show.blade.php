@@ -9,7 +9,7 @@
 <style>
     /* Base container styling for centering */
     .container {
-        max-width: 1200px;
+        max-width: 1800px;
         margin: 0 auto;
         width: 100%;
         padding: 0 20px;

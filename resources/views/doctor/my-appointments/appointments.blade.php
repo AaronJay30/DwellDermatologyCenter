@@ -118,6 +118,11 @@
         color: #fff;
     }
 
+    .status-cancelled_by_doctor {
+        background-color: #e67e22;
+        color: #fff;
+    }
+
     .patient-info {
         display: flex;
         flex-direction: column;
@@ -827,6 +832,9 @@
                             <td>
                                 <div style="display: flex; gap: 0.5rem; align-items: center;">
                                     <button onclick="openAddResultModal({{ $appointment->id }})" class="btn-action btn-add-result" style="padding: 0.4rem 0.8rem; background-color: #008080; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Add Result</button>
+                                    @if(in_array($appointment->status, ['booked', 'confirmed', 'pending', 'ongoing']))
+                                    <button onclick="openCancelModal({{ $appointment->id }})" class="btn-action btn-cancel-doctor" style="padding: 0.4rem 0.8rem; background-color: #e67e22; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Cancel</button>
+                                    @endif
                                     <button onclick="deleteAppointment({{ $appointment->id }})" class="btn-action btn-delete" style="padding: 0.4rem 0.8rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 500;">Delete</button>
                                 </div>
                             </td>
@@ -850,6 +858,28 @@
         <div class="pagination-wrapper">
             {{ $appointments->links() }}
         </div>
+    </div>
+</div>
+
+<!-- Doctor Cancel Appointment Modal -->
+<div id="cancelByDoctorModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:10px; padding:2rem; max-width:480px; width:100%; margin:auto; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+        <h2 style="margin-top:0; color:#e67e22; font-size:1.2rem;">Cancel Appointment</h2>
+        <p style="color:#555; margin-bottom:1rem;">Please provide a reason for cancellation. The patient will be notified automatically.</p>
+        <form id="cancelByDoctorForm" method="POST" action="">
+            @csrf
+            @method('PATCH')
+            <div style="margin-bottom:1rem;">
+                <label for="cancelReason" style="display:block; font-weight:600; margin-bottom:0.4rem; color:#333;">Reason for Cancellation <span style="color:red;">*</span></label>
+                <textarea id="cancelReason" name="cancellation_reason" rows="4" required
+                    style="width:100%; padding:0.6rem; border:1px solid #ccc; border-radius:6px; font-size:0.95rem; resize:vertical;"
+                    placeholder="e.g. Doctor is unavailable due to an emergency..."></textarea>
+            </div>
+            <div style="display:flex; gap:1rem; justify-content:flex-end;">
+                <button type="button" onclick="closeCancelModal()" style="padding:0.5rem 1.2rem; background:#aaa; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:0.95rem;">Back</button>
+                <button type="submit" style="padding:0.5rem 1.2rem; background:#e67e22; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:0.95rem; font-weight:600;">Confirm Cancellation</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -2192,6 +2222,25 @@ function deleteAppointment(appointmentId) {
         alert('An error occurred while deleting the appointment');
     });
 }
+
+function openCancelModal(appointmentId) {
+    const modal = document.getElementById('cancelByDoctorModal');
+    const form = document.getElementById('cancelByDoctorForm');
+    form.action = `{{ url('/doctor/my-appointments') }}/${appointmentId}/cancel`;
+    document.getElementById('cancelReason').value = '';
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCancelModal() {
+    const modal = document.getElementById('cancelByDoctorModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+document.getElementById('cancelByDoctorModal').addEventListener('click', function(e) {
+    if (e.target === this) closeCancelModal();
+});
 
 function handleResultSubmit(e) {
     e.preventDefault();

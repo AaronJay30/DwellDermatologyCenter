@@ -27,7 +27,7 @@
     @media (min-width: 768px) {
         .container {
             padding: 1.5rem;
-            max-width: 1200px;
+            max-width: 1800px;
         }
 
         .patient-modal {
@@ -1296,7 +1296,7 @@
     /* Laptops (1025px - 1440px) */
     @media (min-width: 1025px) and (max-width: 1440px) {
         .container {
-            max-width: 1200px;
+            max-width: 1800px;
             margin: 0 auto;
             padding: 1.5rem;
             width: 100%;

@@ -1821,22 +1821,42 @@ class DashboardController extends Controller
             'cancellation_reason' => 'required|string|max:1000',
         ]);
 
+        $appointment->load(['doctor', 'timeSlot', 'doctorSlot']);
+
         $appointment->update([
             'status' => 'cancelled',
             'cancellation_reason' => $request->cancellation_reason,
         ]);
 
+        // Build appointment date/time string
+        if ($appointment->timeSlot) {
+            $appointmentDate = \Carbon\Carbon::parse($appointment->timeSlot->date)->format('F d, Y');
+            $appointmentTime = $appointment->timeSlot->start_time . ' - ' . $appointment->timeSlot->end_time;
+        } elseif ($appointment->doctorSlot) {
+            $appointmentDate = optional($appointment->doctorSlot->slot_date)->format('F d, Y') ?? 'N/A';
+            $appointmentTime = optional($appointment->doctorSlot)->start_time ?? 'N/A';
+        } else {
+            $appointmentDate = $appointment->scheduled_date ?? 'N/A';
+            $appointmentTime = $appointment->scheduled_time ?? 'N/A';
+        }
+
+        $doctorName = $appointment->doctor?->name ?? 'Your doctor';
+
+        $message = "Your appointment has been cancelled by {$doctorName}.\n"
+            . "Date: {$appointmentDate}\n"
+            . "Time: {$appointmentTime}\n"
+            . "Reason: {$request->cancellation_reason}\n"
+            . "We apologize for any inconvenience. Please contact us to reschedule.";
+
         // Send notification to patient
         NotificationService::sendNotification(
-            'Appointment Cancelled',
-            "Your appointment has been cancelled. Reason: {$request->cancellation_reason}",
-            'appointment_cancelled',
+            'Appointment Cancelled by Doctor',
+            $message,
+            'appointment_cancelled_by_doctor',
             $appointment->patient_id
         );
 
-        // Note: Doctor is already aware since they cancelled it, but we could notify other doctors in the branch if needed
-
-        return redirect()->route('doctor.my-appointments')->with('success', 'Appointment cancelled successfully!');
+        return redirect()->route('doctor.my-appointments')->with('success', 'Appointment has been cancelled and the patient has been notified.');
     }
 
     // My Services Schedules methods
@@ -2956,7 +2976,7 @@ class DashboardController extends Controller
 
     public function cancelAllAppointment(Request $request, Appointment $appointment)
     {
-        if (!in_array($appointment->status, ['pending', 'confirmed', 'booked'])) {
+        if (!in_array($appointment->status, ['pending', 'confirmed', 'booked', 'ongoing'])) {
             return response()->json([
                 'success' => false,
                 'message' => 'This appointment cannot be cancelled.'
@@ -2966,6 +2986,8 @@ class DashboardController extends Controller
         $request->validate([
             'cancellation_reason' => 'required|string|max:1000',
         ]);
+
+        $appointment->load(['doctor', 'timeSlot', 'doctorSlot']);
 
         $appointment->update([
             'status' => 'cancelled',
@@ -2979,11 +3001,36 @@ class DashboardController extends Controller
             $appointment->doctorSlot->update(['is_booked' => false]);
         }
 
-        NotificationService::sendConsultationCancellation($appointment, $request->cancellation_reason);
+        // Build appointment date/time string
+        if ($appointment->timeSlot) {
+            $appointmentDate = \Carbon\Carbon::parse($appointment->timeSlot->date)->format('F d, Y');
+            $appointmentTime = $appointment->timeSlot->start_time . ' - ' . $appointment->timeSlot->end_time;
+        } elseif ($appointment->doctorSlot) {
+            $appointmentDate = optional($appointment->doctorSlot->slot_date)->format('F d, Y') ?? 'N/A';
+            $appointmentTime = optional($appointment->doctorSlot)->start_time ?? 'N/A';
+        } else {
+            $appointmentDate = $appointment->scheduled_date ?? 'N/A';
+            $appointmentTime = $appointment->scheduled_time ?? 'N/A';
+        }
+
+        $doctorName = $appointment->doctor?->name ?? 'Your doctor';
+
+        $message = "Your appointment has been cancelled by {$doctorName}.\n"
+            . "Date: {$appointmentDate}\n"
+            . "Time: {$appointmentTime}\n"
+            . "Reason: {$request->cancellation_reason}\n"
+            . "We apologize for any inconvenience. Please contact us to reschedule.";
+
+        NotificationService::sendNotification(
+            'Appointment Cancelled by Doctor',
+            $message,
+            'appointment_cancelled_by_doctor',
+            $appointment->patient_id
+        );
 
         return response()->json([
             'success' => true,
-            'message' => 'Appointment cancelled successfully!',
+            'message' => 'Appointment cancelled and patient has been notified.',
             'status' => 'cancelled',
         ]);
     }
