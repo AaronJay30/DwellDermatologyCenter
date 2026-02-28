@@ -8,6 +8,8 @@ use App\Http\Controllers\Auth\SocialController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 
+use App\Http\Controllers\AppointmentNotificationController;
+
 // Social authentication routes (works for both login and registration)
 Route::get('login/{provider}', [SocialController::class, 'redirectToSocial'])->name('social.redirect');
 Route::get('login/{provider}/callback', [SocialController::class, 'handleSocialCallback'])->name('social.callback');
@@ -36,6 +38,7 @@ Route::get('/', function () {
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 
+
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 
@@ -52,8 +55,6 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
         // Notifications API
         Route::get('/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
-    // Consultations count (used by patient layout badge; must be defined for all auth users so layout resolves)
-    Route::get('/consultations/count', [App\Http\Controllers\PatientConsultationController::class, 'appointmentCount'])->name('consultations.count');
     
     // API routes for dynamic content loading
     Route::get('/api/branches/{branchId}/categories', [DashboardController::class, 'getCategoriesByBranch'])->name('api.branches.categories');
@@ -176,7 +177,6 @@ Route::middleware('auth')->group(function () {
         // All Appointments (All Branches) routes
         Route::get('/all-appointments', [App\Http\Controllers\Doctor\DashboardController::class, 'allAppointments'])->name('doctor.all-appointments');
         Route::get('/all-appointments/{appointment}/patient-info', [App\Http\Controllers\Doctor\DashboardController::class, 'getPatientInfo'])->name('doctor.all-appointments.patient-info');
-        Route::patch('/all-appointments/{appointment}/cancel', [App\Http\Controllers\Doctor\DashboardController::class, 'cancelAllAppointment'])->name('doctor.all-appointments.cancel');
         Route::delete('/all-appointments/{appointment}', [App\Http\Controllers\Doctor\DashboardController::class, 'deleteAllAppointment'])->name('doctor.all-appointments.delete');
         Route::post('/all-appointments/{appointment}/result', [App\Http\Controllers\Doctor\DashboardController::class, 'storeAllAppointmentResult'])->name('doctor.all-appointments.result');
         
@@ -261,7 +261,6 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/appointments/{appointment}/patient-info', [App\Http\Controllers\Admin\DashboardController::class, 'getPatientInfo'])->name('admin.appointments.patient-info');
         Route::patch('/appointments/{appointment}', [App\Http\Controllers\Admin\DashboardController::class, 'updateAppointment'])->name('admin.appointments.update');
-        Route::patch('/appointments/{appointment}/cancel', [App\Http\Controllers\Admin\DashboardController::class, 'cancelAppointment'])->name('admin.appointments.cancel');
         Route::delete('/appointments/{appointment}', [App\Http\Controllers\Admin\DashboardController::class, 'deleteAppointment'])->name('admin.appointments.delete');
         Route::post('/appointments/{appointment}/progress-photos', [App\Http\Controllers\Admin\DashboardController::class, 'storeProgressPhotos'])->name('admin.appointments.progress-photos');
         Route::post('/appointments/{appointment}/result', [App\Http\Controllers\Admin\DashboardController::class, 'storeResult'])->name('admin.appointments.store-result');
