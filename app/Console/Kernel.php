@@ -12,7 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('app:notify-tomorrow-appointments')->hourly();
+        // Appointment notifications are triggered on user login via SendAppointmentNotificationsOnLogin listener
     }
 
     /**

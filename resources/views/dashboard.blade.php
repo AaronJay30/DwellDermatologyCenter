@@ -123,7 +123,7 @@
         </div>
         
         <!-- Book Now Bar (sticky, appears when at least one service is checked) -->
-        <div id="book-now-bar" style="display: none; position: sticky; bottom: 0; background: var(--primary-color); color: white; padding: 1rem 1.5rem; margin-top: 2rem; border-radius: 12px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); z-index: 100;">
+        <div id="book-now-bar" style="display: none; position: sticky; bottom: 70px; background: var(--primary-color); color: white; padding: 1rem 1.5rem; margin-top: 2rem; border-radius: 12px; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); z-index: 100;">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                 <div>
                     <strong id="selected-count">0</strong> service(s) selected
