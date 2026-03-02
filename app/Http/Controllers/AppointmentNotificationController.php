@@ -15,6 +15,14 @@ class AppointmentNotificationController extends Controller
         $tomorrow = Carbon::tomorrow()->toDateString();
         $appointments = Appointment::whereDate('scheduled_date', $tomorrow)->get();
         $notifications = [];
+
+        if ($appointments->isEmpty()) {
+            AppointmentNotificationLogger::log('No appointments found for tomorrow', [
+                'scheduled_date' => $tomorrow,
+                'count' => 0,
+            ]);
+        }
+
         foreach ($appointments as $appointment) {
             $notification = Notification::create([
                 'user_id' => $appointment->patient_id,
