@@ -851,11 +851,14 @@
                         <label for="consultation_type" class="form-label">Type of Consultation <span class="required-indicator">*required</span></label>
                         <select name="consultation_type" id="consultation_type" class="form-select" required>
                             <option value="">Select consultation type</option>
-                            <option value="General Consultation">General Consultation</option>
-                            <option value="Follow-up">Follow-up</option>
-                            <option value="Emergency">Emergency</option>
-                            <option value="Specialist Referral">Specialist Referral</option>
-                            <option value="Preventive Care">Preventive Care</option>
+                            <option value="General Skin Consultation">General Skin Consultation</option>
+                            <option value="Acne Consultation">Acne Consultation</option>
+                            <option value="Pigmentation Consultation">Pigmentation Consultation</option>
+                            <option value="Anti-Aging Consultation">Anti-Aging Consultation</option>
+                            <option value="Skin Allergy Consultation">Skin Allergy Consultation</option>
+                            <option value="Skin Infection Consultation">Skin Infection Consultation</option>
+                            <option value="Hair and Scalp Consultation">Hair and Scalp Consultation</option>
+                            <option value="Nail Consultation">Nail Consultation</option>
                             <option value="Other">Other</option>
                         </select>
                     </div>
@@ -1822,7 +1825,39 @@ function selectProfile(profile) {
     });
     dateInput.addEventListener('change', loadAvailableTimeSlots);
     slotSelect.addEventListener('change', updateSummary);
-    consultationTypeSelect.addEventListener('change', updateSummary);
+    const consultationDescriptions = {
+        'General Skin Consultation': 'I have general skin concerns like rashes, dryness, redness, or itchiness and I want proper medical advice.',
+        'Acne Consultation': 'I have pimples, frequent breakouts, or acne marks and I want treatment to clear my skin.',
+        'Pigmentation Consultation': 'I have dark spots, melasma, or uneven skin tone and I want to improve my complexion.',
+        'Anti-Aging Consultation': 'I notice wrinkles, fine lines, or sagging skin and I want treatment to look younger.',
+        'Skin Allergy Consultation': 'I am experiencing skin irritation, itching, or allergic reactions and I need medical evaluation.',
+        'Skin Infection Consultation': 'I think I have a fungal, bacterial, or viral skin infection and need proper treatment.',
+        'Hair and Scalp Consultation': 'I am experiencing hair loss, dandruff, or scalp problems and want professional advice.',
+        'Nail Consultation': 'I have nail discoloration, thickening, or infection and want treatment for healthier nails.',
+    };
+
+    const descriptionTextarea = document.getElementById('description');
+
+    consultationTypeSelect.addEventListener('change', function () {
+        const selected = this.value;
+        if (selected && selected !== 'Other' && consultationDescriptions[selected]) {
+            descriptionTextarea.value = consultationDescriptions[selected];
+            descriptionTextarea.disabled = true;
+            descriptionTextarea.style.backgroundColor = '#f0f0f0';
+            descriptionTextarea.style.cursor = 'not-allowed';
+        } else if (selected === 'Other') {
+            descriptionTextarea.value = '';
+            descriptionTextarea.disabled = false;
+            descriptionTextarea.style.backgroundColor = '';
+            descriptionTextarea.style.cursor = '';
+        } else {
+            descriptionTextarea.value = '';
+            descriptionTextarea.disabled = false;
+            descriptionTextarea.style.backgroundColor = '';
+            descriptionTextarea.style.cursor = '';
+        }
+        updateSummary();
+    });
 
     // Book consultation
     bookButton.addEventListener('click', function() {
