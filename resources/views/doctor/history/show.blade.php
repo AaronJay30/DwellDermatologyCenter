@@ -666,6 +666,18 @@
         .patient-info-panel {
             position: static;
         }
+
+        .history-panel {
+            height: auto;
+            max-height: none;
+            overflow: scroll;
+        }
+
+        .history-content-wrapper {
+            overflow-y: scroll;
+            min-height: unset;
+            flex: unset;
+        }
         
         /* Modal responsive styles for small laptops */
         .annual-report-modal {
