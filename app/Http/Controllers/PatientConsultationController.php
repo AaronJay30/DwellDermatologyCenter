@@ -93,6 +93,21 @@ class PatientConsultationController extends Controller
         return view('consultations.index', compact('consultations'));
     }
 
+    public function count()
+    {
+        $count = Appointment::where('patient_id', Auth::id())
+            ->whereIn('status', ['pending', 'confirmed', 'booked'])
+            ->where(function($query) {
+                $query->whereNotNull('time_slot_id')->orWhereNotNull('service_id');
+            })
+            ->where(function($query) {
+                $query->whereNull('time_slot_id')->orWhereNotNull('doctor_id');
+            })
+            ->count();
+
+        return response()->json(['count' => $count]);
+    }
+
     public function appointmentCount()
     {
         $count = Appointment::where('patient_id', Auth::id())

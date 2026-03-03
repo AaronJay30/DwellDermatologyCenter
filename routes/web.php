@@ -76,6 +76,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/consultations', [App\Http\Controllers\PatientConsultationController::class, 'index'])->name('consultations.index');
         Route::get('/consultations/create', [App\Http\Controllers\PatientConsultationController::class, 'create'])->name('consultations.create');
         Route::get('/consultations/medical', [App\Http\Controllers\PatientConsultationController::class, 'medicalConsultation'])->name('consultations.medical');
+        Route::get('/consultations/count', [App\Http\Controllers\PatientConsultationController::class, 'count'])->name('consultations.count');
         Route::post('/consultations', [App\Http\Controllers\PatientConsultationController::class, 'store'])->name('consultations.store');
         Route::get('/consultations/available-slots', [App\Http\Controllers\PatientConsultationController::class, 'getAvailableTimeSlots'])->name('consultations.available-slots');
         Route::get('/consultations/{consultation}', [App\Http\Controllers\PatientConsultationController::class, 'show'])->name('consultations.show');

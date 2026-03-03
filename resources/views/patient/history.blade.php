@@ -420,6 +420,41 @@
         cursor: pointer;
     }
 
+    /* Medical Document Chapter Headings */
+    .med-chapter {
+        margin-bottom: 1.75rem;
+    }
+    .med-chapter-title {
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        text-decoration: underline;
+        text-transform: uppercase;
+        color: #1a1a1a;
+        margin-bottom: 0.75rem;
+        letter-spacing: 0.3px;
+        display: flex;
+        align-items: baseline;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+    }
+    .med-chapter-subtitle {
+        font-style: italic;
+        font-weight: 400;
+        text-transform: none;
+        text-decoration: none;
+        font-size: 0.88rem;
+        color: #555;
+    }
+    .med-profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    @media (max-width: 576px) {
+        .med-profile-grid { grid-template-columns: 1fr; }
+    }
+
     @media (max-width: 768px) {
         .history-container {
             padding: 1rem;
@@ -558,6 +593,10 @@
                 <div id="resultContent"></div>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="downloadPdfBtn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-1" viewBox="0 0 16 16" style="vertical-align:-2px"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg>
+                    Download PDF
+                </button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
@@ -613,161 +652,156 @@ document.addEventListener('DOMContentLoaded', () => {
         const c = data.consultation_data;
         let html = '<div class="consultation-form-container">';
 
+        // ─── I. PATIENT'S PROFILE ─────────────────────────────────────────
+        html += `
+            <div class="med-chapter">
+                <div class="med-chapter-title">I. &nbsp; PATIENT'S PROFILE</div>
+                <div class="med-profile-grid" style="margin-top:0.5rem;">
+                    <div>
+                        <label class="form-label" style="margin-bottom:0.2rem;">Service</label>
+                        <div style="font-size:0.95rem; color:#333;">${data.service ?? '—'}</div>
+                    </div>
+                    <div>
+                        <label class="form-label" style="margin-bottom:0.2rem;">Date of Visit</label>
+                        <div style="font-size:0.95rem; color:#333;">${data.date ?? '—'}</div>
+                    </div>
+                    <div>
+                        <label class="form-label" style="margin-bottom:0.2rem;">Branch</label>
+                        <div style="font-size:0.95rem; color:#333;">${data.branch ?? '—'}</div>
+                    </div>
+                    <div>
+                        <label class="form-label" style="margin-bottom:0.2rem;">Doctor</label>
+                        <div style="font-size:0.95rem; color:#333;">${data.doctor ?? '—'}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
         if (c) {
             // === Consultation with photos schema ===
-            if (c.before || c.after || c.results || c.treatment_plan || c.medication) {
-                // 📸 BEFORE PHOTOS
-                if (c.before && c.before.photos && c.before.photos.length > 0) {
-                    html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">📸</span>
-                                <span class="form-title">BEFORE PHOTOS</span>
-                            </div>
-                            <div class="form-section-content">
-                                ${renderMedia('', c.before.photos)}
-                            </div>
-                        </div>
-                    `;
-                }
+            if (c.before || c.after || c.results || c.treatment_plan) {
 
-                // 🩺 BEFORE CONSULTATION FINDINGS
+                // ─── II. PRESENTING COMPLAINTS ────────────────────────────────
                 if (c.before && c.before.skin_condition && c.before.skin_condition.length > 0) {
                     html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">🩺</span>
-                                <span class="form-title">BEFORE CONSULTATION FINDINGS</span>
+                        <div class="med-chapter">
+                            <div class="med-chapter-title">II. &nbsp; PRESENTING COMPLAINTS
+                                <span class="med-chapter-subtitle">(Use patient's own words &ndash; chronological order)</span>
                             </div>
-                            <div class="form-section-content">
-                                ${renderBulletSection('Findings (Multiple Bullet Points)', c.before.skin_condition)}
+                            <div style="margin-top:0.5rem; margin-left:1rem;">
+                                ${renderBulletSection('BEFORE CONSULTATION FINDINGS', c.before.skin_condition)}
                             </div>
                         </div>
                     `;
                 }
 
-                // 📸 AFTER PHOTOS
+                // ─── III. HISTORY OF PRESENT ILLNESS ──────────────────────────
+                let hpiSections = '';
+                if (c.before && c.before.photos && c.before.photos.length > 0) {
+                    hpiSections += `
+                        <div style="margin-bottom:1rem; margin-left:1rem;">
+                            ${renderMedia('BEFORE PHOTOS', c.before.photos)}
+                        </div>
+                    `;
+                }
                 if (c.after && c.after.photos && c.after.photos.length > 0) {
-                    html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">📸</span>
-                                <span class="form-title">AFTER PHOTOS</span>
-                            </div>
-                            <div class="form-section-content">
-                                ${renderMedia('', c.after.photos)}
-                            </div>
+                    hpiSections += `
+                        <div style="margin-bottom:1rem; margin-left:1rem;">
+                            ${renderMedia('AFTER PHOTOS', c.after.photos)}
                         </div>
                     `;
                 }
-
-                // 🧪 AFTER CONSULTATION RESULTS
                 if (c.results && c.results.length > 0) {
+                    hpiSections += `
+                        <div style="margin-bottom:1rem; margin-left:1rem;">
+                            ${renderBulletSection('AFTER CONSULTATION RESULTS', c.results)}
+                        </div>
+                    `;
+                }
+                if (hpiSections) {
                     html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">🧪</span>
-                                <span class="form-title">AFTER CONSULTATION RESULTS</span>
-                            </div>
-                            <div class="form-section-content">
-                                ${renderBulletSection('Results (Multiple Bullet Points)', c.results)}
+                        <div class="med-chapter">
+                            <div class="med-chapter-title">III. &nbsp; HISTORY OF PRESENT ILLNESS</div>
+                            <div style="margin-top:0.5rem;">
+                                ${hpiSections}
                             </div>
                         </div>
                     `;
                 }
 
-                // 💊 PRESCRIPTION
+                // ─── IV. PRESCRIPTION & MEDICATIONS ───────────────────────────
+                let rxSections = '';
                 if (c.prescription && c.prescription.length > 0) {
-                    html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">💊</span>
-                                <span class="form-title">PRESCRIPTION</span>
-                            </div>
-                            <div class="form-section-content">
-                                ${renderBulletSection('Prescription Items (Multiple Bullet Points)', c.prescription)}
-                            </div>
+                    rxSections += `
+                        <div style="margin-bottom:1rem; margin-left:1rem;">
+                            ${renderBulletSection('PRESCRIPTION', c.prescription)}
                         </div>
                     `;
                 } else if (data.prescription) {
-                    html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">💊</span>
-                                <span class="form-title">PRESCRIPTION</span>
-                            </div>
-                            <div class="form-section-content">
-                                <div class="form-field">
-                                    <div class="form-value">${data.prescription}</div>
-                                </div>
-                            </div>
+                    rxSections += `
+                        <div style="margin-bottom:1rem; margin-left:1rem;">
+                            <div style="font-size:0.95rem;">${data.prescription}</div>
                         </div>
                     `;
                 }
-
-                // 💧 MEDICATIONS TO TAKE
                 if (c.medication) {
-                    html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">💧</span>
-                                <span class="form-title">MEDICATIONS TO TAKE</span>
-                            </div>
-                            <div class="form-section-content">
-                    `;
+                    let medHtml = '';
                     if (Array.isArray(c.medication)) {
-                        html += renderBulletSection('Oral Medications (Multiple Bullet Points)', c.medication);
+                        medHtml = renderBulletSection('ORAL MEDICATIONS', c.medication);
                     } else {
                         const medsList = Array.isArray(c.medication.medicines) ? c.medication.medicines : [];
                         if (medsList.length > 0) {
-                            html += renderBulletSection('Oral Medications (Multiple Bullet Points)', medsList);
+                            medHtml += renderBulletSection('ORAL MEDICATIONS', medsList);
                         }
                         if (c.medication.instructions) {
-                            html += `
-                                <div class="form-field">
-                                    <label class="form-label">Instructions</label>
-                                    <div class="form-value">${c.medication.instructions}</div>
+                            medHtml += `
+                                <div style="margin-top:0.5rem;">
+                                    <div style="font-weight:600; margin-bottom:0.25rem;">Instructions</div>
+                                    <div style="font-size:0.95rem;">${c.medication.instructions}</div>
                                 </div>
                             `;
                         }
                     }
-                    html += `</div></div>`;
+                    rxSections += `
+                        <div style="margin-bottom:1rem; margin-left:1rem;">
+                            ${medHtml}
+                        </div>
+                    `;
                 }
-
-                // 📝 NOTES
-                const notesText = data.notes || c.before?.notes || c.after?.notes || '';
-                if (notesText) {
+                if (rxSections) {
                     html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">📝</span>
-                                <span class="form-title">NOTES</span>
-                            </div>
-                            <div class="form-section-content">
-                                <div class="form-field">
-                                    <label class="form-label">Notes (Optional)</label>
-                                    <div class="form-value">${notesText}</div>
-                                </div>
+                        <div class="med-chapter">
+                            <div class="med-chapter-title">IV. &nbsp; PRESCRIPTION &amp; MEDICATIONS</div>
+                            <div style="margin-top:0.5rem;">
+                                ${rxSections}
                             </div>
                         </div>
                     `;
                 }
 
-                // 📅 FOLLOW-UP DATE
+                // ─── V. FOLLOW-UP DATE ─────────────────────────────────────────
                 const followUpDate = data.follow_up_date || (c.follow_up && c.follow_up.date) || '';
                 const followUpRequired = data.follow_up_required || (c.follow_up && c.follow_up.required) || false;
                 if (followUpRequired || followUpDate) {
                     html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">📅</span>
-                                <span class="form-title">FOLLOW-UP DATE</span>
+                        <div class="med-chapter">
+                            <div class="med-chapter-title">V. &nbsp; FOLLOW-UP DATE</div>
+                            <div style="margin-top:0.5rem; margin-left:1rem;">
+                                <div style="font-weight:600; margin-bottom:0.25rem;">Follow-up Date (Optional)</div>
+                                <div style="font-size:0.95rem;">${followUpDate || 'Required (date TBD)'}</div>
                             </div>
-                            <div class="form-section-content">
-                                <div class="form-field">
-                                    <label class="form-label">Follow-up Date (Optional)</label>
-                                    <div class="form-value">${followUpDate || 'Required (date TBD)'}</div>
-                                </div>
+                        </div>
+                    `;
+                }
+
+                // ─── VI. NOTES ─────────────────────────────────────────────────
+                const notesText = data.notes || c.before?.notes || c.after?.notes || '';
+                if (notesText) {
+                    html += `
+                        <div class="med-chapter">
+                            <div class="med-chapter-title">VI. &nbsp; NOTES</div>
+                            <div style="margin-top:0.5rem; margin-left:1rem;">
+                                <div style="font-size:0.95rem; white-space:pre-wrap;">${notesText}</div>
                             </div>
                         </div>
                     `;
@@ -775,76 +809,70 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // === Services result schema (before_condition / result / procedures / medication / follow_up) ===
-            if (c.before_condition || c.result || c.procedures || c.medication || c.follow_up) {
+            else if (c.before_condition || c.result || c.procedures || c.medication || c.follow_up) {
+
+                // ─── II. PRESENTING COMPLAINTS ────────────────────────────────
                 if (c.before_condition && c.before_condition.length > 0) {
                     html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">🩺</span>
-                                <span class="form-title">BEFORE CONSULTATION FINDINGS</span>
+                        <div class="med-chapter">
+                            <div class="med-chapter-title">II. &nbsp; PRESENTING COMPLAINTS
+                                <span class="med-chapter-subtitle">(Use patient's own words &ndash; chronological order)</span>
                             </div>
-                            <div class="form-section-content">
-                                ${renderBulletSection('Findings (Multiple Bullet Points)', c.before_condition)}
+                            <div style="margin-top:0.5rem; margin-left:1rem;">
+                                ${renderBulletSection('BEFORE CONSULTATION FINDINGS', c.before_condition)}
                             </div>
                         </div>
                     `;
                 }
 
+                // ─── III. HISTORY OF PRESENT ILLNESS ──────────────────────────
+                let hpiServiceSections = '';
                 if (c.result && c.result.length > 0) {
-                    html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">🧪</span>
-                                <span class="form-title">AFTER CONSULTATION RESULTS</span>
-                            </div>
-                            <div class="form-section-content">
-                                ${renderBulletSection('Results (Multiple Bullet Points)', c.result)}
-                            </div>
+                    hpiServiceSections += `
+                        <div style="margin-bottom:1rem; margin-left:1rem;">
+                            ${renderBulletSection('AFTER CONSULTATION RESULTS', c.result)}
                         </div>
                     `;
                 }
-
                 if (c.procedures && c.procedures.length > 0) {
+                    hpiServiceSections += `
+                        <div style="margin-bottom:1rem; margin-left:1rem;">
+                            ${renderBulletSection('PROCEDURES', c.procedures)}
+                        </div>
+                    `;
+                }
+                if (hpiServiceSections) {
                     html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">⚕️</span>
-                                <span class="form-title">PROCEDURES</span>
-                            </div>
-                            <div class="form-section-content">
-                                ${renderBulletSection('Procedures (Multiple Bullet Points)', c.procedures)}
+                        <div class="med-chapter">
+                            <div class="med-chapter-title">III. &nbsp; HISTORY OF PRESENT ILLNESS</div>
+                            <div style="margin-top:0.5rem;">
+                                ${hpiServiceSections}
                             </div>
                         </div>
                     `;
                 }
 
+                // ─── IV. PRESCRIPTION & MEDICATIONS ───────────────────────────
                 if (c.medication && Array.isArray(c.medication) && c.medication.length > 0) {
                     html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">💧</span>
-                                <span class="form-title">MEDICATIONS TO TAKE</span>
-                            </div>
-                            <div class="form-section-content">
-                                ${renderBulletSection('Oral Medications (Multiple Bullet Points)', c.medication)}
+                        <div class="med-chapter">
+                            <div class="med-chapter-title">IV. &nbsp; PRESCRIPTION &amp; MEDICATIONS</div>
+                            <div style="margin-top:0.5rem; margin-left:1rem;">
+                                ${renderBulletSection('ORAL MEDICATIONS', c.medication)}
                             </div>
                         </div>
                     `;
                 }
 
+                // ─── V. FOLLOW-UP DATE ─────────────────────────────────────────
                 if (c.follow_up && (c.follow_up.required || c.follow_up.date)) {
                     const followText = c.follow_up.date || 'Required (date TBD)';
                     html += `
-                        <div class="form-section">
-                            <div class="form-section-header">
-                                <span class="form-icon">📅</span>
-                                <span class="form-title">FOLLOW-UP DATE</span>
-                            </div>
-                            <div class="form-section-content">
-                                <div class="form-field">
-                                    <label class="form-label">Follow-up Date (Optional)</label>
-                                    <div class="form-value">${followText}</div>
-                                </div>
+                        <div class="med-chapter">
+                            <div class="med-chapter-title">V. &nbsp; FOLLOW-UP DATE</div>
+                            <div style="margin-top:0.5rem; margin-left:1rem;">
+                                <div style="font-weight:600; margin-bottom:0.25rem;">Follow-up Date (Optional)</div>
+                                <div style="font-size:0.95rem;">${followText}</div>
                             </div>
                         </div>
                     `;
@@ -877,15 +905,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add prescription if not already included
         if (data.prescription && (!c || !c.prescription)) {
             html += `
-                <div class="form-section">
-                    <div class="form-section-header">
-                        <span class="form-icon">💊</span>
-                        <span class="form-title">PRESCRIPTION</span>
-                    </div>
-                    <div class="form-section-content">
-                        <div class="form-field">
-                            <div class="form-value">${data.prescription}</div>
-                        </div>
+                <div class="med-chapter">
+                    <div class="med-chapter-title">IV. &nbsp; PRESCRIPTION &amp; MEDICATIONS</div>
+                    <div style="margin-top:0.5rem; margin-left:1rem;">
+                        <div style="font-size:0.95rem;">${data.prescription}</div>
                     </div>
                 </div>
             `;
@@ -894,16 +917,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add follow-up if not already included
         if (data.follow_up_required && (!c || !c.follow_up)) {
             html += `
-                <div class="form-section">
-                    <div class="form-section-header">
-                        <span class="form-icon">📅</span>
-                        <span class="form-title">FOLLOW-UP DATE</span>
-                    </div>
-                    <div class="form-section-content">
-                        <div class="form-field">
-                            <label class="form-label">Follow-up Date (Optional)</label>
-                            <div class="form-value">${data.follow_up_date ? data.follow_up_date : 'Required (date TBD)'}</div>
-                        </div>
+                <div class="med-chapter">
+                    <div class="med-chapter-title">V. &nbsp; FOLLOW-UP DATE</div>
+                    <div style="margin-top:0.5rem; margin-left:1rem;">
+                        <div style="font-weight:600; margin-bottom:0.25rem;">Follow-up Date (Optional)</div>
+                        <div style="font-size:0.95rem;">${data.follow_up_date ? data.follow_up_date : 'Required (date TBD)'}</div>
                     </div>
                 </div>
             `;
@@ -912,16 +930,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add notes if not already included
         if (data.notes && (!c || (!c.before?.notes && !c.after?.notes))) {
             html += `
-                <div class="form-section">
-                    <div class="form-section-header">
-                        <span class="form-icon">📝</span>
-                        <span class="form-title">NOTES</span>
-                    </div>
-                    <div class="form-section-content">
-                        <div class="form-field">
-                            <label class="form-label">Notes (Optional)</label>
-                            <div class="form-value">${data.notes}</div>
-                        </div>
+                <div class="med-chapter">
+                    <div class="med-chapter-title">VI. &nbsp; NOTES</div>
+                    <div style="margin-top:0.5rem; margin-left:1rem;">
+                        <div style="font-size:0.95rem; white-space:pre-wrap;">${data.notes}</div>
                     </div>
                 </div>
             `;
@@ -1037,6 +1049,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    document.getElementById('downloadPdfBtn').addEventListener('click', function () {
+        const meta = document.getElementById('resultMeta');
+        const content = document.getElementById('resultContent');
+
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'font-family: Georgia, serif; padding: 2rem; color: #111; font-size: 13px; line-height: 1.6;';
+
+        // Clinic header
+        wrapper.innerHTML = `
+            <div style="text-align:center; margin-bottom:1.5rem; border-bottom:2px solid #333; padding-bottom:1rem;">
+                <div style="font-size:1.3rem; font-weight:bold; letter-spacing:1px;">DWELL DERMATOLOGY CENTER</div>
+                <div style="font-size:0.85rem; color:#555; margin-top:0.25rem;">Consultation Record</div>
+            </div>
+            <div style="margin-bottom:1.2rem; font-size:0.85rem; color:#444;">${meta.innerHTML}</div>
+            ${content.innerHTML}
+        `;
+
+        const opt = {
+            margin:       [15, 15, 15, 15],
+            filename:     'consultation-result.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(wrapper).save();
+    });
 });
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 @endpush
