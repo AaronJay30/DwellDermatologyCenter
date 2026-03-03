@@ -24,6 +24,20 @@ class AppointmentNotificationController extends Controller
         }
 
         foreach ($appointments as $appointment) {
+            $alreadyNotified = Notification::where('user_id', $appointment->patient_id)
+                ->where('type', 'appointment')
+                ->whereDate('created_at', today())
+                ->exists();
+
+            if ($alreadyNotified) {
+                AppointmentNotificationLogger::log('Skipping duplicate notification', [
+                    'user_id' => $appointment->patient_id,
+                    'appointment_id' => $appointment->id,
+                    'scheduled_date' => $appointment->scheduled_date,
+                ]);
+                continue;
+            }
+
             $notification = Notification::create([
                 'user_id' => $appointment->patient_id,
                 'title' => 'Upcoming Appointment',
