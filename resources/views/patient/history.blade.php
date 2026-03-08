@@ -420,39 +420,58 @@
         cursor: pointer;
     }
 
-    /* Medical Document Chapter Headings */
-    .med-chapter {
-        margin-bottom: 1.75rem;
+    /* Report Card Sections */
+    .report-card {
+        border: 1px solid #c8c8c8;
+        border-radius: 6px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
-    .med-chapter-title {
-        font-family: 'Times New Roman', Times, serif;
-        font-size: 1.05rem;
+    .report-card-header {
+        background: #e0e0e0;
+        border-bottom: 1px solid #c8c8c8;
+        padding: 0.55rem 1rem;
         font-weight: 700;
-        text-decoration: underline;
+        font-size: 0.8rem;
         text-transform: uppercase;
-        color: #1a1a1a;
-        margin-bottom: 0.75rem;
-        letter-spacing: 0.3px;
+        letter-spacing: 0.6px;
+        color: #222;
         display: flex;
-        align-items: baseline;
-        gap: 0.35rem;
-        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
     }
-    .med-chapter-subtitle {
-        font-style: italic;
-        font-weight: 400;
-        text-transform: none;
-        text-decoration: none;
-        font-size: 0.88rem;
+    .report-card-body {
+        padding: 0.9rem 1.1rem;
+        background: #fff;
+    }
+    .report-dotfield {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 0;
+    }
+    .report-dotfield label {
+        font-size: 0.72rem;
+        font-weight: 700;
         color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 3px;
     }
-    .med-profile-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.75rem;
+    .report-dotfield .report-dotline {
+        border-bottom: 1px dotted #999;
+        padding-bottom: 2px;
+        font-size: 0.88rem;
+        min-height: 1.25rem;
+        word-break: break-word;
     }
-    @media (max-width: 576px) {
-        .med-profile-grid { grid-template-columns: 1fr; }
+    .report-field-row {
+        display: flex;
+        gap: 1.25rem;
+        margin-bottom: 0.7rem;
+        flex-wrap: wrap;
     }
 
     @media (max-width: 768px) {
@@ -650,297 +669,209 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderResult(data) {
         const c = data.consultation_data;
-        let html = '<div class="consultation-form-container">';
 
-        // ─── I. PATIENT'S PROFILE ─────────────────────────────────────────
-        html += `
-            <div class="med-chapter">
-                <div class="med-chapter-title">I. &nbsp; PATIENT'S PROFILE</div>
-                <div class="med-profile-grid" style="margin-top:0.5rem;">
-                    <div>
-                        <label class="form-label" style="margin-bottom:0.2rem;">Service</label>
-                        <div style="font-size:0.95rem; color:#333;">${data.service ?? '—'}</div>
-                    </div>
-                    <div>
-                        <label class="form-label" style="margin-bottom:0.2rem;">Date of Visit</label>
-                        <div style="font-size:0.95rem; color:#333;">${data.date ?? '—'}</div>
-                    </div>
-                    <div>
-                        <label class="form-label" style="margin-bottom:0.2rem;">Branch</label>
-                        <div style="font-size:0.95rem; color:#333;">${data.branch ?? '—'}</div>
-                    </div>
-                    <div>
-                        <label class="form-label" style="margin-bottom:0.2rem;">Doctor</label>
-                        <div style="font-size:0.95rem; color:#333;">${data.doctor ?? '—'}</div>
-                    </div>
-                </div>
-            </div>
-        `;
+        const complaints    = c?.before?.skin_condition ?? c?.before_condition ?? [];
+        const beforePhotos  = c?.before?.photos ?? [];
+        const afterPhotos   = c?.after?.photos ?? [];
+        const procedures    = c?.procedures ?? [];
+        const results       = c?.results ?? c?.result ?? [];
+        let prescriptionItems = c?.prescription ?? [];
+        if (!prescriptionItems.length && data.prescription) prescriptionItems = [data.prescription];
+        const medication    = c?.medication ?? null;
+        const followUpDate  = data.follow_up_date || c?.follow_up?.date || '';
+        const followUpReq   = data.follow_up_required || c?.follow_up?.required || false;
+        const notesText     = data.notes || c?.before?.notes || c?.after?.notes || '';
+        const patientName   = data.patient?.name ?? '—';
+        const patientDob    = data.patient?.birthday ?? '—';
+        const patientSex    = data.patient?.sex ?? '—';
+        const patientAge    = data.patient?.age ?? '—';
 
-        if (c) {
-            // === Consultation with photos schema ===
-            if (c.before || c.after || c.results || c.treatment_plan) {
+        const card = (icon, title, body) => `
+            <div class="report-card">
+                <div class="report-card-header">${icon}&nbsp; ${title}</div>
+                <div class="report-card-body">${body}</div>
+            </div>`;
 
-                // ─── II. PRESENTING COMPLAINTS ────────────────────────────────
-                if (c.before && c.before.skin_condition && c.before.skin_condition.length > 0) {
-                    html += `
-                        <div class="med-chapter">
-                            <div class="med-chapter-title">II. &nbsp; PRESENTING COMPLAINTS
-                                <span class="med-chapter-subtitle">(Use patient's own words &ndash; chronological order)</span>
-                            </div>
-                            <div style="margin-top:0.5rem; margin-left:1rem;">
-                                ${renderBulletSection('BEFORE CONSULTATION FINDINGS', c.before.skin_condition)}
-                            </div>
-                        </div>
-                    `;
-                }
+        const dotField = (label, value, flex='1') => `
+            <div class="report-dotfield" style="flex:${flex}">
+                <label>${label}</label>
+                <div class="report-dotline">${value || ''}</div>
+            </div>`;
 
-                // ─── III. HISTORY OF PRESENT ILLNESS ──────────────────────────
-                let hpiSections = '';
-                if (c.before && c.before.photos && c.before.photos.length > 0) {
-                    hpiSections += `
-                        <div style="margin-bottom:1rem; margin-left:1rem;">
-                            ${renderMedia('BEFORE PHOTOS', c.before.photos)}
-                        </div>
-                    `;
-                }
-                if (c.after && c.after.photos && c.after.photos.length > 0) {
-                    hpiSections += `
-                        <div style="margin-bottom:1rem; margin-left:1rem;">
-                            ${renderMedia('AFTER PHOTOS', c.after.photos)}
-                        </div>
-                    `;
-                }
-                if (c.results && c.results.length > 0) {
-                    hpiSections += `
-                        <div style="margin-bottom:1rem; margin-left:1rem;">
-                            ${renderBulletSection('AFTER CONSULTATION RESULTS', c.results)}
-                        </div>
-                    `;
-                }
-                if (hpiSections) {
-                    html += `
-                        <div class="med-chapter">
-                            <div class="med-chapter-title">III. &nbsp; HISTORY OF PRESENT ILLNESS</div>
-                            <div style="margin-top:0.5rem;">
-                                ${hpiSections}
-                            </div>
-                        </div>
-                    `;
-                }
+        const row = (...fields) => `<div class="report-field-row">${fields.join('')}</div>`;
 
-                // ─── IV. PRESCRIPTION & MEDICATIONS ───────────────────────────
-                let rxSections = '';
-                if (c.prescription && c.prescription.length > 0) {
-                    rxSections += `
-                        <div style="margin-bottom:1rem; margin-left:1rem;">
-                            ${renderBulletSection('PRESCRIPTION', c.prescription)}
-                        </div>
-                    `;
-                } else if (data.prescription) {
-                    rxSections += `
-                        <div style="margin-bottom:1rem; margin-left:1rem;">
-                            <div style="font-size:0.95rem;">${data.prescription}</div>
-                        </div>
-                    `;
-                }
-                if (c.medication) {
-                    let medHtml = '';
-                    if (Array.isArray(c.medication)) {
-                        medHtml = renderBulletSection('ORAL MEDICATIONS', c.medication);
-                    } else {
-                        const medsList = Array.isArray(c.medication.medicines) ? c.medication.medicines : [];
-                        if (medsList.length > 0) {
-                            medHtml += renderBulletSection('ORAL MEDICATIONS', medsList);
-                        }
-                        if (c.medication.instructions) {
-                            medHtml += `
-                                <div style="margin-top:0.5rem;">
-                                    <div style="font-weight:600; margin-bottom:0.25rem;">Instructions</div>
-                                    <div style="font-size:0.95rem;">${c.medication.instructions}</div>
-                                </div>
-                            `;
-                        }
-                    }
-                    rxSections += `
-                        <div style="margin-bottom:1rem; margin-left:1rem;">
-                            ${medHtml}
-                        </div>
-                    `;
-                }
-                if (rxSections) {
-                    html += `
-                        <div class="med-chapter">
-                            <div class="med-chapter-title">IV. &nbsp; PRESCRIPTION &amp; MEDICATIONS</div>
-                            <div style="margin-top:0.5rem;">
-                                ${rxSections}
-                            </div>
-                        </div>
-                    `;
-                }
+        const bulletList = (items) => items.length
+            ? `<ul style="margin:0;padding-left:1.4rem;">${items.map(i=>`<li style="font-size:0.88rem;margin-bottom:2px;">${i}</li>`).join('')}</ul>`
+            : '';
 
-                // ─── V. FOLLOW-UP DATE ─────────────────────────────────────────
-                const followUpDate = data.follow_up_date || (c.follow_up && c.follow_up.date) || '';
-                const followUpRequired = data.follow_up_required || (c.follow_up && c.follow_up.required) || false;
-                if (followUpRequired || followUpDate) {
-                    html += `
-                        <div class="med-chapter">
-                            <div class="med-chapter-title">V. &nbsp; FOLLOW-UP DATE</div>
-                            <div style="margin-top:0.5rem; margin-left:1rem;">
-                                <div style="font-weight:600; margin-bottom:0.25rem;">Follow-up Date (Optional)</div>
-                                <div style="font-size:0.95rem;">${followUpDate || 'Required (date TBD)'}</div>
-                            </div>
-                        </div>
-                    `;
-                }
+        let html = '';
 
-                // ─── VI. NOTES ─────────────────────────────────────────────────
-                const notesText = data.notes || c.before?.notes || c.after?.notes || '';
-                if (notesText) {
-                    html += `
-                        <div class="med-chapter">
-                            <div class="med-chapter-title">VI. &nbsp; NOTES</div>
-                            <div style="margin-top:0.5rem; margin-left:1rem;">
-                                <div style="font-size:0.95rem; white-space:pre-wrap;">${notesText}</div>
-                            </div>
-                        </div>
-                    `;
-                }
+        // ── SECTION 1: CONSULTATION OVERVIEW ─────────────────────────────
+        let s1 = row(dotField('Patient Name (Full)', patientName, '2'), dotField('Date of Birth', patientDob));
+        s1    += row(dotField('Service', data.service), dotField('Date of Visit', data.date), dotField('Branch', data.branch), dotField('Doctor', data.doctor));
+        s1    += complaints.length
+            ? `<div style="margin-top:0.5rem;"><label class="report-dotfield"><label>Chief Complaint(s)</label></label>${bulletList(complaints)}</div>`
+            : row(dotField('Chief Complaint(s)', ''));
+        html  += card('🗒️', 'SECTION 1: CONSULTATION OVERVIEW', s1);
+
+        // ── SECTION 2: NOTES ─────────────────────────────────────────────
+        if (notesText) {
+            html += card('✏️', 'SECTION 2: NOTES',
+                `<div style="font-size:0.88rem;white-space:pre-wrap;">${notesText}</div>`);
+        }
+
+        // ── SECTION 3: PHOTO DOCUMENTATION ───────────────────────────────
+        if (beforePhotos.length || afterPhotos.length || results.length) {
+            let s3 = '';
+            if (beforePhotos.length || afterPhotos.length) {
+                s3 += `<div style="display:flex;gap:1rem;margin-bottom:0.75rem;flex-wrap:wrap;">`;
+                const photoCol = (label, photos) => `
+                    <div style="flex:1;min-width:120px;">
+                        <div style="font-size:0.72rem;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:6px;">${label}</div>
+                        <div class="modal-media-grid">${photos.map(src=>`<div class="modal-media-card"><img src="${src}" style="cursor:pointer;" onclick="window.open('${src}','_blank')"/></div>`).join('')}</div>
+                    </div>`;
+                if (beforePhotos.length) s3 += photoCol('Before Photos', beforePhotos);
+                if (afterPhotos.length)  s3 += photoCol('After Photos',  afterPhotos);
+                s3 += `</div>`;
             }
-
-            // === Services result schema (before_condition / result / procedures / medication / follow_up) ===
-            else if (c.before_condition || c.result || c.procedures || c.medication || c.follow_up) {
-
-                // ─── II. PRESENTING COMPLAINTS ────────────────────────────────
-                if (c.before_condition && c.before_condition.length > 0) {
-                    html += `
-                        <div class="med-chapter">
-                            <div class="med-chapter-title">II. &nbsp; PRESENTING COMPLAINTS
-                                <span class="med-chapter-subtitle">(Use patient's own words &ndash; chronological order)</span>
-                            </div>
-                            <div style="margin-top:0.5rem; margin-left:1rem;">
-                                ${renderBulletSection('BEFORE CONSULTATION FINDINGS', c.before_condition)}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                // ─── III. HISTORY OF PRESENT ILLNESS ──────────────────────────
-                let hpiServiceSections = '';
-                if (c.result && c.result.length > 0) {
-                    hpiServiceSections += `
-                        <div style="margin-bottom:1rem; margin-left:1rem;">
-                            ${renderBulletSection('AFTER CONSULTATION RESULTS', c.result)}
-                        </div>
-                    `;
-                }
-                if (c.procedures && c.procedures.length > 0) {
-                    hpiServiceSections += `
-                        <div style="margin-bottom:1rem; margin-left:1rem;">
-                            ${renderBulletSection('PROCEDURES', c.procedures)}
-                        </div>
-                    `;
-                }
-                if (hpiServiceSections) {
-                    html += `
-                        <div class="med-chapter">
-                            <div class="med-chapter-title">III. &nbsp; HISTORY OF PRESENT ILLNESS</div>
-                            <div style="margin-top:0.5rem;">
-                                ${hpiServiceSections}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                // ─── IV. PRESCRIPTION & MEDICATIONS ───────────────────────────
-                if (c.medication && Array.isArray(c.medication) && c.medication.length > 0) {
-                    html += `
-                        <div class="med-chapter">
-                            <div class="med-chapter-title">IV. &nbsp; PRESCRIPTION &amp; MEDICATIONS</div>
-                            <div style="margin-top:0.5rem; margin-left:1rem;">
-                                ${renderBulletSection('ORAL MEDICATIONS', c.medication)}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                // ─── V. FOLLOW-UP DATE ─────────────────────────────────────────
-                if (c.follow_up && (c.follow_up.required || c.follow_up.date)) {
-                    const followText = c.follow_up.date || 'Required (date TBD)';
-                    html += `
-                        <div class="med-chapter">
-                            <div class="med-chapter-title">V. &nbsp; FOLLOW-UP DATE</div>
-                            <div style="margin-top:0.5rem; margin-left:1rem;">
-                                <div style="font-weight:600; margin-bottom:0.25rem;">Follow-up Date (Optional)</div>
-                                <div style="font-size:0.95rem;">${followText}</div>
-                            </div>
-                        </div>
-                    `;
-                }
+            if (results.length) {
+                s3 += `<div style="font-size:0.72rem;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;margin-top:0.5rem;">Consultation Results</div>${bulletList(results)}`;
             }
-
-            if (html === '<div class="consultation-form-container">') {
-                html += `<div class="form-section"><div class="form-section-content"><p class="text-muted mb-0">No detailed result available.</p></div></div>`;
-            }
-        } else if (data.consultation_raw) {
-            html += `
-                <div class="form-section">
-                    <div class="form-section-content">
-                        <div class="form-field">
-                            <div class="form-value">${data.consultation_raw}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else {
-            html += `
-                <div class="form-section">
-                    <div class="form-section-content">
-                        <p class="text-muted mb-0">No result provided.</p>
-                    </div>
-                </div>
-            `;
+            html += card('📷', 'SECTION 3: PHOTO DOCUMENTATION', s3);
         }
 
-        // Add prescription if not already included
-        if (data.prescription && (!c || !c.prescription)) {
-            html += `
-                <div class="med-chapter">
-                    <div class="med-chapter-title">IV. &nbsp; PRESCRIPTION &amp; MEDICATIONS</div>
-                    <div style="margin-top:0.5rem; margin-left:1rem;">
-                        <div style="font-size:0.95rem;">${data.prescription}</div>
-                    </div>
-                </div>
-            `;
+        // ── SECTION 4: TREATMENT PLAN & PRESCRIPTION ─────────────────────
+        let s4 = '';
+        if (prescriptionItems.length) {
+            s4 += `<div style="font-size:0.72rem;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;">Prescription</div>${bulletList(prescriptionItems)}`;
+        }
+        if (procedures.length) {
+            s4 += `<div style="font-size:0.72rem;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:4px;${prescriptionItems.length?'margin-top:0.75rem;':''}">Procedures</div>${bulletList(procedures)}`;
+        }
+        if (s4) html += card('💊', 'SECTION 4: TREATMENT PLAN & PRESCRIPTION', s4);
+
+        // ── SECTION 5: MEDICATIONS TO TAKE ───────────────────────────────
+        let s5 = '';
+        if (medication) {
+            let medItems = Array.isArray(medication) ? medication : (medication.medicines ?? []);
+            let instructions = Array.isArray(medication) ? '' : (medication.instructions ?? '');
+            if (medItems.length) s5 += bulletList(medItems);
+            if (instructions) s5 += `<div style="margin-top:0.5rem;font-size:0.72rem;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:2px;">Instructions</div><div style="font-size:0.88rem;">${instructions}</div>`;
+        }
+        if (s5) html += card('💉', 'SECTION 5: MEDICATIONS TO TAKE', s5);
+
+        // ── SECTION 6: FOLLOW-UP ──────────────────────────────────────────
+        if (followUpReq || followUpDate) {
+            let s6 = row(dotField('Follow-up Date', followUpDate || 'Required (date TBD)', '2'), dotField('Time', ''));
+            s6   += row(dotField('Purpose', ''));
+            html += card('📅', 'SECTION 6: FOLLOW-UP', s6);
         }
 
-        // Add follow-up if not already included
-        if (data.follow_up_required && (!c || !c.follow_up)) {
-            html += `
-                <div class="med-chapter">
-                    <div class="med-chapter-title">V. &nbsp; FOLLOW-UP DATE</div>
-                    <div style="margin-top:0.5rem; margin-left:1rem;">
-                        <div style="font-weight:600; margin-bottom:0.25rem;">Follow-up Date (Optional)</div>
-                        <div style="font-size:0.95rem;">${data.follow_up_date ? data.follow_up_date : 'Required (date TBD)'}</div>
-                    </div>
-                </div>
-            `;
-        }
+        return `<div class="consultation-form-container">${html || '<p style="color:#777;text-align:center;padding:1rem;">No detailed result available.</p>'}</div>`;
+    }
 
-        // Add notes if not already included
-        if (data.notes && (!c || (!c.before?.notes && !c.after?.notes))) {
-            html += `
-                <div class="med-chapter">
-                    <div class="med-chapter-title">VI. &nbsp; NOTES</div>
-                    <div style="margin-top:0.5rem; margin-left:1rem;">
-                        <div style="font-size:0.95rem; white-space:pre-wrap;">${data.notes}</div>
-                    </div>
-                </div>
-            `;
-        }
+    function buildPdfDocument(data) {
+        const c = data.consultation_data;
 
-        html += '</div>';
-        return html;
+        const complaints    = c?.before?.skin_condition ?? c?.before_condition ?? [];
+        const beforePhotos  = c?.before?.photos ?? [];
+        const afterPhotos   = c?.after?.photos ?? [];
+        const procedures    = c?.procedures ?? [];
+        const results       = c?.results ?? c?.result ?? [];
+        let prescriptionItems = c?.prescription ?? [];
+        if (!prescriptionItems.length && data.prescription) prescriptionItems = [data.prescription];
+        const medication    = c?.medication ?? null;
+        const followUpDate  = data.follow_up_date || c?.follow_up?.date || '';
+        const followUpReq   = data.follow_up_required || c?.follow_up?.required || false;
+        const notesText     = data.notes || c?.before?.notes || c?.after?.notes || '';
+        const patientName   = data.patient?.name ?? '';
+        const patientDob    = data.patient?.birthday ?? '';
+        const patientSex    = data.patient?.sex ?? '';
+        const patientAge    = data.patient?.age ?? '';
+
+        const sec = (num, title, body) => `
+            <div style="border:1px solid #bbb;border-radius:4px;margin-bottom:12px;page-break-inside:avoid;">
+                <div style="background:#d5d5d5;padding:6px 11px;">
+                    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:#222;">SECTION ${num}: ${title}</span>
+                </div>
+                <div style="background:#fff;padding:10px 13px;">${body}</div>
+            </div>`;
+
+        const f = (label, value, w) => `
+            <span style="display:inline-block;vertical-align:top;width:${w||'160px'};margin-right:10px;margin-bottom:8px;">
+                <span style="display:block;font-size:7.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">${label}</span>
+                <span style="display:block;border-bottom:1px dotted #888;padding-bottom:2px;font-size:10px;min-height:14px;word-break:break-word;">${value || '&nbsp;'}</span>
+            </span>`;
+        const bullets = (items) => items.length
+            ? `<ul style="margin:0;padding-left:16px;">${items.map(i=>`<li style="font-size:10px;margin-bottom:2px;">${i}</li>`).join('')}</ul>`
+            : '';
+        const subLabel = (text, mt) => `<div style="font-size:7.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;${mt?'margin-top:'+mt+';':''}">${text}</div>`;
+
+        // S1
+        let s1  = `<div style="margin-bottom:8px;">${f('Patient Name (Full)', patientName, '300px')}${f('Date of Birth', patientDob, '140px')}</div>`;
+        s1     += `<div style="margin-bottom:8px;">${f('Sex', patientSex, '90px')}${f('Age', patientAge, '60px')}${f('Date of Visit', data.date ?? '', '140px')}${f('Branch', data.branch ?? '', '160px')}</div>`;
+        s1     += complaints.length
+            ? `<div style="margin-top:4px;">${subLabel('Chief Complaint(s)')}${bullets(complaints)}</div>`
+            : `<div>${f('Chief Complaint(s)', '', '480px')}</div>`;
+
+        // S3
+        let s3 = '';
+        if (beforePhotos.length || afterPhotos.length) {
+            const photoBox = (label, src) => src
+                ? `<span style="display:inline-block;vertical-align:top;width:210px;text-align:center;margin-right:14px;"><div style="font-size:7.5px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:5px;">${label}</div><div style="border:2px dashed #888;border-radius:4px;height:110px;text-align:center;"><img src="${src}" style="max-width:100%;max-height:110px;object-fit:contain;" crossorigin="anonymous"></div></span>`
+                : `<span style="display:inline-block;vertical-align:top;width:210px;margin-right:14px;"><div style="font-size:7.5px;font-weight:700;color:#555;text-transform:uppercase;margin-bottom:5px;">${label}</div><div style="border:2px dashed #bbb;border-radius:4px;height:110px;padding-top:44px;text-align:center;"><span style="font-size:9px;color:#aaa;">${label}</span></div></span>`;
+            s3 += `<div style="margin-bottom:10px;">${photoBox('BEFORE PHOTO', beforePhotos[0]??null)}${photoBox('AFTER PHOTO', afterPhotos[0]??null)}</div>`;
+            s3 += `<div>${f('Before Picture Notes','','210px')}${f('After Picture Notes','','210px')}</div>`;
+        }
+        if (results.length) s3 += `<div style="margin-top:8px;">${subLabel('Consultation Results')}${bullets(results)}</div>`;
+
+        // S4
+        let s4 = '';
+        if (prescriptionItems.length) s4 += `${subLabel('Prescription')}${bullets(prescriptionItems)}`;
+        if (procedures.length) s4 += `${subLabel('Procedures', prescriptionItems.length?'8px':null)}${bullets(procedures)}`;
+        if (!s4) s4 = `<div style="border-bottom:1px dotted #aaa;margin:6px 0;"></div><div style="border-bottom:1px dotted #aaa;margin:6px 0;"></div>`;
+
+        // S5
+        let s5 = '';
+        if (medication) {
+            let medItems = Array.isArray(medication) ? medication : (medication.medicines ?? []);
+            let instr = Array.isArray(medication) ? '' : (medication.instructions ?? '');
+            if (medItems.length) s5 += bullets(medItems);
+            if (instr) s5 += `${subLabel('Instructions','6px')}<div style="font-size:10px;">${instr}</div>`;
+        }
+        if (!s5) s5 = `<div style="font-size:10px;margin-bottom:5px;">&#9633; &nbsp;Use as directed. Continue existing: <span style="display:inline-block;border-bottom:1px dotted #888;width:160px;">&nbsp;</span></div><div style="font-size:10px;">&#9633; &nbsp;New medications: <span style="display:inline-block;border-bottom:1px dotted #888;width:195px;">&nbsp;</span></div>`;
+
+        // S6
+        let s6  = `<div style="margin-bottom:8px;">${f('Follow-up Date', followUpDate||(followUpReq?'Required (date TBD)':''), '260px')}${f('Time','','160px')}</div>`;
+        s6     += `<div>${f('Purpose','','480px')}</div>`;
+
+        return `
+            <div style="font-family:Arial,Helvetica,sans-serif;color:#111;font-size:11px;line-height:1.5;width:100%;">
+                <div style="background:#1a1a1a;color:#fff;text-align:center;padding:13px;margin-bottom:14px;border-radius:3px;">
+                    <div style="font-size:15px;font-weight:900;letter-spacing:2px;text-transform:uppercase;">PATIENT CONSULTATION REPORT</div>
+                </div>
+                <div style="margin-bottom:13px;">
+                    <div style="font-size:15px;font-weight:800;margin-bottom:3px;">${data.service ?? 'Consultation'}</div>
+                    <div style="font-size:9px;color:#555;">${data.date ?? 'Date TBD'} &bull; ${data.branch ?? 'N/A'} &bull; ${data.doctor ?? 'N/A'}</div>
+                    <div style="font-size:9px;color:#555;">Recorded: ${data.created_at ?? 'N/A'}</div>
+                </div>
+                ${sec('1','CONSULTATION OVERVIEW', s1)}
+                ${notesText ? sec('2','NOTES',`<div style="font-size:10px;white-space:pre-wrap;">${notesText}</div>`) : ''}
+                ${s3 ? sec('3','PHOTO DOCUMENTATION', s3) : ''}
+                ${sec('4','TREATMENT PLAN &amp; PRESCRIPTION', s4)}
+                ${sec('5','MEDICATIONS TO TAKE', s5)}
+                ${sec('6','FOLLOW-UP', s6)}
+                <div style="margin-top:18px;padding-top:10px;border-top:1px solid #bbb;">
+                    <span style="display:inline-block;vertical-align:bottom;width:320px;margin-right:30px;">
+                        <span style="font-size:9px;font-weight:700;">Patient Signature:</span>
+                        <div style="border-bottom:2px solid #333;height:22px;"></div>
+                    </span>
+                    <span style="display:inline-block;vertical-align:bottom;width:160px;">
+                        <span style="font-size:9px;font-weight:700;">Date:</span>
+                        <div style="border-bottom:2px solid #333;height:22px;"></div>
+                    </span>
+                </div>
+            </div>`;
     }
 
     function bindShowResultButtons(scope = document) {
@@ -953,6 +884,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="text-muted">Recorded: ${data.created_at ?? ''}</span>
                 `;
                 resultContent.innerHTML = renderResult(data);
+                resultContent.dataset.lastHistory = btn.dataset.history;
                 if (resultModal) {
                     resultModal.show();
                 } else {
@@ -1051,33 +983,47 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('downloadPdfBtn').addEventListener('click', function () {
-        const meta = document.getElementById('resultMeta');
-        const content = document.getElementById('resultContent');
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Opening...';
 
-        const wrapper = document.createElement('div');
-        wrapper.style.cssText = 'font-family: Georgia, serif; padding: 2rem; color: #111; font-size: 13px; line-height: 1.6;';
+        const currentData = JSON.parse(document.getElementById('resultContent').dataset?.lastHistory || '{}');
+        const pdfHtml = buildPdfDocument(currentData);
 
-        // Clinic header
-        wrapper.innerHTML = `
-            <div style="text-align:center; margin-bottom:1.5rem; border-bottom:2px solid #333; padding-bottom:1rem;">
-                <div style="font-size:1.3rem; font-weight:bold; letter-spacing:1px;">DWELL DERMATOLOGY CENTER</div>
-                <div style="font-size:0.85rem; color:#555; margin-top:0.25rem;">Consultation Record</div>
-            </div>
-            <div style="margin-bottom:1.2rem; font-size:0.85rem; color:#444;">${meta.innerHTML}</div>
-            ${content.innerHTML}
-        `;
+        const fullHtml = `<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<title>Consultation Report</title>
+<style>
+  @page { size: A4; margin: 10mm 12mm; }
+  body  { margin: 0; padding: 20px; background: #fff; font-family: Arial, Helvetica, sans-serif; color: #111; }
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  @media print { body { padding: 0; } }
+</style></head>
+<body>${pdfHtml}</body>
+</html>`;
 
-        const opt = {
-            margin:       [15, 15, 15, 15],
-            filename:     'consultation-result.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+        const win = window.open('', '_blank');
+        if (!win) {
+            alert('Pop-ups are blocked. Please allow pop-ups for this page, then try again.');
+            btn.disabled = false;
+            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-1" viewBox="0 0 16 16" style="vertical-align:-2px"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg> Download PDF`;
+            return;
+        }
 
-        html2pdf().set(opt).from(wrapper).save();
+        win.document.open();
+        win.document.write(fullHtml);
+        win.document.close();
+
+        win.addEventListener('load', function () {
+            setTimeout(function () {
+                win.focus();
+                win.print();
+            }, 350);
+        });
+
+        btn.disabled = false;
+        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="me-1" viewBox="0 0 16 16" style="vertical-align:-2px"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg> Download PDF`;
     });
 });
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 @endpush
