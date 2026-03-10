@@ -700,7 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const row = (...fields) => `<div class="report-field-row">${fields.join('')}</div>`;
 
-        const bulletList = (items) => items.length
+        const bulletList = (items) => Array.isArray(items) && items.length
             ? `<ul style="margin:0;padding-left:1.4rem;">${items.map(i=>`<li style="font-size:0.88rem;margin-bottom:2px;">${i}</li>`).join('')}</ul>`
             : '';
 
@@ -802,7 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span style="display:block;font-size:7.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;">${label}</span>
                 <span style="display:block;border-bottom:1px dotted #888;padding-bottom:2px;font-size:10px;min-height:14px;word-break:break-word;">${value || '&nbsp;'}</span>
             </span>`;
-        const bullets = (items) => items.length
+        const bullets = (items) => Array.isArray(items) && items.length
             ? `<ul style="margin:0;padding-left:16px;">${items.map(i=>`<li style="font-size:10px;margin-bottom:2px;">${i}</li>`).join('')}</ul>`
             : '';
         const subLabel = (text, mt) => `<div style="font-size:7.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;${mt?'margin-top:'+mt+';':''}">${text}</div>`;

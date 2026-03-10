@@ -402,7 +402,7 @@
 
     .annual-report-modal-content {
         background-color: #ffffff;
-        margin: auto 1.5in auto auto;
+        /* margin: auto 1.5in auto auto; */
         padding: 0;
         border: 2px solid #FFD700;
         width: 85%;
@@ -1225,6 +1225,22 @@
                                                     }
                                                 }
                                                 
+                                                // Extract appointment photos
+                                                $appointmentConditionPhotos = [];
+                                                $appointmentProgressPhotos = [];
+                                                if ($item->appointment) {
+                                                    if ($item->appointment->conditionPhotos && $item->appointment->conditionPhotos->count() > 0) {
+                                                        $appointmentConditionPhotos = $item->appointment->conditionPhotos
+                                                            ->map(fn($p) => asset('storage/' . $p->photo))
+                                                            ->toArray();
+                                                    }
+                                                    if ($item->appointment->progressPhotos && $item->appointment->progressPhotos->count() > 0) {
+                                                        $appointmentProgressPhotos = $item->appointment->progressPhotos
+                                                            ->map(fn($p) => asset('storage/' . $p->photo))
+                                                            ->toArray();
+                                                    }
+                                                }
+                                                
                                                 // Prepare history item data for JSON
                                                 $historyItemData = [
                                                     'id' => $item->id,
@@ -1238,6 +1254,8 @@
                                                     'prescription' => $item->prescription,
                                                     'notes' => $item->notes,
                                                     'follow_up_date' => $item->follow_up_date ? $item->follow_up_date->format('M d, Y') : null,
+                                                    'appointment_condition_photos' => $appointmentConditionPhotos,
+                                                    'appointment_progress_photos' => $appointmentProgressPhotos,
                                                 ];
                                             @endphp
 
@@ -1298,6 +1316,22 @@
                                             }
                                         }
                                         
+                                        // Extract appointment photos
+                                        $appointmentConditionPhotos = [];
+                                        $appointmentProgressPhotos = [];
+                                        if ($item->appointment) {
+                                            if ($item->appointment->conditionPhotos && $item->appointment->conditionPhotos->count() > 0) {
+                                                $appointmentConditionPhotos = $item->appointment->conditionPhotos
+                                                    ->map(fn($p) => asset('storage/' . $p->photo))
+                                                    ->toArray();
+                                            }
+                                            if ($item->appointment->progressPhotos && $item->appointment->progressPhotos->count() > 0) {
+                                                $appointmentProgressPhotos = $item->appointment->progressPhotos
+                                                    ->map(fn($p) => asset('storage/' . $p->photo))
+                                                    ->toArray();
+                                            }
+                                        }
+                                        
                                         // Prepare history item data for JSON
                                         $historyItemData = [
                                             'id' => $item->id,
@@ -1311,6 +1345,8 @@
                                             'prescription' => $item->prescription,
                                             'notes' => $item->notes,
                                             'follow_up_date' => $item->follow_up_date ? $item->follow_up_date->format('M d, Y') : null,
+                                            'appointment_condition_photos' => $appointmentConditionPhotos,
+                                            'appointment_progress_photos' => $appointmentProgressPhotos,
                                         ];
                                     @endphp
 
@@ -1359,10 +1395,29 @@
 
 @push('scripts')
 <script>
+    // Build historyData from DOM for use by openAnnualReport()
+    const historyData = {};
+
     document.addEventListener('DOMContentLoaded', function () {
         if (window.feather && typeof window.feather.replace === 'function') {
             window.feather.replace();
         }
+
+        // Populate historyData from existing DOM elements
+        document.querySelectorAll('.annual-report-bar[data-year]').forEach(function(bar) {
+            const year = bar.dataset.year;
+            const profileId = bar.dataset.profile || 'default';
+            if (!historyData[year]) historyData[year] = {};
+            if (!historyData[year][profileId]) historyData[year][profileId] = [];
+            const yearGroup = bar.closest('.year-group');
+            if (yearGroup) {
+                yearGroup.querySelectorAll('.history-item[data-history]').forEach(function(el) {
+                    try {
+                        historyData[year][profileId].push(JSON.parse(el.getAttribute('data-history')));
+                    } catch (e) {}
+                });
+            }
+        });
 
         // Date filter functionality
         const dateFilterBtns = document.querySelectorAll('.date-filter-btn');
@@ -1481,36 +1536,24 @@
                 
                 try {
                     const historyDataStr = historyItem.getAttribute('data-history');
-                    console.log('History data string:', historyDataStr);
-                    console.log('History data string length:', historyDataStr ? historyDataStr.length : 0);
                     
                     if (historyDataStr && historyDataStr.trim() !== '') {
-                        // Try to parse the JSON
-                        let historyData;
+                        let itemData;
                         try {
-                            historyData = JSON.parse(historyDataStr);
+                            itemData = JSON.parse(historyDataStr);
                         } catch (parseError) {
-                            console.error('JSON Parse Error:', parseError);
-                            console.error('First 100 chars of data:', historyDataStr.substring(0, 100));
                             // Try to decode HTML entities if that's the issue
                             const tempDiv = document.createElement('div');
                             tempDiv.innerHTML = historyDataStr;
-                            const decodedStr = tempDiv.textContent || tempDiv.innerText;
-                            console.log('Decoded string:', decodedStr);
-                            historyData = JSON.parse(decodedStr);
+                            itemData = JSON.parse(tempDiv.textContent || tempDiv.innerText);
                         }
                         
-                        console.log('Parsed history data:', historyData);
-                        openHistoryItemModal(historyData);
+                        openHistoryItemModal(itemData);
                     } else {
-                        console.error('No data-history attribute found or empty');
                         alert('No consultation data available.');
                     }
                 } catch (error) {
-                    console.error('Error parsing history data:', error);
-                    console.error('Error stack:', error.stack);
-                    console.error('Data string (first 200 chars):', historyItem.getAttribute('data-history')?.substring(0, 200));
-                    alert('Error loading consultation details: ' + error.message + '\n\nPlease check the browser console for more details.');
+                    alert('Error loading consultation details: ' + error.message);
                 }
             }
         });
@@ -1549,17 +1592,19 @@
             }
             
             // Consultation Data (from JSON)
-            if (item.consultation_data) {
+            const hasConsultationData = item.consultation_data && Object.keys(item.consultation_data).length > 0;
+            if (hasConsultationData) {
                 const data = item.consultation_data;
                 
                 // BEFORE PHOTOS Section
-                if (data.before && data.before.photos && data.before.photos.length > 0) {
+                const beforePhotos = (data.before && data.before.photos) || data.appointment_condition_photos || [];
+                if (Array.isArray(beforePhotos) && beforePhotos.length > 0) {
                     html += `<div class="result-form-section">`;
                     html += `<div class="result-section-header">📸 BEFORE PHOTOS</div>`;
                     html += `<div class="result-form-group">`;
                     html += `<label>Upload Before Photos (Multiple)</label>`;
                     html += `<div class="file-preview">`;
-                    data.before.photos.forEach(photo => {
+                    beforePhotos.forEach(photo => {
                         html += `<div class="file-preview-item">`;
                         html += `<img src="{{ asset('storage/') }}/` + escapeHtml(photo) + `" alt="Before Photo" onerror="this.style.display='none'">`;
                         html += `</div>`;
@@ -1576,6 +1621,8 @@
                     beforeFindings = data.before_findings.split('\n').map(f => f.replace(/^•\s*/, '').trim()).filter(f => f);
                 } else if (data.before && data.before.findings) {
                     beforeFindings = Array.isArray(data.before.findings) ? data.before.findings : [data.before.findings];
+                } else if (data.before_condition) {
+                    beforeFindings = Array.isArray(data.before_condition) ? data.before_condition : [data.before_condition];
                 }
                 
                 if (beforeFindings.length > 0) {
@@ -1598,13 +1645,14 @@
                 }
                 
                 // AFTER PHOTOS Section
-                if (data.after && data.after.photos && data.after.photos.length > 0) {
+                const afterPhotos = (data.after && data.after.photos) || data.appointment_progress_photos || [];
+                if (Array.isArray(afterPhotos) && afterPhotos.length > 0) {
                     html += `<div class="result-form-section">`;
                     html += `<div class="result-section-header">📸 AFTER PHOTOS</div>`;
                     html += `<div class="result-form-group">`;
                     html += `<label>Upload After Photos (Multiple)</label>`;
                     html += `<div class="file-preview">`;
-                    data.after.photos.forEach(photo => {
+                    afterPhotos.forEach(photo => {
                         html += `<div class="file-preview-item">`;
                         html += `<img src="{{ asset('storage/') }}/` + escapeHtml(photo) + `" alt="After Photo" onerror="this.style.display='none'">`;
                         html += `</div>`;
@@ -1621,6 +1669,8 @@
                     afterResults = data.after_results.split('\n').map(r => r.replace(/^•\s*/, '').trim()).filter(r => r);
                 } else if (data.after && data.after.results) {
                     afterResults = Array.isArray(data.after.results) ? data.after.results : [data.after.results];
+                } else if (data.result) {
+                    afterResults = Array.isArray(data.result) ? data.result : [data.result];
                 }
                 
                 if (afterResults.length > 0) {
@@ -1634,6 +1684,31 @@
                             html += `<div class="bullet-note-item">`;
                             html += `<span class="bullet-point">•</span>`;
                             html += `<div class="bullet-text">${escapeHtml(result.trim())}</div>`;
+                            html += `</div>`;
+                        }
+                    });
+                    html += `</div>`;
+                    html += `</div>`;
+                    html += `</div>`;
+                }
+                
+                // PROCEDURES Section
+                let procedures = [];
+                if (data.procedures) {
+                    procedures = Array.isArray(data.procedures) ? data.procedures : [data.procedures];
+                }
+                
+                if (procedures.length > 0) {
+                    html += `<div class="result-form-section">`;
+                    html += `<div class="result-section-header">⚕️ PROCEDURES</div>`;
+                    html += `<div class="result-form-group">`;
+                    html += `<label>Procedures</label>`;
+                    html += `<div>`;
+                    procedures.forEach(proc => {
+                        if (proc && proc.toString().trim()) {
+                            html += `<div class="bullet-note-item">`;
+                            html += `<span class="bullet-point">•</span>`;
+                            html += `<div class="bullet-text">${escapeHtml(proc.toString().trim())}</div>`;
                             html += `</div>`;
                         }
                     });
@@ -1675,12 +1750,16 @@
                 if (data.medications_to_take) {
                     // Handle string format with bullet points
                     medications = data.medications_to_take.split('\n').map(m => m.replace(/^•\s*/, '').trim()).filter(m => m);
-                } else if (data.medication && data.medication.medicines) {
-                    medications = typeof data.medication.medicines === 'string' 
-                        ? data.medication.medicines.split('\n').map(m => m.replace(/^•\s*/, '').trim()).filter(m => m)
-                        : (Array.isArray(data.medication.medicines) ? data.medication.medicines : [data.medication.medicines]);
+                } else if (data.medication) {
+                    if (Array.isArray(data.medication)) {
+                        medications = data.medication;
+                    } else if (data.medication.medicines) {
+                        medications = typeof data.medication.medicines === 'string'
+                            ? data.medication.medicines.split('\n').map(m => m.replace(/^•\s*/, '').trim()).filter(m => m)
+                            : (Array.isArray(data.medication.medicines) ? data.medication.medicines : [data.medication.medicines]);
+                    }
                 }
-                
+
                 if (medications.length > 0) {
                     html += `<div class="result-form-section">`;
                     html += `<div class="result-section-header">💧 MEDICATIONS TO TAKE</div>`;
@@ -1700,31 +1779,45 @@
                     html += `</div>`;
                 }
                 
-                // NOTES Section
-                const notes = data.notes || (data.after && data.after.notes) || null;
-                if (notes && notes.trim()) {
-                    html += `<div class="result-form-section">`;
-                    html += `<div class="result-section-header">📝 NOTES</div>`;
-                    html += `<div class="result-form-group">`;
-                    html += `<label>Notes (Optional)</label>`;
-                    html += `<textarea readonly style="min-height: 100px;">${escapeHtml(notes)}</textarea>`;
-                    html += `</div>`;
-                    html += `</div>`;
+                // FOLLOW-UP DATE Section
+                let followUpDate = data.follow_up_date || null;
+                
+                // Support new follow_up object format
+                if (!followUpDate && data.follow_up && data.follow_up.date) {
+                    followUpDate = data.follow_up.date;
                 }
                 
-                // FOLLOW-UP DATE Section
-                if (data.follow_up_date) {
+                if (followUpDate) {
                     html += `<div class="result-form-section">`;
                     html += `<div class="result-section-header">📅 FOLLOW-UP DATE</div>`;
                     html += `<div class="result-form-group">`;
                     html += `<label>Follow-up Date (Optional)</label>`;
-                    html += `<input type="text" class="result-form-input" value="${escapeHtml(data.follow_up_date)}" readonly>`;
+                    html += `<input type="text" class="result-form-input" value="${escapeHtml(followUpDate)}" readonly>`;
                     html += `</div>`;
                     html += `</div>`;
                 }
             } else {
-                // Fallback: Display legacy data format
-                // BEFORE PHOTOS (if any in legacy format)
+                // Fallback: Display legacy data format or appointment photos
+                
+                // BEFORE PHOTOS from appointment
+                const beforePhotos = item.appointment_condition_photos || [];
+                if (Array.isArray(beforePhotos) && beforePhotos.length > 0) {
+                    html += `<div class="result-form-section">`;
+                    html += `<div class="result-section-header">📸 BEFORE PHOTOS</div>`;
+                    html += `<div class="result-form-group">`;
+                    html += `<label>Before Photos</label>`;
+                    html += `<div class="file-preview">`;
+                    beforePhotos.forEach(photo => {
+                        const photoPath = photo.startsWith('http') ? photo : `{{ asset('storage/') }}/${escapeHtml(photo)}`;
+                        html += `<div class="file-preview-item">`;
+                        html += `<img src="${photoPath}" alt="Before Photo" onerror="this.style.display='none'">`;
+                        html += `</div>`;
+                    });
+                    html += `</div>`;
+                    html += `</div>`;
+                    html += `</div>`;
+                }
+                
                 // BEFORE CONSULTATION FINDINGS
                 if (item.diagnosis) {
                     html += `<div class="result-form-section">`;
@@ -1744,56 +1837,18 @@
                     html += `</div>`;
                 }
                 
-                // AFTER CONSULTATION RESULTS
-                if (item.treatment_notes) {
+                // AFTER PHOTOS from appointment
+                const afterPhotos = item.appointment_progress_photos || [];
+                if (Array.isArray(afterPhotos) && afterPhotos.length > 0) {
                     html += `<div class="result-form-section">`;
-                    html += `<div class="result-section-header">🧪 AFTER CONSULTATION RESULTS</div>`;
+                    html += `<div class="result-section-header">📸 AFTER PHOTOS</div>`;
                     html += `<div class="result-form-group">`;
-                    html += `<label>Results (Multiple Bullet Points)</label>`;
-                    html += `<div>`;
-                    const results = item.treatment_notes.split('\n').filter(r => r.trim());
-                    results.forEach(result => {
-                        html += `<div class="bullet-note-item">`;
-                        html += `<span class="bullet-point">•</span>`;
-                        html += `<div class="bullet-text">${escapeHtml(result.trim())}</div>`;
-                        html += `</div>`;
-                    });
-                    html += `</div>`;
-                    html += `</div>`;
-                    html += `</div>`;
-                }
-                
-                // PRESCRIPTION
-                if (item.prescription) {
-                    html += `<div class="result-form-section">`;
-                    html += `<div class="result-section-header">💊 PRESCRIPTION</div>`;
-                    html += `<div class="result-form-group">`;
-                    html += `<label>Prescription Items (Multiple Bullet Points)</label>`;
-                    html += `<div>`;
-                    const prescriptions = item.prescription.split('\n').filter(p => p.trim());
-                    prescriptions.forEach(pres => {
-                        html += `<div class="bullet-note-item">`;
-                        html += `<span class="bullet-point">•</span>`;
-                        html += `<div class="bullet-text">${escapeHtml(pres.trim())}</div>`;
-                        html += `</div>`;
-                    });
-                    html += `</div>`;
-                    html += `</div>`;
-                    html += `</div>`;
-                }
-                
-                // MEDICATIONS TO TAKE
-                if (item.medicines_to_take) {
-                    html += `<div class="result-form-section">`;
-                    html += `<div class="result-section-header">💧 MEDICATIONS TO TAKE</div>`;
-                    html += `<div class="result-form-group">`;
-                    html += `<label>Oral Medications (Multiple Bullet Points)</label>`;
-                    html += `<div>`;
-                    const medications = item.medicines_to_take.split('\n').filter(m => m.trim());
-                    medications.forEach(med => {
-                        html += `<div class="bullet-note-item">`;
-                        html += `<span class="bullet-point">•</span>`;
-                        html += `<div class="bullet-text">${escapeHtml(med.trim())}</div>`;
+                    html += `<label>After Photos</label>`;
+                    html += `<div class="file-preview">`;
+                    afterPhotos.forEach(photo => {
+                        const photoPath = photo.startsWith('http') ? photo : `{{ asset('storage/') }}/${escapeHtml(photo)}`;
+                        html += `<div class="file-preview-item">`;
+                        html += `<img src="${photoPath}" alt="After Photo" onerror="this.style.display='none'">`;
                         html += `</div>`;
                     });
                     html += `</div>`;
@@ -1838,19 +1893,16 @@
     }
 
     function openHistoryItemModal(item) {
-        console.log('Opening history item modal:', item);
         const modal = document.getElementById('historyItemModal');
         const title = document.getElementById('historyItemTitle');
         const body = document.getElementById('historyItemBody');
         
         if (!modal || !title || !body) {
-            console.error('Modal elements not found');
             alert('Error: Modal elements not found. Please refresh the page.');
             return;
         }
         
         if (!item) {
-            console.error('No item data provided');
             return;
         }
         
@@ -1867,16 +1919,20 @@
         html += `</div>`;
         
         // Consultation Data (from JSON)
-        if (item.consultation_data) {
+        // Check if consultation_data has actual content
+        const hasConsultationData = item.consultation_data && Object.keys(item.consultation_data).length > 0;
+        
+        if (hasConsultationData) {
             const data = item.consultation_data;
             
             // BEFORE PHOTOS Section
-            if (data.before && data.before.photos && data.before.photos.length > 0) {
+            const beforePhotos = (data.before && data.before.photos) || item.appointment_condition_photos || [];
+            if (Array.isArray(beforePhotos) && beforePhotos.length > 0) {
                 html += `<div class="result-form-section">`;
                 html += `<div class="result-section-header">📸 BEFORE PHOTOS</div>`;
                 html += `<div class="result-form-group">`;
                 html += `<div class="file-preview">`;
-                data.before.photos.forEach(photo => {
+                beforePhotos.forEach(photo => {
                     const photoPath = photo.startsWith('http') ? photo : `{{ asset('storage/') }}/${escapeHtml(photo)}`;
                     html += `<div class="file-preview-item">`;
                     html += `<img src="${photoPath}" alt="Before Photo" onerror="this.style.display='none'">`;
@@ -1893,6 +1949,8 @@
                 beforeFindings = data.before_findings.split('\n').map(f => f.replace(/^•\s*/, '').trim()).filter(f => f);
             } else if (data.before && data.before.findings) {
                 beforeFindings = Array.isArray(data.before.findings) ? data.before.findings : [data.before.findings];
+            } else if (data.before_condition) {
+                beforeFindings = Array.isArray(data.before_condition) ? data.before_condition : [data.before_condition];
             }
             
             if (beforeFindings.length > 0) {
@@ -1914,12 +1972,13 @@
             }
             
             // AFTER PHOTOS Section
-            if (data.after && data.after.photos && data.after.photos.length > 0) {
+            const afterPhotos = (data.after && data.after.photos) || item.appointment_progress_photos || [];
+            if (Array.isArray(afterPhotos) && afterPhotos.length > 0) {
                 html += `<div class="result-form-section">`;
                 html += `<div class="result-section-header">📸 AFTER PHOTOS</div>`;
                 html += `<div class="result-form-group">`;
                 html += `<div class="file-preview">`;
-                data.after.photos.forEach(photo => {
+                afterPhotos.forEach(photo => {
                     const photoPath = photo.startsWith('http') ? photo : `{{ asset('storage/') }}/${escapeHtml(photo)}`;
                     html += `<div class="file-preview-item">`;
                     html += `<img src="${photoPath}" alt="After Photo" onerror="this.style.display='none'">`;
@@ -1936,6 +1995,8 @@
                 afterResults = data.after_results.split('\n').map(r => r.replace(/^•\s*/, '').trim()).filter(r => r);
             } else if (data.after && data.after.results) {
                 afterResults = Array.isArray(data.after.results) ? data.after.results : [data.after.results];
+            } else if (data.result) {
+                afterResults = Array.isArray(data.result) ? data.result : [data.result];
             }
             
             if (afterResults.length > 0) {
@@ -1948,6 +2009,30 @@
                         html += `<div class="bullet-note-item">`;
                         html += `<span class="bullet-point">•</span>`;
                         html += `<div class="bullet-text">${escapeHtml(result.trim())}</div>`;
+                        html += `</div>`;
+                    }
+                });
+                html += `</div>`;
+                html += `</div>`;
+                html += `</div>`;
+            }
+            
+            // PROCEDURES Section
+            let procedures = [];
+            if (data.procedures) {
+                procedures = Array.isArray(data.procedures) ? data.procedures : [data.procedures];
+            }
+            
+            if (procedures.length > 0) {
+                html += `<div class="result-form-section">`;
+                html += `<div class="result-section-header">⚕️ PROCEDURES</div>`;
+                html += `<div class="result-form-group">`;
+                html += `<div>`;
+                procedures.forEach(proc => {
+                    if (proc && proc.toString().trim()) {
+                        html += `<div class="bullet-note-item">`;
+                        html += `<span class="bullet-point">•</span>`;
+                        html += `<div class="bullet-text">${escapeHtml(proc.toString().trim())}</div>`;
                         html += `</div>`;
                     }
                 });
@@ -1987,9 +2072,13 @@
             if (data.medications_to_take) {
                 medications = data.medications_to_take.split('\n').map(m => m.replace(/^•\s*/, '').trim()).filter(m => m);
             } else if (data.medication && data.medication.medicines) {
-                medications = typeof data.medication.medicines === 'string' 
+                medications = typeof data.medication.medicines === 'string'
                     ? data.medication.medicines.split('\n').map(m => m.replace(/^•\s*/, '').trim()).filter(m => m)
                     : (Array.isArray(data.medication.medicines) ? data.medication.medicines : [data.medication.medicines]);
+            } else if (data.medication && Array.isArray(data.medication)) {
+                medications = data.medication;
+            } else if (data.medication && typeof data.medication === 'string') {
+                medications = [data.medication];
             }
             
             if (medications.length > 0) {
@@ -2022,16 +2111,42 @@
             }
             
             // FOLLOW-UP DATE Section
-            if (data.follow_up_date) {
+            let followUpDate = data.follow_up_date;
+            let followUpRequired = false;
+            if (data.follow_up) {
+                followUpDate = data.follow_up.date || followUpDate;
+                followUpRequired = data.follow_up.required || false;
+            }
+            
+            if (followUpDate || followUpRequired) {
                 html += `<div class="result-form-section">`;
                 html += `<div class="result-section-header">📅 FOLLOW-UP DATE</div>`;
                 html += `<div class="result-form-group">`;
-                html += `<input type="text" class="result-form-input" value="${escapeHtml(data.follow_up_date)}" readonly>`;
+                html += `<input type="text" class="result-form-input" value="${escapeHtml(followUpDate || 'Required (date TBD)')}" readonly>`;
                 html += `</div>`;
                 html += `</div>`;
             }
         } else {
-            // Fallback: Display legacy data format
+            // Fallback: Display legacy data format or appointment photos
+            
+            // BEFORE PHOTOS from appointment
+            const beforePhotos = item.appointment_condition_photos || [];
+            if (Array.isArray(beforePhotos) && beforePhotos.length > 0) {
+                html += `<div class="result-form-section">`;
+                html += `<div class="result-section-header">📸 BEFORE PHOTOS</div>`;
+                html += `<div class="result-form-group">`;
+                html += `<div class="file-preview">`;
+                beforePhotos.forEach(photo => {
+                    const photoPath = photo.startsWith('http') ? photo : `{{ asset('storage/') }}/${escapeHtml(photo)}`;
+                    html += `<div class="file-preview-item">`;
+                    html += `<img src="${photoPath}" alt="Before Photo" onerror="this.style.display='none'">`;
+                    html += `</div>`;
+                });
+                html += `</div>`;
+                html += `</div>`;
+                html += `</div>`;
+            }
+            
             // BEFORE CONSULTATION FINDINGS
             if (item.diagnosis) {
                 html += `<div class="result-form-section">`;
@@ -2050,7 +2165,25 @@
                 html += `</div>`;
             }
             
-            // AFTER CONSULTATION RESULTS
+            // AFTER PHOTOS from appointment
+            const afterPhotos = item.appointment_progress_photos || [];
+            if (Array.isArray(afterPhotos) && afterPhotos.length > 0) {
+                html += `<div class="result-form-section">`;
+                html += `<div class="result-section-header">📸 AFTER PHOTOS</div>`;
+                html += `<div class="result-form-group">`;
+                html += `<div class="file-preview">`;
+                afterPhotos.forEach(photo => {
+                    const photoPath = photo.startsWith('http') ? photo : `{{ asset('storage/') }}/${escapeHtml(photo)}`;
+                    html += `<div class="file-preview-item">`;
+                    html += `<img src="${photoPath}" alt="After Photo" onerror="this.style.display='none'">`;
+                    html += `</div>`;
+                });
+                html += `</div>`;
+                html += `</div>`;
+                html += `</div>`;
+            }
+            
+            // AFTER CONSULTATION RESULTS (from treatment_notes fallback)
             if (item.treatment_notes) {
                 html += `<div class="result-form-section">`;
                 html += `<div class="result-section-header">🧪 AFTER CONSULTATION RESULTS</div>`;
@@ -2068,7 +2201,7 @@
                 html += `</div>`;
             }
             
-            // PRESCRIPTION
+            // PRESCRIPTION (fallback)
             if (item.prescription) {
                 html += `<div class="result-form-section">`;
                 html += `<div class="result-section-header">💊 PRESCRIPTION</div>`;
@@ -2121,7 +2254,6 @@
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
         
-        console.log('Modal displayed, classList:', modal.classList.toString());
     }
 
     function closeHistoryItemModal() {

@@ -2514,7 +2514,7 @@ class DashboardController extends Controller
         }
 
         $query = $patient->patientHistory()
-            ->with(['doctor', 'appointment.service', 'appointment.branch', 'personalInformation']);
+            ->with(['doctor', 'appointment.service', 'appointment.branch', 'appointment.conditionPhotos', 'appointment.progressPhotos', 'personalInformation']);
 
         // Filter by personal_information_id (patient profile) if selected
         if ($request->filled('personal_information_id')) {
