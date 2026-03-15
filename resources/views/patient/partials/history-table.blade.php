@@ -89,9 +89,14 @@
                     <tbody>
                     @foreach($items as $item)
                         @php
-                            $slotDate = ($item->appointment && $item->appointment->timeSlot && $item->appointment->timeSlot->date) 
-                                ? $item->appointment->timeSlot->date->format('M d, Y') 
-                                : 'Date TBD';
+                            $slotDate = 'Date TBD';
+                            if ($item->appointment) {
+                                if ($item->appointment->timeSlot && $item->appointment->timeSlot->date) {
+                                    $slotDate = $item->appointment->timeSlot->date->format('M d, Y');
+                                } elseif ($item->appointment->scheduled_date) {
+                                    $slotDate = $item->appointment->scheduled_date->format('M d, Y');
+                                }
+                            }
                             $branchName = $item->appointment->branch->name ?? 'N/A';
                             $serviceName = $item->appointment->service->name ?? 'Consultation';
                             $consultationData = null;

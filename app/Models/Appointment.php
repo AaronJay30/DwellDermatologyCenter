@@ -32,6 +32,10 @@ class Appointment extends Model
         'scheduled_time',
     ];
 
+    protected $casts = [
+        'scheduled_date' => 'date',
+    ];
+
     public function patient(): BelongsTo
     {
         return $this->belongsTo(User::class, 'patient_id');
