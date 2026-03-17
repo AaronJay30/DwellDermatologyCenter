@@ -78,13 +78,6 @@ class PatientConsultationController extends Controller
                 $query->whereNotNull('time_slot_id')
                       ->orWhereNotNull('service_id');
             })
-            ->where(function($query) {
-                // Hide consultation appointments where doctor is N/A - don't print/show those
-                $query->where(function($q) {
-                    $q->whereNull('time_slot_id') // Service-only bookings (no doctor required yet)
-                      ->orWhereNotNull('doctor_id'); // Or has doctor assigned
-                });
-            })
             ->with(['branch', 'timeSlot', 'doctor', 'service'])
             ->latest()
             ->paginate(3)
@@ -667,7 +660,7 @@ class PatientConsultationController extends Controller
                 'branch_name' => $consultation->branch->name ?? 'N/A',
                 'date' => $date,
                 'time' => $time,
-                'doctor_name' => $consultation->doctor->name ?? 'N/A',
+                'doctor_name' => $consultation->doctor->name ?? (isset($consultation->admin_note) ? preg_replace('/^Doctor:\s*/i', '', $consultation->admin_note) : null),
                 'status' => $consultation->status ?? 'pending',
                 'cancellation_reason' => $consultation->cancellation_reason ?? null,
                 'notes' => $consultation->notes ?? null,

@@ -178,7 +178,11 @@
                                     </span>
                                 </td>
                                 <td data-label="Branch">{{ $branchName }}</td>
-                                <td data-label="Doctor">{{ $consultation->doctor->name ?? 'N/A' }}</td>
+                                <td data-label="Doctor">
+                                    {{ $consultation->doctor && $consultation->doctor->name 
+                                        ? $consultation->doctor->name 
+                                        : (isset($consultation->admin_note) ? preg_replace('/^Doctor:\s*/i', '', $consultation->admin_note) : 'N/A') }}
+                                </td>
                                 <td data-label="Type">{{ $typeName }}</td>
                                 <td data-label="Status">
                                     <span class="status-badge status-{{ strtolower($consultation->status ?? 'pending') }}">
@@ -363,7 +367,7 @@ function showConsultationDetails(consultationId) {
                             <p><strong>Branch:</strong> ${consultation.branch_name}</p>
                             <p><strong>Date:</strong> ${consultation.date}</p>
                             <p><strong>Time:</strong> ${consultation.time}</p>
-                            ${!consultation.is_service_booking ? `<p><strong>Doctor:</strong> ${consultation.doctor_name}</p>` : ''}
+                            ${!consultation.is_service_booking ? `<p><strong>Doctor:</strong> ${consultation.doctor_name ? consultation.doctor_name : ''}</p>` : ''}
                         </div>
                     </div>
                     <div style="background: ${grayLight}; padding: 1.25rem; border-radius: 12px; border-left: 4px solid ${primaryColor};">
